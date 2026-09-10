@@ -22,6 +22,7 @@ public class MainActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         bindings = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(bindings.getRoot());
+        setSupportActionBar(bindings.topAppBar);
         int[] paddings = {
                 bindings.main.getPaddingLeft(),
                 bindings.main.getPaddingTop(),
