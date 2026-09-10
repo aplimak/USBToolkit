@@ -8,8 +8,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import java.util.ArrayList;
-import java.util.Arrays;
+import com.google.android.material.color.DynamicColors;
 
 import ir.aeliux.usbtoolkit.databinding.ActivityMainBinding;
 
@@ -22,7 +21,6 @@ public class MainActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         bindings = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(bindings.getRoot());
-        setSupportActionBar(bindings.topAppBar);
         int[] paddings = {
                 bindings.main.getPaddingLeft(),
                 bindings.main.getPaddingTop(),
