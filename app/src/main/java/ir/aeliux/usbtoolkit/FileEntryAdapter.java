@@ -94,7 +94,7 @@ public class FileEntryAdapter extends ListAdapter<FileEntry, FileEntryAdapter.Vi
 
         if (entry.isDirectory()) {
             holder.ivIcon.setImageResource(R.drawable.ic_folder);
-            holder.tvDetails.setText("Directory");
+            holder.tvDetails.setVisibility(View.GONE);
             holder.cbSelect.setVisibility(View.GONE);
 
             holder.itemView.setAlpha(1f);
@@ -126,6 +126,7 @@ public class FileEntryAdapter extends ListAdapter<FileEntry, FileEntryAdapter.Vi
 
         holder.itemView.setAlpha(1f);
         holder.itemView.setEnabled(true);
+        holder.tvDetails.setVisibility(View.VISIBLE);
         holder.cbSelect.setVisibility(allowMultiple ? View.VISIBLE : View.GONE);
         holder.cbSelect.setChecked(selectedSet.contains(entry.getAbsolutePath()));
 
