@@ -3,4 +3,9 @@
     <string name="btn_reboot">Reboot</string>
     <string name="btn_start">Start</string>
     <string name="btn_stop">Stop</string>
+    <string name="files_to_mount">Files to Mount</string>
+    <string name="add">Add</string>
+    <string name="read_only">Read-Only</string>
+    <string name="cd_rom">CD-ROM</string>
+    <string name="removable">Removable</string>
 </resources>

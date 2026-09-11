@@ -19,8 +19,9 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        maven { url 'https://jitpack.io' }
     }
 }
 
-rootProject.name = "USB Toolkit"
+rootProject.name = "USBToolkit"
 include ':app'
