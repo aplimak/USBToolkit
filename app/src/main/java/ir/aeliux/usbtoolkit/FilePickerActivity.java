@@ -174,11 +174,12 @@ public class FilePickerActivity extends AppCompatActivity {
                 @Override
                 public void onFileList(List<FileEntry> entries) {
                     runOnUiThread(() -> {
-                        showLoading(false);
-                        adapter.submitList(new ArrayList<>(entries));
-                        binding.tvEmpty.setVisibility(
-                                entries.isEmpty() ? View.VISIBLE : View.GONE);
-                        adapter.restoreSelection(selectedPaths);
+                        adapter.submitList(new ArrayList<>(entries), () -> {
+                            showLoading(false);
+                            binding.tvEmpty.setVisibility(
+                                    entries.isEmpty() ? View.VISIBLE : View.GONE);
+                            adapter.restoreSelection(selectedPaths);
+                        });
                     });
                 }
 
