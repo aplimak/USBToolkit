@@ -95,18 +95,15 @@ public class RootFileService extends RootService {
         }
 
         @Override
-        public boolean exists(String path) {
-            return new File(path).exists();
+        public void exists(String path, IRootFileExistCallback callback) {
+            boolean exists = new File(path).exists();
+            try {
+                callback.OnResult(exists);
+            } catch (RemoteException e) {
+                // Ignore
+            }
         }
 
-        @Override
-        public String getMountInfo(String path) {
-            Shell.Result result = Shell.cmd("mount | grep '" + path + "'").exec();
-            if (result.isSuccess()) {
-                return joinLines(result.getOut());
-            }
-            return "No mount info found";
-        }
     };
 
     @Nullable
