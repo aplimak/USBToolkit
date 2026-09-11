@@ -68,9 +68,15 @@ public class FilePickerActivity extends AppCompatActivity {
         binding = ActivityFilePickerBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        ViewCompat.setOnApplyWindowInsetsListener(binding.toolbar, (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(v.getPaddingLeft(), systemBars.top, v.getPaddingRight(), v.getPaddingBottom());
+            return insets;
+        });
+
         ViewCompat.setOnApplyWindowInsetsListener(binding.main, (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            v.setPadding(systemBars.left, 0, systemBars.right, systemBars.bottom);
             return insets;
         });
 
@@ -98,6 +104,22 @@ public class FilePickerActivity extends AppCompatActivity {
             setResult(Activity.RESULT_CANCELED);
             finish();
         });
+
+        binding.toolbar.setOnMenuItemClickListener(item -> {
+            if (item.getItemId() == R.id.action_select) {
+                Intent result = new Intent();
+                result.putStringArrayListExtra(
+                        EXTRA_SELECTED_PATHS,
+                        new ArrayList<>(selectedPaths)
+                );
+                setResult(Activity.RESULT_OK, result);
+                finish();
+                return true;
+            }
+            return false;
+        });
+
+        updateConfirmButton();
     }
 
     private void setupRecyclerView() {
@@ -139,18 +161,6 @@ public class FilePickerActivity extends AppCompatActivity {
                 loadDirectory(currentPath);
             }
         });
-
-        binding.btnConfirm.setOnClickListener(v -> {
-            Intent result = new Intent();
-            result.putStringArrayListExtra(
-                    EXTRA_SELECTED_PATHS,
-                    new ArrayList<>(selectedPaths)
-            );
-            setResult(Activity.RESULT_OK, result);
-            finish();
-        });
-
-        updateConfirmButton();
     }
 
     private void bindRootService() {
@@ -200,8 +210,10 @@ public class FilePickerActivity extends AppCompatActivity {
     }
 
     private void updateConfirmButton() {
-        binding.btnConfirm.setText("Select (" + selectedPaths.size() + ")");
-        binding.btnConfirm.setEnabled(!selectedPaths.isEmpty());
+        android.view.MenuItem item = binding.toolbar.getMenu().findItem(R.id.action_select);
+        if (item == null) return;
+        item.setTitle("Select (" + selectedPaths.size() + ")");
+        item.setEnabled(!selectedPaths.isEmpty());
     }
 
     private void showLoading(boolean loading) {

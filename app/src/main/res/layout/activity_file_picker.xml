@@ -7,20 +7,21 @@
     android:layout_height="match_parent"
     android:background="?attr/colorSurface">
 
-    <!-- Expressive Top App Bar -->
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
         android:layout_width="0dp"
-        android:layout_height="?attr/actionBarSize"
+        android:layout_height="wrap_content"
+        android:minHeight="?attr/actionBarSize"
         android:background="?attr/colorSurfaceContainer"
         app:title="Select Files"
-        app:titleCentered="true"
+        app:titleCentered="false"
         app:navigationIcon="@drawable/ic_close"
+        app:navigationIconTint="?attr/colorOnSurface"
+        app:menu="@menu/menu_file_picker"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Current path breadcrumb -->
     <TextView
         android:id="@+id/tvCurrentPath"
         android:layout_width="0dp"
@@ -36,7 +37,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Up navigation button -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnUp"
         style="@style/Widget.Material3.Button.TonalButton"
@@ -49,20 +49,6 @@
         app:layout_constraintTop_toBottomOf="@id/tvCurrentPath"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <!-- Selection count + confirm -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnConfirm"
-        style="@style/Widget.Material3.Button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
-        android:layout_marginTop="4dp"
-        android:text="Select (0)"
-        app:icon="@drawable/ic_check"
-        app:layout_constraintTop_toBottomOf="@id/tvCurrentPath"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <!-- File list (Expressive List) -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerFiles"
         android:layout_width="0dp"
@@ -74,7 +60,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Loading indicator -->
     <com.google.android.material.progressindicator.CircularProgressIndicator
         android:id="@+id/progressBar"
         android:layout_width="wrap_content"
@@ -88,7 +73,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Empty state -->
     <TextView
         android:id="@+id/tvEmpty"
         android:layout_width="wrap_content"
