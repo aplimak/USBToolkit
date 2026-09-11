@@ -259,6 +259,9 @@ public class FilePickerActivity extends AppCompatActivity {
     private void showLoading(boolean loading) {
         binding.progressBar.setVisibility(loading ? View.VISIBLE : View.GONE);
         binding.recyclerFiles.setVisibility(loading ? View.GONE : View.VISIBLE);
+        binding.btnUp.setVisibility(loading ? View.INVISIBLE : View.VISIBLE);
+        binding.btnRoot.setVisibility(loading ? View.INVISIBLE : View.VISIBLE);
+        binding.btnHome.setVisibility(loading ? View.INVISIBLE : View.VISIBLE);
     }
 
     @Override
