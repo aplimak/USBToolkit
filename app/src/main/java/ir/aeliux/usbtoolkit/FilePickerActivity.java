@@ -4,6 +4,7 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.TypedValue;
@@ -37,6 +38,10 @@ public class FilePickerActivity extends AppCompatActivity {
     public static final String EXTRA_START_PATH = "start_path";
     public static final String EXTRA_ALLOWED_EXTENSIONS = "allowed_extensions";
 
+    public static final String ROOT_PATH = "/";
+    public static final String HOME_PATH = Environment.getExternalStorageDirectory().getAbsolutePath();
+
+
     private ActivityFilePickerBinding binding;
     private FileEntryAdapter adapter;
 
@@ -53,7 +58,7 @@ public class FilePickerActivity extends AppCompatActivity {
         public void onServiceConnected(ComponentName name, IBinder service) {
             rootService = IRootFileService.Stub.asInterface(service);
             isBound = true;
-            loadDirectory(currentPath);
+            loadDirectory();
         }
 
         @Override
@@ -142,8 +147,7 @@ public class FilePickerActivity extends AppCompatActivity {
     private void setupRecyclerView() {
         adapter = new FileEntryAdapter(
                 entry -> { // onDirectoryClick
-                    currentPath = entry.getAbsolutePath();
-                    loadDirectory(currentPath);
+                    changeDirectory(entry.getAbsolutePath());
                 },
                 (entry, checked) -> { // onFileSelect (checkbox)
                     if (checked) selectedPaths.add(entry.getAbsolutePath());
@@ -173,11 +177,25 @@ public class FilePickerActivity extends AppCompatActivity {
     private void setupButtons() {
         binding.btnUp.setOnClickListener(v -> {
             File parent = new File(currentPath).getParentFile();
-            if (parent != null && !parent.getAbsolutePath().equals(currentPath)) {
-                currentPath = parent.getAbsolutePath();
-                loadDirectory(currentPath);
+            if (parent != null) {
+                changeDirectory(parent.getAbsolutePath());
             }
         });
+
+        binding.btnRoot.setOnClickListener(v -> {
+            changeDirectory(ROOT_PATH);
+        });
+
+        binding.btnHome.setOnClickListener(v -> {
+            changeDirectory(HOME_PATH);
+        });
+    }
+
+    private void changeDirectory(String path) {
+        if (!path.equals(currentPath)) {
+            currentPath = path;
+            loadDirectory();
+        }
     }
 
     private void bindRootService() {
@@ -185,9 +203,14 @@ public class FilePickerActivity extends AppCompatActivity {
         RootService.bind(intent, serviceConnection);
     }
 
-    private void loadDirectory(String path) {
+    private void loadDirectory() {
         showLoading(true);
-        binding.tvCurrentPath.setText(path);
+        binding.tvCurrentPath.setText(currentPath);
+
+        boolean hasParent = new File(currentPath).getParentFile() != null;
+        binding.btnUp.setEnabled(hasParent);
+        binding.btnRoot.setEnabled(!ROOT_PATH.equals(currentPath));
+        binding.btnHome.setEnabled(!HOME_PATH.equals(currentPath));
 
         IRootFileService service = rootService;
         if (service == null) {
@@ -197,7 +220,7 @@ public class FilePickerActivity extends AppCompatActivity {
         }
 
         try {
-            service.listFiles(path, new IRootFileCallback.Stub() {
+            service.listFiles(currentPath, new IRootFileCallback.Stub() {
                 @Override
                 public void onFileList(List<FileEntry> entries) {
                     runOnUiThread(() -> {
