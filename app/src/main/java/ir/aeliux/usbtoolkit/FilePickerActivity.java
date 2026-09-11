@@ -88,7 +88,12 @@ public class FilePickerActivity extends AppCompatActivity {
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.main, (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            v.setPadding(systemBars.left, 0, systemBars.right, systemBars.bottom);
+
+            ViewGroup.LayoutParams lp = binding.statusBarScrim.getLayoutParams();
+            lp.height = systemBars.top;
+            binding.statusBarScrim.setLayoutParams(lp);
+
             return insets;
         });
 
