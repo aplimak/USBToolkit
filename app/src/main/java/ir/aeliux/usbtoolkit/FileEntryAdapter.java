@@ -106,7 +106,6 @@ public class FileEntryAdapter extends ListAdapter<FileEntry, FileEntryAdapter.Vi
         holder.ivIcon.setImageResource(R.drawable.ic_file);
         holder.tvDetails.setText(
                 formatSize(entry.getSize())
-                        + "  •  " + entry.getPermissions()
                         + "  •  " + formatDate(entry.getLastModified())
         );
 

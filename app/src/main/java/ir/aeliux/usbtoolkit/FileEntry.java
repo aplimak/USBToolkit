@@ -14,16 +14,14 @@ public class FileEntry implements Parcelable {
     private final boolean isDirectory;
     private final long size;
     private final long lastModified;
-    private final String permissions;
 
     public FileEntry(String name, String absolutePath, boolean isDirectory,
-                     long size, long lastModified, String permissions) {
+                     long size, long lastModified) {
         this.name = name;
         this.absolutePath = absolutePath;
         this.isDirectory = isDirectory;
         this.size = size;
         this.lastModified = lastModified;
-        this.permissions = permissions;
     }
 
     protected FileEntry(Parcel in) {
@@ -32,7 +30,6 @@ public class FileEntry implements Parcelable {
         isDirectory = in.readInt() == 1;
         size = in.readLong();
         lastModified = in.readLong();
-        permissions = in.readString();
     }
 
     public static final Creator<FileEntry> CREATOR = new Creator<FileEntry>() {
@@ -52,7 +49,6 @@ public class FileEntry implements Parcelable {
     public boolean isDirectory() { return isDirectory; }
     public long getSize() { return size; }
     public long getLastModified() { return lastModified; }
-    public String getPermissions() { return permissions; }
 
     @Override
     public int describeContents() { return 0; }
@@ -64,7 +60,6 @@ public class FileEntry implements Parcelable {
         dest.writeInt(isDirectory ? 1 : 0);
         dest.writeLong(size);
         dest.writeLong(lastModified);
-        dest.writeString(permissions);
     }
 
     @Override
@@ -76,12 +71,11 @@ public class FileEntry implements Parcelable {
                 && size == other.size
                 && lastModified == other.lastModified
                 && Objects.equals(name, other.name)
-                && Objects.equals(absolutePath, other.absolutePath)
-                && Objects.equals(permissions, other.permissions);
+                && Objects.equals(absolutePath, other.absolutePath);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, absolutePath, isDirectory, size, lastModified, permissions);
+        return Objects.hash(name, absolutePath, isDirectory, size, lastModified);
     }
 }

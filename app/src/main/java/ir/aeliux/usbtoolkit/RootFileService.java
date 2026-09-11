@@ -41,8 +41,7 @@ public class RootFileService extends RootService {
                                 child.getAbsolutePath(),
                                 child.isDirectory(),
                                 child.isDirectory() ? 0L : child.length(),
-                                child.lastModified(),
-                                getPermissions(child.getAbsolutePath())
+                                child.lastModified()
                         ));
                     }
                 }
@@ -81,8 +80,7 @@ public class RootFileService extends RootService {
                         file.getAbsolutePath(),
                         file.isDirectory(),
                         file.length(),
-                        file.lastModified(),
-                        getPermissions(path)
+                        file.lastModified()
                 ));
                 callback.onFileList(single);
             } catch (RemoteException e) {
@@ -110,18 +108,5 @@ public class RootFileService extends RootService {
     @Override
     public IBinder onBind(Intent intent) {
         return binder;
-    }
-
-    private String getPermissions(String path) {
-        // Single-quote the path so spaces / special chars are safe
-        Shell.Result result = Shell.cmd("stat -c '%A' '" + path + "' 2>/dev/null").exec();
-        if (result.isSuccess() && !result.getOut().isEmpty()) {
-            return result.getOut().get(0).trim();
-        }
-        File file = new File(path);
-        String r = file.canRead() ? "r" : "-";
-        String w = file.canWrite() ? "w" : "-";
-        String x = file.canExecute() ? "x" : "-";
-        return r + w + x + "------";
     }
 }
