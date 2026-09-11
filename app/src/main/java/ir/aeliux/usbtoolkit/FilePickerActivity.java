@@ -6,7 +6,9 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.util.TypedValue;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -68,15 +70,25 @@ public class FilePickerActivity extends AppCompatActivity {
         binding = ActivityFilePickerBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        /*
+        final TypedValue tv = new TypedValue();
+        getTheme().resolveAttribute(android.R.attr.actionBarSize, tv, true);
+        final int baseHeight = TypedValue.complexToDimensionPixelSize(
+                tv.data, getResources().getDisplayMetrics());
+
         ViewCompat.setOnApplyWindowInsetsListener(binding.toolbar, (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(v.getPaddingLeft(), systemBars.top, v.getPaddingRight(), v.getPaddingBottom());
+            ViewGroup.LayoutParams lp = v.getLayoutParams();
+            lp.height = baseHeight + systemBars.top;
+            v.setLayoutParams(lp);
             return insets;
         });
+        */
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.main, (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, 0, systemBars.right, systemBars.bottom);
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
 
