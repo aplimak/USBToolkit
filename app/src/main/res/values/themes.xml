@@ -6,4 +6,5 @@
     </style>
 
     <style name="Theme.USBToolkit" parent="Base.Theme.USBToolkit" />
+    <style name="Theme.FilePicker" parent="Theme.Material3Expressive.DynamicColors.DayNight.NoActionBar"/>
 </resources>

@@ -1,0 +1,219 @@
+package ir.aeliux.usbtoolkit;
+import android.app.Activity;
+import android.content.ComponentName;
+import android.content.Intent;
+import android.content.ServiceConnection;
+import android.os.Bundle;
+import android.os.IBinder;
+import android.os.RemoteException;
+import android.view.View;
+import android.widget.Toast;
+
+import androidx.activity.EdgeToEdge;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+
+import com.topjohnwu.superuser.ipc.RootService;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+
+import ir.aeliux.usbtoolkit.databinding.ActivityFilePickerBinding;
+
+public class FilePickerActivity extends AppCompatActivity {
+
+    public static final String EXTRA_SELECTED_PATHS = "selected_paths";
+    public static final String EXTRA_ALLOW_MULTIPLE = "allow_multiple";
+    public static final String EXTRA_START_PATH = "start_path";
+    public static final String EXTRA_ALLOWED_EXTENSIONS = "allowed_extensions";
+
+    private ActivityFilePickerBinding binding;
+    private FileEntryAdapter adapter;
+
+    private IRootFileService rootService;
+    private boolean isBound = false;
+
+    private String currentPath = "/";
+    private final Set<String> selectedPaths = new HashSet<>();
+    private boolean allowMultiple = true;
+    private Set<String> allowedExtensions = null;
+
+    private final ServiceConnection serviceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            rootService = IRootFileService.Stub.asInterface(service);
+            isBound = true;
+            loadDirectory(currentPath);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            rootService = null;
+            isBound = false;
+        }
+    };
+
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        EdgeToEdge.enable(this);
+        binding = ActivityFilePickerBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.main, (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            return insets;
+        });
+
+        allowMultiple = getIntent().getBooleanExtra(EXTRA_ALLOW_MULTIPLE, true);
+
+        ArrayList<String> extList = getIntent().getStringArrayListExtra(EXTRA_ALLOWED_EXTENSIONS);
+        if (extList != null) {
+            allowedExtensions = new HashSet<>();
+            for (String e : extList) {
+                allowedExtensions.add(e.toLowerCase(Locale.ROOT));
+            }
+        }
+
+        String start = getIntent().getStringExtra(EXTRA_START_PATH);
+        if (start != null) currentPath = start;
+
+        setupToolbar();
+        setupRecyclerView();
+        setupButtons();
+        bindRootService();
+    }
+
+    private void setupToolbar() {
+        binding.toolbar.setNavigationOnClickListener(v -> {
+            setResult(Activity.RESULT_CANCELED);
+            finish();
+        });
+    }
+
+    private void setupRecyclerView() {
+        adapter = new FileEntryAdapter(
+                entry -> { // onDirectoryClick
+                    currentPath = entry.getAbsolutePath();
+                    loadDirectory(currentPath);
+                },
+                (entry, checked) -> { // onFileSelect (checkbox)
+                    if (checked) selectedPaths.add(entry.getAbsolutePath());
+                    else selectedPaths.remove(entry.getAbsolutePath());
+                    updateConfirmButton();
+                },
+                entry -> { // onFileClick (row)
+                    boolean wasSelected = selectedPaths.contains(entry.getAbsolutePath());
+                    if (!allowMultiple) {
+                        selectedPaths.clear();
+                        adapter.deselectAll();
+                    }
+                    boolean newState = !wasSelected;
+                    if (newState) selectedPaths.add(entry.getAbsolutePath());
+                    else selectedPaths.remove(entry.getAbsolutePath());
+                    adapter.setSelected(entry.getAbsolutePath(), newState);
+                    updateConfirmButton();
+                },
+                allowMultiple,
+                allowedExtensions
+        );
+
+        binding.recyclerFiles.setLayoutManager(new LinearLayoutManager(this));
+        binding.recyclerFiles.setAdapter(adapter);
+    }
+
+    private void setupButtons() {
+        binding.btnUp.setOnClickListener(v -> {
+            File parent = new File(currentPath).getParentFile();
+            if (parent != null && !parent.getAbsolutePath().equals(currentPath)) {
+                currentPath = parent.getAbsolutePath();
+                loadDirectory(currentPath);
+            }
+        });
+
+        binding.btnConfirm.setOnClickListener(v -> {
+            Intent result = new Intent();
+            result.putStringArrayListExtra(
+                    EXTRA_SELECTED_PATHS,
+                    new ArrayList<>(selectedPaths)
+            );
+            setResult(Activity.RESULT_OK, result);
+            finish();
+        });
+
+        updateConfirmButton();
+    }
+
+    private void bindRootService() {
+        Intent intent = new Intent(this, RootFileService.class);
+        RootService.bind(intent, serviceConnection);
+    }
+
+    private void loadDirectory(String path) {
+        showLoading(true);
+        binding.tvCurrentPath.setText(path);
+
+        IRootFileService service = rootService;
+        if (service == null) {
+            showLoading(false);
+            Toast.makeText(this, "Root service not connected", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        try {
+            service.listFiles(path, new IRootFileCallback.Stub() {
+                @Override
+                public void onFileList(List<FileEntry> entries) {
+                    runOnUiThread(() -> {
+                        showLoading(false);
+                        adapter.submitList(new ArrayList<>(entries));
+                        binding.tvEmpty.setVisibility(
+                                entries.isEmpty() ? View.VISIBLE : View.GONE);
+                        adapter.restoreSelection(selectedPaths);
+                    });
+                }
+
+                @Override
+                public void onError(String message) {
+                    runOnUiThread(() -> {
+                        showLoading(false);
+                        Toast.makeText(FilePickerActivity.this,
+                                message, Toast.LENGTH_LONG).show();
+                    });
+                }
+            });
+        } catch (RemoteException e) {
+            showLoading(false);
+            Toast.makeText(this, "IPC error: " + e.getMessage(),
+                    Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void updateConfirmButton() {
+        binding.btnConfirm.setText("Select (" + selectedPaths.size() + ")");
+        binding.btnConfirm.setEnabled(!selectedPaths.isEmpty());
+    }
+
+    private void showLoading(boolean loading) {
+        binding.progressBar.setVisibility(loading ? View.VISIBLE : View.GONE);
+        binding.recyclerFiles.setVisibility(loading ? View.GONE : View.VISIBLE);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (isBound) {
+            RootService.unbind(serviceConnection);
+            isBound = false;
+        }
+    }
+}
