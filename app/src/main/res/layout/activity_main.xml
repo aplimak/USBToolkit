@@ -65,6 +65,12 @@
                     android:layout_height="match_parent"
                     android:layout_weight="1"/>
                 <Button
+                    android:id="@+id/btn_clear_files"
+                    android:text="@string/clear"
+                    android:layout_marginEnd="@dimen/gap_medium"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+                <Button
                     android:id="@+id/btn_add_file"
                     android:text="@string/add"
                     android:layout_width="wrap_content"

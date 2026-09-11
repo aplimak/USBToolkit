@@ -39,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
                                 container.addView(tv);
                             }
 
-                            binding.containerSelectedFiles.setVisibility(View.VISIBLE);
+                            refresh();
                         }
                     });
 
@@ -73,5 +73,14 @@ public class MainActivity extends AppCompatActivity {
 
             addMountFilesLauncher.launch(intent);
         });
+
+        binding.btnClearFiles.setOnClickListener(v -> {
+            binding.layoutSelectedFiles.removeAllViews();
+            refresh();
+        });
+    }
+
+    private void refresh() {
+        binding.containerSelectedFiles.setVisibility(binding.layoutSelectedFiles.getChildCount() > 0 ? View.VISIBLE : View.GONE);
     }
 }

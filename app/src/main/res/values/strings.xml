@@ -8,4 +8,5 @@
     <string name="read_only">Read-Only</string>
     <string name="cd_rom">CD-ROM</string>
     <string name="removable">Removable</string>
+    <string name="clear">Clear</string>
 </resources>
