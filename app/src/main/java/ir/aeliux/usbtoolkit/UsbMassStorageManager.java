@@ -1,8 +1,13 @@
-package ir.aeliux.webq;
+package ir.aeliux.usbtoolkit;
 
+import android.annotation.SuppressLint;
 import android.os.Build;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -25,6 +30,7 @@ import java.util.stream.Stream;
  * The class is restart‑resistant: it uses a fixed gadget name so that a new instance
  * can detect an existing gadget and either take over or clean it up.
  */
+@SuppressLint("MissingPermission")
 public class UsbMassStorageManager {
 
     // ------------------------------------------------------------------------
@@ -222,13 +228,13 @@ public class UsbMassStorageManager {
      * @throws UsbGadgetException if configfs is not mounted or cannot be read.
      */
     public static Path getConfigfsMountPoint() throws UsbGadgetException {
-        try (Stream<String> lines = Files.lines(Path.of("/proc/mounts"))) {
+        try (Stream<String> lines = Files.lines(new File("/proc/mounts").toPath())) {
             Optional<String> configfsLine = lines
                     .filter(line -> line.split("\\s+")[2].equals(CONFIGFS_TYPE))
                     .findFirst();
             if (configfsLine.isPresent()) {
                 String[] parts = configfsLine.get().split("\\s+");
-                return Path.of(parts[1]);  // mount point is the second field
+                return new File(parts[1]).toPath();  // mount point is the second field
             }
         } catch (IOException e) {
             throw new UsbGadgetException("Failed to read /proc/mounts", e);
@@ -243,7 +249,7 @@ public class UsbMassStorageManager {
      * @throws UsbGadgetException if the UDC directory cannot be read.
      */
     public static List<String> getUdcList() throws UsbGadgetException {
-        Path udcDir = Path.of("/sys/class/udc");
+        Path udcDir = new File("/sys/class/udc").toPath();
         if (!Files.exists(udcDir)) {
             throw new UsbGadgetException("UDC directory does not exist: " + udcDir);
         }
@@ -280,7 +286,7 @@ public class UsbMassStorageManager {
         Path udcFile = gadgetPath.resolve("UDC");
         if (!Files.exists(udcFile)) return false;
         try {
-            String content = Files.readString(udcFile).trim();
+            String content = readString(udcFile.toFile()).trim();
             return !content.isEmpty();
         } catch (IOException e) {
             throw new UsbGadgetException("Failed to read UDC file: " + udcFile, e);
@@ -327,7 +333,7 @@ public class UsbMassStorageManager {
                     boolean ro = parseBoolean(readConfigfsString(lunPath.resolve("ro")));
                     boolean removable = parseBoolean(readConfigfsString(lunPath.resolve("removable")));
                     String fileStr = readConfigfsString(lunPath.resolve("file"));
-                    Path file = fileStr.isEmpty() ? null : Path.of(fileStr);
+                    Path file = fileStr.isEmpty() ? null : new File(fileStr).toPath();
                     LunState lun = new LunState(lunNumber, file, cdrom, ro, removable);
                     luns.put(name, lun);
                 }
@@ -533,7 +539,7 @@ public class UsbMassStorageManager {
 
             // Create symlink: configs/c.1/mass_storage.0 -> ../../functions/mass_storage.0
             Path linkPath = configDir.resolve(FUNCTION_NAME);
-            Files.createSymbolicLink(linkPath, Path.of("../../functions/" + FUNCTION_NAME));
+            Files.createSymbolicLink(linkPath, new File("../../functions/" + FUNCTION_NAME).toPath());
         });
 
         // Step 5: Bind to first available UDC
@@ -592,10 +598,23 @@ public class UsbMassStorageManager {
             if (!Files.exists(path)) {
                 throw new UsbGadgetException("File not found: " + path);
             }
-            return Files.readString(path).trim();
+            return readString(path.toFile()).trim();
         } catch (IOException e) {
             throw new UsbGadgetException("Failed to read " + path, e);
         }
+    }
+
+    public static String readString(File file) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        char[] buf = new char[8192];
+        try (Reader reader = new InputStreamReader(
+                new FileInputStream(file), StandardCharsets.UTF_8)) {
+            int n;
+            while ((n = reader.read(buf)) != -1) {
+                sb.append(buf, 0, n);
+            }
+        }
+        return sb.toString();
     }
 
     /**
