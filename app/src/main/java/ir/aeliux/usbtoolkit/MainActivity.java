@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
 import android.view.View;
+import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
@@ -15,15 +16,13 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import com.google.android.material.color.DynamicColors;
-
 import java.util.ArrayList;
 
 import ir.aeliux.usbtoolkit.databinding.ActivityMainBinding;
 
 public class MainActivity extends AppCompatActivity {
-    private ActivityMainBinding bindings;
-    private final ActivityResultLauncher<Intent> pickFilesLauncher =
+    private ActivityMainBinding binding;
+    private final ActivityResultLauncher<Intent> addMountFilesLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
                     result -> {
                         if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
@@ -31,39 +30,32 @@ public class MainActivity extends AppCompatActivity {
                                     .getStringArrayListExtra(FilePickerActivity.EXTRA_SELECTED_PATHS);
                             if (paths == null) return;
 
+                            var container = binding.layoutSelectedFiles;
+
                             for (String path : paths) {
-                                Log.d("Picker", "Selected: " + path);
+                                TextView tv = new TextView(this);
+                                tv.setText(path);
+                                tv.setPadding(16, 16, 16, 16);
+                                container.addView(tv);
                             }
+
+                            binding.containerSelectedFiles.setVisibility(View.VISIBLE);
                         }
                     });
-
-    private void launchPicker() {
-        Intent intent = new Intent(this, FilePickerActivity.class);
-        intent.putExtra(FilePickerActivity.EXTRA_START_PATH, Environment.getExternalStorageDirectory().getPath());
-        intent.putExtra(FilePickerActivity.EXTRA_ALLOW_MULTIPLE, true);
-
-        /* ArrayList<String> exts = new ArrayList<>();
-        exts.add("conf");
-        exts.add("txt");
-        exts.add("log");
-        intent.putStringArrayListExtra(FilePickerActivity.EXTRA_ALLOWED_EXTENSIONS, exts); */
-
-        pickFilesLauncher.launch(intent);
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        bindings = ActivityMainBinding.inflate(getLayoutInflater());
-        setContentView(bindings.getRoot());
+        binding = ActivityMainBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
         int[] paddings = {
-                bindings.main.getPaddingLeft(),
-                bindings.main.getPaddingTop(),
-                bindings.main.getPaddingRight(),
-                bindings.main.getPaddingBottom()
+                binding.main.getPaddingLeft(),
+                binding.main.getPaddingTop(),
+                binding.main.getPaddingRight(),
+                binding.main.getPaddingBottom()
         };
-        ViewCompat.setOnApplyWindowInsetsListener(bindings.main, (v, insets) -> {
+        ViewCompat.setOnApplyWindowInsetsListener(binding.main, (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(
                     paddings[0] + systemBars.left,
@@ -74,8 +66,12 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
 
-        bindings.btnAddFile.setOnClickListener(v -> {
-            launchPicker();
+        binding.btnAddFile.setOnClickListener(v -> {
+            Intent intent = new Intent(this, FilePickerActivity.class);
+            intent.putExtra(FilePickerActivity.EXTRA_START_PATH, Environment.getExternalStorageDirectory().getAbsolutePath());
+            intent.putExtra(FilePickerActivity.EXTRA_ALLOW_MULTIPLE, true);
+
+            addMountFilesLauncher.launch(intent);
         });
     }
 }

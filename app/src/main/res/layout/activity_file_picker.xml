@@ -54,6 +54,7 @@
         android:layout_marginTop="4dp"
         android:text="Up"
         app:icon="@drawable/ic_arrow_up"
+        android:visibility="invisible"
         app:layout_constraintTop_toBottomOf="@id/tvCurrentPath"
         app:layout_constraintStart_toStartOf="parent" />
 
@@ -66,6 +67,7 @@
         android:layout_marginTop="4dp"
         android:text="Root"
         app:icon="@drawable/ic_shield"
+        android:visibility="invisible"
         app:layout_constraintTop_toBottomOf="@id/tvCurrentPath"
         app:layout_constraintEnd_toEndOf="parent" />
 
@@ -78,6 +80,7 @@
         android:layout_marginTop="4dp"
         android:text="Home"
         app:icon="@drawable/ic_shield"
+        android:visibility="invisible"
         app:layout_constraintTop_toBottomOf="@id/tvCurrentPath"
         app:layout_constraintEnd_toStartOf="@id/btnRoot" />
 
