@@ -112,15 +112,6 @@ public class RootFileService extends RootService {
         return binder;
     }
 
-    private static String joinLines(List<String> lines) {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < lines.size(); i++) {
-            if (i > 0) sb.append('\n');
-            sb.append(lines.get(i));
-        }
-        return sb.toString();
-    }
-
     private String getPermissions(String path) {
         // Single-quote the path so spaces / special chars are safe
         Shell.Result result = Shell.cmd("stat -c '%A' '" + path + "' 2>/dev/null").exec();
