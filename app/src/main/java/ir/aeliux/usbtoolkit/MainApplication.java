@@ -2,6 +2,8 @@ package ir.aeliux.usbtoolkit;
 
 import android.app.Application;
 
+import com.topjohnwu.superuser.Shell;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.PrintWriter;
@@ -11,6 +13,10 @@ public class MainApplication extends Application {
     public void onCreate() {
         super.onCreate();
         installCrashHandler();
+        Shell.enableVerboseLogging = BuildConfig.DEBUG;
+        Shell.setDefaultBuilder(Shell.Builder.create()
+                .setFlags(Shell.FLAG_MOUNT_MASTER)
+                .setTimeout(10));
         App.init(this);
         LoadingDialog.init(this);
     }
