@@ -91,6 +91,7 @@
                 </LinearLayout>
             </ScrollView>
             <com.google.android.material.materialswitch.MaterialSwitch
+                android:id="@+id/sch_readonly"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:minHeight="48dp"
@@ -102,6 +103,7 @@
                 android:textSize="16sp"
                 android:text="@string/read_only"/>
             <com.google.android.material.materialswitch.MaterialSwitch
+                android:id="@+id/sch_cdrom"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:minHeight="48dp"
@@ -113,6 +115,7 @@
                 android:textSize="16sp"
                 android:text="@string/cd_rom"/>
             <com.google.android.material.materialswitch.MaterialSwitch
+                android:id="@+id/sch_removable"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:minHeight="48dp"

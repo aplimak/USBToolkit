@@ -5,13 +5,13 @@ import ir.aeliux.usbtoolkit.IUsbMassStorageCallback;
 import ir.aeliux.usbtoolkit.IBooleanCallback;
 
 oneway interface IUsbMassStorageService {
-    void Start(in List<String> files,
+    void start(in List<String> files,
                boolean readOnly,
                boolean cdrom,
                boolean removable,
                IUsbMassStorageCallback callback);
 
-    void Stop(IUsbMassStorageCallback callback);
+    void stop(IUsbMassStorageCallback callback);
 
     void isRunning(IBooleanCallback callback);
 }

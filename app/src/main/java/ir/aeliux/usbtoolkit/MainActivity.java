@@ -17,6 +17,7 @@ import android.widget.TextView;
 import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
@@ -29,11 +30,14 @@ import com.topjohnwu.superuser.Shell;
 import com.topjohnwu.superuser.ipc.RootService;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import ir.aeliux.usbtoolkit.databinding.ActivityMainBinding;
 
 public class MainActivity extends BaseActivity {
     private final int DIALOG_INIT = 1;
+    private final int DIALOG_MASS_STORAGE = 2;
+
     private IUsbMassStorageService rootService;
     private boolean isBound = false;
     private final ServiceConnection serviceConnection = new ServiceConnection() {
@@ -106,6 +110,41 @@ public class MainActivity extends BaseActivity {
 
         LoadingDialog.show(this, DIALOG_INIT, "Initializing");
 
+        binding.btnStart.setOnClickListener(v -> {
+            List<String> files = new ArrayList<>();
+            for (int i = 0; i < binding.layoutSelectedFiles.getChildCount(); i++) {
+                TextView tv = (TextView) binding.layoutSelectedFiles.getChildAt(i);
+                files.add(tv.getText().toString());
+            }
+
+            if (files.isEmpty()) {
+                Message.snack("At least one file required");
+                return;
+            }
+
+            LoadingDialog.show(this, DIALOG_MASS_STORAGE, "Processing");
+
+            try {
+                rootService.start(files,
+                        binding.schReadonly.isChecked(),
+                        binding.schCdrom.isChecked(),
+                        binding.schRemovable.isChecked(),
+                        getUsbMassStorageCallback());
+            } catch (RemoteException e) {
+                showRootRequiredError();
+            }
+        });
+
+        binding.btnStop.setOnClickListener(v -> {
+            LoadingDialog.show(this, DIALOG_MASS_STORAGE, "Processing");
+
+            try {
+                rootService.stop(getUsbMassStorageCallback());
+            } catch (RemoteException e) {
+                showRootRequiredError();
+            }
+        });
+
         binding.btnAddFile.setOnClickListener(v -> {
             Intent intent = new Intent(this, FilePickerActivity.class);
             intent.putExtra(FilePickerActivity.EXTRA_START_PATH, Environment.getExternalStorageDirectory().getAbsolutePath());
@@ -123,6 +162,45 @@ public class MainActivity extends BaseActivity {
         RootService.bind(intent, serviceConnection);
     }
 
+    @NonNull
+    private IUsbMassStorageCallback.Stub getUsbMassStorageCallback() {
+        return new IUsbMassStorageCallback.Stub() {
+            @Override
+            public void onStepStart(String stepName) {
+                runOnUiThread(() -> {
+                    LoadingDialog.updateMessage(stepName);
+                });
+            }
+
+            @Override
+            public void onStepComplete(String stepName) {
+            }
+
+            @Override
+            public void onStepFailed(String stepName, String error) {
+                runOnUiThread(() -> {
+                    AlertDialog dialog = new MaterialAlertDialogBuilder(MainActivity.this)
+                            .setMessage("Error occurred on step: " + stepName + " - " + error)
+                            .setNeutralButton("OK", (d, w) -> {
+                                d.dismiss();
+                            })
+                            .setCancelable(false)
+                            .create();
+
+                    dialog.show();
+                });
+            }
+
+            @Override
+            public void onEnd(boolean result) {
+                runOnUiThread(() -> {
+                    refresh();
+                    LoadingDialog.dismiss();
+                });
+            }
+        };
+    }
+
     private void refresh() {
         binding.containerSelectedFiles.setVisibility(binding.layoutSelectedFiles.getChildCount() > 0 ? View.VISIBLE : View.GONE);
 
@@ -138,9 +216,7 @@ public class MainActivity extends BaseActivity {
                     }
                 });
             } catch (RemoteException e) {
-                new AlertDialog.Builder(this).setMessage(e.toString()).setCancelable(false).setPositiveButton("Ok", (d, w) -> {
-                    d.dismiss();
-                }).show();
+                showRootRequiredError();
             }
         } else {
             showRootRequiredError();

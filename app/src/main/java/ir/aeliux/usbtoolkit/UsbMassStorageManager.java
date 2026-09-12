@@ -531,7 +531,7 @@ public class UsbMassStorageManager {
                 }
 
                 Path lunPath = functionPath.resolve("lun." + lunIndex);
-                Files.createDirectory(lunPath);
+                Files.createDirectories(lunPath);
 
                 // Order matters: set ro, removable, cdrom BEFORE writing the file
                 writeConfigfsBoolean(lunPath.resolve("ro"), config.readOnly);
@@ -553,12 +553,24 @@ public class UsbMassStorageManager {
             writeConfigfsInt(configDir.resolve("bmAttributes"), BM_ATTRIBUTES, 16);
 
             // Create symlink: configs/c.1/mass_storage.0 -> ../../functions/mass_storage.0
-            Path linkPath = configDir.resolve(FUNCTION_NAME);
-            Files.createSymbolicLink(linkPath, new File("../../functions/" + FUNCTION_NAME).toPath());
+            Path linkPath   = configDir.resolve(FUNCTION_NAME);
+            Path targetPath = gadgetPath.resolve("functions")
+                    .resolve(FUNCTION_NAME)
+                    .toAbsolutePath()
+                    .normalize();
+            Files.createSymbolicLink(linkPath, targetPath);
         });
 
         // Step 5: Bind to first available UDC
         step(callback, "Bind to UDC", () -> {
+            try (var gadgets = Files.list(gadgetPath.getParent())) {
+                var gadgetsUdc = gadgets.map(g -> g.resolve("UDC"))
+                                        .collect(Collectors.toList());
+
+                for (Path gUdc : gadgetsUdc) {
+                    writeConfigfsString(gUdc, "");
+                }
+            }
             List<String> udcs = getUdcList();
             if (udcs.isEmpty()) {
                 throw new UsbGadgetException("No UDC available for binding");
@@ -637,6 +649,9 @@ public class UsbMassStorageManager {
      */
     private static int readConfigfsInt(Path path, int radix) throws UsbGadgetException {
         String str = readConfigfsString(path);
+        if (radix == 16 && (str.startsWith("0x") || str.startsWith("0X"))) {
+            str = str.substring(2);
+        }
         try {
             return Integer.parseInt(str, radix);
         } catch (NumberFormatException e) {
@@ -659,7 +674,7 @@ public class UsbMassStorageManager {
      * Writes an integer to a configfs file in the given radix (e.g., 16 for hex).
      */
     private static void writeConfigfsInt(Path path, int value, int radix) throws UsbGadgetException {
-        writeConfigfsString(path, Integer.toString(value, radix));
+        writeConfigfsString(path,(radix == 16 ? "0x" : "") + Integer.toString(value, radix));
     }
 
     /**
