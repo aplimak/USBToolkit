@@ -2,7 +2,6 @@ package ir.aeliux.usbtoolkit;
 
 import android.app.Activity;
 import android.content.ComponentName;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
@@ -11,7 +10,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.RemoteException;
-import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
 
@@ -25,6 +24,8 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.progressindicator.CircularProgressIndicator;
+import com.topjohnwu.superuser.Shell;
 import com.topjohnwu.superuser.ipc.RootService;
 
 import java.util.ArrayList;
@@ -32,6 +33,7 @@ import java.util.ArrayList;
 import ir.aeliux.usbtoolkit.databinding.ActivityMainBinding;
 
 public class MainActivity extends AppCompatActivity {
+    private final int DIALOG_INIT = 1;
     private IUsbMassStorageService rootService;
     private boolean isBound = false;
     private final ServiceConnection serviceConnection = new ServiceConnection() {
@@ -97,6 +99,13 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
 
+        if (Shell.cmd("ls /data/adb").exec().getCode() > 0) {
+            showRootRequiredError();
+            return;
+        }
+
+        LoadingDialog.show(this, DIALOG_INIT, "Initializing");
+
         binding.btnAddFile.setOnClickListener(v -> {
             Intent intent = new Intent(this, FilePickerActivity.class);
             intent.putExtra(FilePickerActivity.EXTRA_START_PATH, Environment.getExternalStorageDirectory().getAbsolutePath());
@@ -129,21 +138,31 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
             } catch (RemoteException e) {
-                new AlertDialog.Builder(this).setMessage(e.toString()).show();
+                new AlertDialog.Builder(this).setMessage(e.toString()).setCancelable(false).setPositiveButton("Ok", (d, w) -> {
+                    d.dismiss();
+                }).show();
             }
         } else {
-            MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
-            builder.setTitle("Error");
-            builder.setMessage("This app needs root access to work.");
-            builder.setCancelable(false);
-
-            builder.setNegativeButton("Exit", (dialog, which) -> {
-                dialog.dismiss();
-                finishAffinity();
-            });
-
-            builder.show();
+            showRootRequiredError();
         }
+
+        if (LoadingDialog.getDialogId() == DIALOG_INIT && LoadingDialog.isShowing()) {
+            LoadingDialog.dismiss();
+        }
+    }
+
+    private void showRootRequiredError() {
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
+        builder.setTitle("Error");
+        builder.setMessage("This app needs root access to work.");
+        builder.setCancelable(false);
+
+        builder.setNegativeButton("Exit", (dialog, which) -> {
+            dialog.dismiss();
+            finishAffinity();
+        });
+
+        builder.show();
     }
 
     @Override
