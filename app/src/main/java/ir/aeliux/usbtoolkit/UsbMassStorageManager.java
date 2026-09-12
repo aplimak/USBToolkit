@@ -2,6 +2,7 @@ package ir.aeliux.usbtoolkit;
 
 import android.annotation.SuppressLint;
 import android.os.Build;
+import android.util.Log;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -32,6 +33,7 @@ import java.util.stream.Stream;
  */
 @SuppressLint("MissingPermission")
 public class UsbMassStorageManager {
+    private static final String TAG = "UsbMassStorageManager";
 
     // ------------------------------------------------------------------------
     // Constants
@@ -59,6 +61,29 @@ public class UsbMassStorageManager {
     // Configuration attributes
     private static final int MAX_POWER_MA = 120;
     private static final int BM_ATTRIBUTES = 0x80;    // self‑powered
+
+    private UsbMassStorageManager() {
+        assertRoot("[constructor]");
+    }
+
+    /**
+     * Single chokepoint for the root check.
+     * Call this at the top of every public method AND the constructor.
+     */
+    private static void assertRoot(String where) {
+        int uid = android.os.Process.myUid();
+        if (uid != 0) {
+            String msg = "UsbMassStorageManager." + where
+                    + " called from non-root process"
+                    + " (uid=" + uid
+                    + ", pid=" + android.os.Process.myPid()
+                    + ")";
+
+            Log.e(TAG, msg, new SecurityException("caller trace"));
+
+            throw new SecurityException(msg);
+        }
+    }
 
     // ------------------------------------------------------------------------
     // Configuration Object
