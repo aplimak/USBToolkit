@@ -4,9 +4,11 @@ import android.annotation.SuppressLint;
 import android.os.Build;
 import android.util.Log;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
@@ -563,23 +565,56 @@ public class UsbMassStorageManager {
 
         // Step 5: Bind to first available UDC
         step(callback, "Bind to UDC", () -> {
-            try (var gadgets = Files.list(gadgetPath.getParent())) {
-                var gadgetsUdc = gadgets.map(g -> g.resolve("UDC"))
-                                        .collect(Collectors.toList());
-
-                for (Path gUdc : gadgetsUdc) {
-                    writeConfigfsString(gUdc, "");
-                }
-            }
             List<String> udcs = getUdcList();
             if (udcs.isEmpty()) {
                 throw new UsbGadgetException("No UDC available for binding");
             }
-            writeConfigfsString(gadgetPath.resolve("UDC"), udcs.get(0));
+            var gadgetUdc = gadgetPath.resolve("UDC");
+            var selectedUdc = udcs.get(0);
+
+            StringBuilder existingUdcs = new StringBuilder("echo unbinding");
+
+            try (var gadgets = Files.list(gadgetPath.getParent())) {
+                var gadgetsUdc = gadgets.map(g -> g.resolve("UDC"))
+                        .filter(path -> {
+                            try {
+                                return readConfigfsString(path).equals(selectedUdc);
+                            } catch (UsbGadgetException e) {
+                                return false;
+                            }
+                        })
+                        .collect(Collectors.toList());
+
+                for (Path gUdc : gadgetsUdc) {
+                    existingUdcs.append(String.format(" && echo > '%s'", gUdc));
+                }
+            }
+
+            // Android likes to mess with us, so we do it faster than android could ever react
+            String shellCmd = String.format("%s && echo %s >%s", existingUdcs, selectedUdc, gadgetUdc);
+            Log.d(TAG, "Executing: sh -c " + shellCmd);
+            Process process = new ProcessBuilder("sh", "-c", shellCmd).start();
+            process.waitFor();
+            String err = readStream(process.getErrorStream());
+            String out = readStream(process.getInputStream());
+            Log.d(TAG, "exec Result:\nErrorStream: " + err + "\nOutputStream: " + out);
+            int exitCode = process.exitValue();
+            if (exitCode > 0) {
+                throw new UsbGadgetException("UDC binding atomic process failed with exit code: " + exitCode);
+            }
         });
 
         // Return the final state
         return getGadgetState(configfs, GADGET_NAME);
+    }
+
+    static String readStream(InputStream in) throws IOException {
+        BufferedReader r = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
+        StringBuilder sb = new StringBuilder();
+        char[] buf = new char[4096];
+        int n;
+        while ((n = r.read(buf)) != -1) sb.append(buf, 0, n);
+        return sb.toString();
     }
 
     /**

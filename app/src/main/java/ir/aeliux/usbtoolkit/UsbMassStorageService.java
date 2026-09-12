@@ -53,7 +53,8 @@ public class UsbMassStorageService extends RootService {
                 try {
                     configfs = UsbMassStorageManager.getConfigfsMountPoint();
                 } catch (UsbGadgetException e) {
-                    callback.onStepFailed("Get ConfigFS mountpoint", e.toString());
+                    var cause = e.getCause();
+                    callback.onStepFailed("Get ConfigFS mountpoint", e + (cause != null ? "\n Caused by: " + cause : ""));
                     throw e;
                 }
                 UsbMassStorageManager.cleanupGadget(configfs, UsbMassStorageManager.GADGET_NAME, getCallback(callback));
@@ -111,7 +112,8 @@ public class UsbMassStorageService extends RootService {
                     try {
                         Log.e(TAG, "Error happened in step: " + stepName, error);
                         Log.d(TAG, "firing onStepFailed with step: " + stepName);
-                        callback.onStepFailed(stepName, error.toString());
+                        var cause = error.getCause();
+                        callback.onStepFailed(stepName, error + (cause != null ? "\n Caused by: " + cause : ""));
                     } catch (RemoteException ignored) {
                     }
                 }
