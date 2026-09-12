@@ -273,7 +273,7 @@ public class UsbMassStorageManager {
         try (Stream<Path> paths = Files.list(udcDir)) {
             return paths
                     .map(p -> p.getFileName().toString())
-                    .filter(name -> !"dummy".equalsIgnoreCase(name))
+                    .filter(name -> !name.contains("dummy"))
                     .sorted()
                     .collect(Collectors.toList());
         } catch (IOException e) {
