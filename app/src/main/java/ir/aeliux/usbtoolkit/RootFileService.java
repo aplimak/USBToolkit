@@ -6,12 +6,10 @@ import android.os.RemoteException;
 
 import androidx.annotation.Nullable;
 
-import com.topjohnwu.superuser.Shell;
 import com.topjohnwu.superuser.ipc.RootService;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 

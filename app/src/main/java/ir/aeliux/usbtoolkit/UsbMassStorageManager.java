@@ -38,7 +38,7 @@ public class UsbMassStorageManager {
     // ------------------------------------------------------------------------
     private static final String CONFIGFS_TYPE = "configfs";
     private static final String GADGETS_BASE = "usb_gadget";
-    private static final String GADGET_NAME = "mass_storage_gadget";   // fixed name for state detection
+    static final String GADGET_NAME = "mass_storage_gadget";   // fixed name for state detection
     private static final String FUNCTION_NAME = "mass_storage.0";
     private static final String CONFIG_NAME = "c.1";
 
@@ -59,23 +59,6 @@ public class UsbMassStorageManager {
     // Configuration attributes
     private static final int MAX_POWER_MA = 120;
     private static final int BM_ATTRIBUTES = 0x80;    // self‑powered
-
-    // ------------------------------------------------------------------------
-    // Custom Exceptions
-    // ------------------------------------------------------------------------
-
-    /**
-     * Thrown when any operation on the USB gadget fails.
-     */
-    public static class UsbGadgetException extends Exception {
-        public UsbGadgetException(String message) {
-            super(message);
-        }
-
-        public UsbGadgetException(String message, Throwable cause) {
-            super(message, cause);
-        }
-    }
 
     // ------------------------------------------------------------------------
     // Configuration Object
@@ -103,6 +86,13 @@ public class UsbMassStorageManager {
             private boolean cdrom = false;
             private boolean readOnly = false;
             private boolean removable = true;
+
+            /**
+             * Adds an image file (will be resolved to an absolute path during setup).
+             */
+            public Builder addImage(String image) {
+                return addImage(new File(image).toPath());
+            }
 
             /**
              * Adds an image file (will be resolved to an absolute path during setup).
