@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="MaterialSettingItem">
+        <!-- Core text -->
+        <attr name="settingTitle" format="string" />
+        <attr name="settingSubtitle" format="string" />
+        <attr name="settingIcon" format="reference" />
+
+        <!-- Behavioral toggles -->
+        <attr name="showSwitch" format="boolean" />
+        <attr name="showChevron" format="boolean" />
+        <attr name="isClickable" format="boolean" />
+        <attr name="isChecked" format="boolean" />
+
+        <!-- Dropdown support -->
+        <attr name="isDropdown" format="boolean" />
+        <attr name="dropdownEntries" format="reference" />
+    </declare-styleable>
+</resources>
