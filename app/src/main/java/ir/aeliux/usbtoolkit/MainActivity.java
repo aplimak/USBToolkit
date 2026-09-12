@@ -32,7 +32,7 @@ import java.util.ArrayList;
 
 import ir.aeliux.usbtoolkit.databinding.ActivityMainBinding;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends BaseActivity {
     private final int DIALOG_INIT = 1;
     private IUsbMassStorageService rootService;
     private boolean isBound = false;

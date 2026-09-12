@@ -31,7 +31,7 @@ import java.util.Set;
 
 import ir.aeliux.usbtoolkit.databinding.ActivityFilePickerBinding;
 
-public class FilePickerActivity extends AppCompatActivity {
+public class FilePickerActivity extends BaseActivity {
 
     public static final String EXTRA_SELECTED_PATHS = "selected_paths";
     public static final String EXTRA_ALLOW_MULTIPLE = "allow_multiple";
