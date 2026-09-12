@@ -395,16 +395,27 @@ public class UsbMassStorageManager {
     }
 
     /**
-     * Overloaded cleanup with progress callback.
+     * Removes a gadget completely from configfs using configfs‑legal operations
+     * (only {@code rmdir} and unlink of symlinks). Idempotent: calling it on a
+     * non‑existent gadget does nothing.
+     * <p>
+     * While the gadget is being torn down, {@code sys.usb.config} is temporarily
+     * set to {@code none} so init does not race us by re‑binding {@code g1}.
+     * The previous value is restored in a {@code finally} block.
+     *
+     * @param configfs   the configfs mount point.
+     * @param gadgetName the name of the gadget to remove.
+     * @param callback   optional progress callback; may be {@code null}.
+     * @throws UsbGadgetException if any step fails.
      */
     public static void cleanupGadget(Path configfs, String gadgetName,
                                      ProgressCallback callback) throws UsbGadgetException {
         Path gadgetPath = configfs.resolve(GADGETS_BASE).resolve(gadgetName);
         if (!Files.exists(gadgetPath)) {
-            return; // already clean
+            return;
         }
 
-        // Step 1: Unbind if bound
+        // Step 1: Unbind from UDC
         step(callback, "Unbind gadget", () -> {
             Path udcFile = gadgetPath.resolve("UDC");
             if (Files.exists(udcFile)) {
@@ -412,46 +423,61 @@ public class UsbMassStorageManager {
             }
         });
 
-        // Step 2: Remove configuration directories and symlinks
+        // Step 2: Remove configurations
+        //   - unlink function symlinks inside each config
+        //   - rmdir config/strings/0x409, then config/strings
+        //   - rmdir config
         step(callback, "Remove configurations", () -> {
             Path configsBase = gadgetPath.resolve("configs");
-            if (Files.exists(configsBase)) {
-                try (DirectoryStream<Path> configs = Files.newDirectoryStream(configsBase)) {
-                    for (Path configDir : configs) {
-                        // Remove symlinks and subdirectories inside config dir
-                        try (DirectoryStream<Path> entries = Files.newDirectoryStream(configDir)) {
-                            for (Path entry : entries) {
-                                if (Files.isSymbolicLink(entry) || Files.isDirectory(entry)) {
-                                    deleteRecursively(entry);
-                                } else if (Files.isRegularFile(entry)) {
-                                    Files.delete(entry);
-                                }
+            if (!Files.exists(configsBase)) return;
+
+            try (DirectoryStream<Path> configs = Files.newDirectoryStream(configsBase)) {
+                for (Path configDir : configs) {
+                    // 2a. Unlink symlinks (e.g. mass_storage.0) — they block rmdir.
+                    try (DirectoryStream<Path> entries = Files.newDirectoryStream(configDir)) {
+                        for (Path entry : entries) {
+                            if (Files.isSymbolicLink(entry)) {
+                                Files.delete(entry);
                             }
                         }
-                        Files.delete(configDir);
                     }
+
+                    // 2b. rmdir strings/0x409, then strings/
+                    Path stringsDir = configDir.resolve("strings");
+                    if (Files.exists(stringsDir)) {
+                        rmdirChildren(stringsDir);     // removes 0x409
+                    }
+
+                    // 2c. rmdir config itself. Attributes (MaxPower, bmAttributes,
+                    //     configuration, …) disappear with the directory.
+                    Files.delete(configDir);
                 }
             }
         });
 
         // Step 3: Remove functions
+        //   - rmdir each lun.N
+        //   - rmdir the function directory (attributes vanish with it)
         step(callback, "Remove functions", () -> {
             Path functionsBase = gadgetPath.resolve("functions");
-            if (Files.exists(functionsBase)) {
-                try (DirectoryStream<Path> functions = Files.newDirectoryStream(functionsBase)) {
-                    for (Path functionDir : functions) {
-                        deleteRecursively(functionDir);
-                    }
+            if (!Files.exists(functionsBase)) return;
+
+            try (DirectoryStream<Path> functions = Files.newDirectoryStream(functionsBase)) {
+                for (Path functionDir : functions) {
+                    try {
+                        rmdirChildren(functionDir);        // removes lun.0, lun.1, …
+                    } catch (FileSystemException ignored) {}
+                    Files.delete(functionDir);         // rmdir mass_storage.0
                 }
             }
         });
 
         // Step 4: Remove strings
+        //   - rmdir strings/0x409, then strings
         step(callback, "Remove strings", () -> {
-            Path stringsBase = gadgetPath.resolve("strings");
-            if (Files.exists(stringsBase)) {
-                deleteRecursively(stringsBase);
-            }
+            Path stringsDir = gadgetPath.resolve("strings");
+            if (!Files.exists(stringsDir)) return;
+            rmdirChildren(stringsDir);                 // removes 0x409
         });
 
         // Step 5: Delete gadget directory
@@ -727,26 +753,28 @@ public class UsbMassStorageManager {
     }
 
     /**
-     * Deletes a file or directory recursively.
+     * Removes all immediate child <em>directories</em> and <em>symlinks</em> of
+     * {@code dir}, but never touches regular files.
+     * <p>
+     * This is required for configfs: attribute files inside a configfs directory
+     * (e.g. {@code configuration}, {@code MaxPower}, {@code ro}, {@code file})
+     * cannot be unlinked individually — the kernel returns {@code EPERM}.
+     * The only valid removal operation is {@code rmdir} on the containing
+     * directory, after which the kernel discards the attributes.
+     *
+     * @param dir the directory whose children should be removed.
+     * @throws IOException if any {@code rmdir}/unlink fails.
      */
-    private static void deleteRecursively(Path path) throws UsbGadgetException {
-        if (!Files.exists(path)) return;
-        try {
-            Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
-                @Override
-                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                    Files.delete(file);
-                    return FileVisitResult.CONTINUE;
+    private static void rmdirChildren(Path dir) throws IOException {
+        try (DirectoryStream<Path> entries = Files.newDirectoryStream(dir)) {
+            for (Path entry : entries) {
+                if (Files.isSymbolicLink(entry)) {
+                    Files.delete(entry);                              // unlink symlink
+                } else if (Files.isDirectory(entry, LinkOption.NOFOLLOW_LINKS)) {
+                    Files.delete(entry);                              // rmdir (must already be empty)
                 }
-
-                @Override
-                public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-                    Files.delete(dir);
-                    return FileVisitResult.CONTINUE;
-                }
-            });
-        } catch (IOException e) {
-            throw new UsbGadgetException("Failed to delete " + path, e);
+                // Regular files (configfs attributes) are intentionally left alone.
+            }
         }
     }
 
