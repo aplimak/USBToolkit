@@ -16,4 +16,7 @@
         <attr name="showDropdown" format="boolean" />
         <attr name="dropdownEntries" format="reference" />
     </declare-styleable>
+    <declare-styleable name="MaterialContainer">
+        <attr name="headerText" format="string" />
+    </declare-styleable>
 </resources>
