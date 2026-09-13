@@ -17,9 +17,9 @@
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="16dp"
         android:layout_marginTop="@dimen/gap_medium"
-        app:cardBackgroundColor="?attr/colorSurfaceContainer"
+        app:cardBackgroundColor="?attr/colorSurfaceContainerHighest"
         app:cardCornerRadius="28dp"
-        app:cardElevation="3dp"
+        app:cardElevation="0dp"
         app:strokeWidth="0dp">
 
         <LinearLayout

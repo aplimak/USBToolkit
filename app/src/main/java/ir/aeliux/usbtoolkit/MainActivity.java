@@ -88,20 +88,12 @@ public class MainActivity extends BaseActivity {
         EdgeToEdge.enable(this);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        int[] paddings = {
-                binding.main.getPaddingLeft(),
-                binding.main.getPaddingTop(),
-                binding.main.getPaddingRight(),
-                binding.main.getPaddingBottom()
-        };
+        setupToolbar(binding.toolbar);
+
         ViewCompat.setOnApplyWindowInsetsListener(binding.main, (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(
-                    paddings[0] + systemBars.left,
-                    paddings[1] + systemBars.top,
-                    paddings[2] + systemBars.right,
-                    paddings[3] + systemBars.bottom
-            );
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+
             return insets;
         });
 

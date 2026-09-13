@@ -7,14 +7,11 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.IBinder;
 import android.os.RemoteException;
-import android.util.TypedValue;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -74,30 +71,11 @@ public class FilePickerActivity extends BaseActivity {
         EdgeToEdge.enable(this);
         binding = ActivityFilePickerBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
-        /*
-        final TypedValue tv = new TypedValue();
-        getTheme().resolveAttribute(android.R.attr.actionBarSize, tv, true);
-        final int baseHeight = TypedValue.complexToDimensionPixelSize(
-                tv.data, getResources().getDisplayMetrics());
-
-        ViewCompat.setOnApplyWindowInsetsListener(binding.toolbar, (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(v.getPaddingLeft(), systemBars.top, v.getPaddingRight(), v.getPaddingBottom());
-            ViewGroup.LayoutParams lp = v.getLayoutParams();
-            lp.height = baseHeight + systemBars.top;
-            v.setLayoutParams(lp);
-            return insets;
-        });
-        */
+        setupToolbar(binding.toolbar);
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.main, (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, 0, systemBars.right, systemBars.bottom);
-
-            ViewGroup.LayoutParams lp = binding.statusBarScrim.getLayoutParams();
-            lp.height = systemBars.top;
-            binding.statusBarScrim.setLayoutParams(lp);
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
 
             return insets;
         });
@@ -122,26 +100,19 @@ public class FilePickerActivity extends BaseActivity {
     }
 
     private void setupToolbar() {
-        binding.toolbar.setNavigationOnClickListener(v -> {
-            setResult(Activity.RESULT_CANCELED);
+        binding.actionConfirm.setOnClickListener(v -> {
+            if (selectedPaths.isEmpty()) {
+                Message.snack("At least one item is required");
+                return;
+            }
+            Intent result = new Intent();
+            result.putStringArrayListExtra(
+                    EXTRA_SELECTED_PATHS,
+                    new ArrayList<>(selectedPaths)
+            );
+            setResult(Activity.RESULT_OK, result);
             finish();
         });
-
-        binding.toolbar.setOnMenuItemClickListener(item -> {
-            if (item.getItemId() == R.id.action_select) {
-                Intent result = new Intent();
-                result.putStringArrayListExtra(
-                        EXTRA_SELECTED_PATHS,
-                        new ArrayList<>(selectedPaths)
-                );
-                setResult(Activity.RESULT_OK, result);
-                finish();
-                return true;
-            }
-            return false;
-        });
-
-        updateConfirmButton();
     }
 
     private void setupRecyclerView() {
@@ -152,7 +123,6 @@ public class FilePickerActivity extends BaseActivity {
                 (entry, checked) -> { // onFileSelect (checkbox)
                     if (checked) selectedPaths.add(entry.getAbsolutePath());
                     else selectedPaths.remove(entry.getAbsolutePath());
-                    updateConfirmButton();
                 },
                 entry -> { // onFileClick (row)
                     boolean wasSelected = selectedPaths.contains(entry.getAbsolutePath());
@@ -164,7 +134,6 @@ public class FilePickerActivity extends BaseActivity {
                     if (newState) selectedPaths.add(entry.getAbsolutePath());
                     else selectedPaths.remove(entry.getAbsolutePath());
                     adapter.setSelected(entry.getAbsolutePath(), newState);
-                    updateConfirmButton();
                 },
                 allowMultiple,
                 allowedExtensions
@@ -247,13 +216,6 @@ public class FilePickerActivity extends BaseActivity {
             Toast.makeText(this, "IPC error: " + e.getMessage(),
                     Toast.LENGTH_SHORT).show();
         }
-    }
-
-    private void updateConfirmButton() {
-        android.view.MenuItem item = binding.toolbar.getMenu().findItem(R.id.action_select);
-        if (item == null) return;
-        item.setTitle("Select (" + selectedPaths.size() + ")");
-        item.setEnabled(!selectedPaths.isEmpty());
     }
 
     private void showLoading(boolean loading) {
