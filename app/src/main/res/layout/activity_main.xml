@@ -109,6 +109,14 @@
                     app:itemIcon="@drawable/ic_usb"
                     app:showDropdown="true" />
             </ir.aeliux.usbtoolkit.widget.MaterialContainer>
+
+            <ir.aeliux.usbtoolkit.widget.MaterialContainer
+                android:id="@+id/sec_gadgets"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:headerText="Gadgets">
+
+            </ir.aeliux.usbtoolkit.widget.MaterialContainer>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 </androidx.constraintlayout.widget.ConstraintLayout>

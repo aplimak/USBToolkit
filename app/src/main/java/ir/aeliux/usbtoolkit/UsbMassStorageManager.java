@@ -174,10 +174,11 @@ public class UsbMassStorageManager {
      * @throws UsbGadgetException if the Gadgets directory cannot be read.
      */
     public static List<String> getGadgetList(Path configfs) throws UsbGadgetException {
-        if (!Files.exists(configfs)) {
-            throw new UsbGadgetException("configfs directory does not exist: " + configfs);
+        Path gadgetPath = configfs.resolve(GADGETS_BASE);
+        if (!Files.exists(gadgetPath)) {
+            throw new UsbGadgetException("gadgets directory does not exist: " + gadgetPath);
         }
-        try (Stream<Path> paths = Files.list(configfs)) {
+        try (Stream<Path> paths = Files.list(gadgetPath)) {
             return paths
                     .map(p -> p.getFileName().toString())
                     .sorted()

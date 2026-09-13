@@ -134,48 +134,7 @@ public class MainActivity extends BaseActivity {
     private void refresh() {
         if (isBound) {
             try {
-                rootService.isRunning(new IBooleanCallback.Stub() {
-                    @Override
-                    public void onResult(boolean result) throws RemoteException {
-                        runOnUiThread(() -> {
-                            isRunning = result;
-                            setEnabledRecursively(binding.secFiles.getContentContainer(), !result);
-                            binding.secFiles.getContentContainer().setAlpha(result ? 0.5f : 1);
-                            setEnabledRecursively(binding.secSettings.getContentContainer(), !result);
-                            binding.secSettings.getContentContainer().setAlpha(result ? 0.5f : 1);
-
-                            if (isRunning) {
-                                binding.doAction.setImageResource(R.drawable.ic_stop);
-                            } else {
-                                binding.doAction.setImageResource(R.drawable.ic_play_arrow);
-                            }
-                            binding.doAction.setVisibility(View.VISIBLE);
-                        });
-                    }
-                });
-                rootService.supportsConfigfs(new IBooleanCallback.Stub() {
-                    @Override
-                    public void onResult(boolean result) {
-                        if (result) return;
-                        runOnUiThread(() -> {
-                            showFatalError("ConfigFS either not supported or not mounted.");
-                        });
-                    }
-                });
-                rootService.getUdcList(new IStringListCallback.Stub() {
-                    @Override
-                    public void onResult(List<String> result) {
-                        runOnUiThread(() -> {
-                            if (result == null && result.isEmpty()) {
-                                showFatalError("No UDC is found.");
-                                return;
-                            }
-                            var currentDropdownEntries = binding.selUdc.getDropdownEntries();
-                            if (contentsEqual(result, currentDropdownEntries != null ? Arrays.asList(currentDropdownEntries) : new ArrayList<>())) return;
-                            binding.selUdc.setDropdownEntries(result.toArray(new CharSequence[0]));
-                        });
-                    }
-                });
+                rootRefresh();
             } catch (RemoteException e) {
                 showRootServiceConnectionLostError();
             }
@@ -186,6 +145,74 @@ public class MainActivity extends BaseActivity {
         if (LoadingDialog.getDialogId() == DIALOG_INIT && LoadingDialog.isShowing()) {
             LoadingDialog.dismiss();
         }
+    }
+
+    private void rootRefresh() throws RemoteException {
+        rootService.isRunning(new IBooleanCallback.Stub() {
+            @Override
+            public void onResult(boolean result) throws RemoteException {
+                runOnUiThread(() -> {
+                    isRunning = result;
+                    setEnabledRecursively(binding.secFiles.getContentContainer(), !result);
+                    binding.secFiles.getContentContainer().setAlpha(result ? 0.5f : 1);
+                    setEnabledRecursively(binding.secSettings.getContentContainer(), !result);
+                    binding.secSettings.getContentContainer().setAlpha(result ? 0.5f : 1);
+
+                    if (isRunning) {
+                        binding.doAction.setImageResource(R.drawable.ic_stop);
+                    } else {
+                        binding.doAction.setImageResource(R.drawable.ic_play_arrow);
+                    }
+                    binding.doAction.setVisibility(View.VISIBLE);
+                });
+            }
+        });
+        rootService.supportsConfigfs(new IBooleanCallback.Stub() {
+            @Override
+            public void onResult(boolean result) {
+                if (result) return;
+                runOnUiThread(() -> {
+                    showFatalError("ConfigFS either not supported or not mounted.");
+                });
+            }
+        });
+        rootService.getUdcList(new IStringListCallback.Stub() {
+            @Override
+            public void onResult(List<String> result) {
+                runOnUiThread(() -> {
+                    if (result == null || result.isEmpty()) {
+                        showFatalError("No UDC is found.");
+                        return;
+                    }
+                    var currentDropdownEntries = binding.selUdc.getDropdownEntries();
+                    if (contentsEqual(result, currentDropdownEntries != null ? Arrays.asList(currentDropdownEntries) : new ArrayList<>())) return;
+                    binding.selUdc.setDropdownEntries(result.toArray(new CharSequence[0]));
+                });
+            }
+        });
+        rootService.getGadgetList(new IStringListCallback.Stub() {
+            @Override
+            public void onResult(List<String> result) {
+                runOnUiThread(() -> {
+                    if (result == null || result.isEmpty()) {
+                        binding.secGadgets.setVisibility(View.GONE);
+                        return;
+                    }
+                    binding.secGadgets.setVisibility(View.VISIBLE);
+                    var container = binding.secGadgets.getContentContainer();
+                    container.removeAllViews();
+
+                    for (String gadget : result) {
+                        MaterialItem item = new MaterialItem(MainActivity.this);
+                        item.setTitle(gadget);
+                        item.setOnClickListener((v) -> {
+                            Message.snack("Not implemented yet");
+                        });
+                        container.addView(item);
+                    }
+                });
+            }
+        });
     }
 
     public static boolean contentsEqual(List<? extends CharSequence> a,
