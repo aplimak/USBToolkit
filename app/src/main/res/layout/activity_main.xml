@@ -9,6 +9,7 @@
     tools:context=".MainActivity">
 
     <androidx.core.widget.NestedScrollView
+        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:padding="16dp"
@@ -130,4 +131,73 @@
 
     </androidx.core.widget.NestedScrollView>
 
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="@dimen/gap_large"
+        app:cardBackgroundColor="?attr/colorSurfaceContainer"
+        app:cardCornerRadius="28dp"
+        app:cardElevation="3dp"
+        app:strokeWidth="0dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingVertical="8dp">
+
+            <!-- Toggle with subtitle -->
+            <ir.aeliux.usbtoolkit.widgets.MaterialItem
+                android:id="@+id/itemAutoSync"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:itemTitle="Auto sync"
+                app:itemSubtitle="Sync files automatically in background"
+                app:showSwitch="true"
+                app:isClickable="true"
+                app:isChecked="true" />
+
+            <View android:layout_width="match_parent" android:layout_height="1dp"
+                android:layout_marginHorizontal="24dp"
+                android:background="?attr/colorOutlineVariant" />
+
+            <!-- Clickable row (chevron only, no switch) -->
+            <ir.aeliux.usbtoolkit.widgets.MaterialItem
+                android:id="@+id/itemNotifications"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:itemTitle="Notifications"
+                app:itemSubtitle="Get alerts when files are updated"
+                app:isClickable="true"
+                app:showChevron="true" />
+
+            <View android:layout_width="match_parent" android:layout_height="1dp"
+                android:layout_marginHorizontal="24dp"
+                android:background="?attr/colorOutlineVariant" />
+
+            <!-- Toggle without subtitle -->
+            <ir.aeliux.usbtoolkit.widgets.MaterialItem
+                android:id="@+id/itemDarkMode"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:itemTitle="Dark theme"
+                app:showSwitch="true"
+                app:isChecked="false" />
+
+            <View android:layout_width="match_parent" android:layout_height="1dp"
+                android:layout_marginHorizontal="24dp"
+                android:background="?attr/colorOutlineVariant" />
+
+            <!-- Dropdown -->
+            <ir.aeliux.usbtoolkit.widgets.MaterialItem
+                android:id="@+id/itemTheme"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:itemTitle="App Theme"
+                app:showDropdown="true"
+                app:showChevron="true"/>
+
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

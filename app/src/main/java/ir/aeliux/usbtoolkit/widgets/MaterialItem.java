@@ -16,7 +16,7 @@ import com.google.android.material.materialswitch.MaterialSwitch;
 
 import ir.aeliux.usbtoolkit.R;
 
-public class MaterialSettingItem extends ConstraintLayout {
+public class MaterialItem extends ConstraintLayout {
 
     public interface OnSettingChangeListener {
         void onCheckedChanged(boolean isChecked);
@@ -36,21 +36,21 @@ public class MaterialSettingItem extends ConstraintLayout {
     private CharSequence[] dropdownEntries;
 
     // --- Constructors ---
-    public MaterialSettingItem(@NonNull Context context) {
+    public MaterialItem(@NonNull Context context) {
         this(context, null);
     }
 
-    public MaterialSettingItem(@NonNull Context context, @Nullable AttributeSet attrs) {
+    public MaterialItem(@NonNull Context context, @Nullable AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public MaterialSettingItem(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+    public MaterialItem(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init(context, attrs);
     }
 
     private void init(Context context, AttributeSet attrs) {
-        LayoutInflater.from(context).inflate(R.layout.view_material_setting_item, this, true);
+        LayoutInflater.from(context).inflate(R.layout.view_material_item, this, true);
 
         textContainer = findViewById(R.id.textContainer);
         title = findViewById(R.id.title);
@@ -68,18 +68,22 @@ public class MaterialSettingItem extends ConstraintLayout {
 
         // --- Read custom attributes ---
         if (attrs != null) {
-            TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.MaterialSettingItem);
+            TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.MaterialItem);
 
-            String t = a.getString(R.styleable.MaterialSettingItem_settingTitle);
-            String s = a.getString(R.styleable.MaterialSettingItem_settingSubtitle);
-            int iconRes = a.getResourceId(R.styleable.MaterialSettingItem_settingIcon, 0);
+            String t = a.getString(R.styleable.MaterialItem_itemTitle);
+            String s = a.getString(R.styleable.MaterialItem_itemSubtitle);
+            int iconRes = a.getResourceId(R.styleable.MaterialItem_itemIcon, 0);
 
-            boolean showSwitch = a.getBoolean(R.styleable.MaterialSettingItem_showSwitch, false);
-            boolean showChevron = a.getBoolean(R.styleable.MaterialSettingItem_showChevron, false);
-            boolean clickableAttr = a.getBoolean(R.styleable.MaterialSettingItem_isClickable, false);
-            boolean checked = a.getBoolean(R.styleable.MaterialSettingItem_isChecked, false);
-            boolean dropdownAttr = a.getBoolean(R.styleable.MaterialSettingItem_isDropdown, false);
-            int entriesRes = a.getResourceId(R.styleable.MaterialSettingItem_dropdownEntries, 0);
+            boolean showSwitch = a.getBoolean(R.styleable.MaterialItem_showSwitch, false);
+            boolean showChevron = a.getBoolean(R.styleable.MaterialItem_showChevron, false);
+            boolean showDropdown = a.getBoolean(R.styleable.MaterialItem_showDropdown, false);
+            boolean clickableAttr = a.getBoolean(R.styleable.MaterialItem_isClickable, true);
+            boolean checked = a.getBoolean(R.styleable.MaterialItem_isChecked, false);
+            int dropdownEntriesRes = a.getResourceId(R.styleable.MaterialItem_dropdownEntries, 0);
+
+            if (showChevron && !(showSwitch || showDropdown)) {
+                showChevron = false; // No point on it
+            }
 
             if (t != null) title.setText(t);
             if (s != null) {
@@ -95,7 +99,6 @@ public class MaterialSettingItem extends ConstraintLayout {
             if (showSwitch) {
                 switchWidget.setVisibility(View.VISIBLE);
                 switchWidget.setChecked(checked);
-                divider.setVisibility(View.VISIBLE);
                 switchWidget.setOnCheckedChangeListener((btn, isChecked) -> {
                     if (listener != null) listener.onCheckedChanged(isChecked);
                 });
@@ -103,24 +106,28 @@ public class MaterialSettingItem extends ConstraintLayout {
 
             if (showChevron) {
                 chevron.setVisibility(View.VISIBLE);
+                divider.setVisibility(View.VISIBLE);
+                if (clickableAttr) {
+                    textContainer.setClickable(true);
+                    textContainer.setFocusable(true);
+                    applySelectableBackground(textContainer);
+                }
             }
 
-            if (dropdownAttr) {
+            if (showDropdown) {
                 this.isDropdown = true;
                 dropdownValue.setVisibility(View.VISIBLE);
-                if (showChevron) chevron.setVisibility(View.VISIBLE);
-                if (entriesRes != 0) {
-                    dropdownEntries = context.getResources().getTextArray(entriesRes);
+                if (dropdownEntriesRes != 0) {
+                    dropdownEntries = context.getResources().getTextArray(dropdownEntriesRes);
                 }
                 setupDropdown();
             }
 
             // Full-row clickable
-            if (clickableAttr && !showSwitch && !dropdownAttr) {
+            if (clickableAttr && !showChevron && !showDropdown) {
                 setClickable(true);
                 setFocusable(true);
-                applySelectableBackground();
-                if (showChevron) chevron.setVisibility(View.VISIBLE);
+                applySelectableBackground(this);
                 setOnClickListener(v -> {
                     if (listener != null) listener.onClicked();
                 });
@@ -148,7 +155,7 @@ public class MaterialSettingItem extends ConstraintLayout {
         });
     }
 
-    private void applySelectableBackground() {
+    private void applySelectableBackground(View view) {
         TypedValue outValue = new TypedValue();
         boolean resolved = getContext().getTheme().resolveAttribute(
                 android.R.attr.selectableItemBackground,
@@ -156,7 +163,7 @@ public class MaterialSettingItem extends ConstraintLayout {
                 true
         );
         if (resolved && outValue.resourceId != 0) {
-            setBackgroundResource(outValue.resourceId);
+            view.setBackgroundResource(outValue.resourceId);
         }
     }
 
