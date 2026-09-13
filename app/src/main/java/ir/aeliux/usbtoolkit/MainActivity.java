@@ -191,7 +191,7 @@ public class MainActivity extends BaseActivity {
                 runOnUiThread(() -> {
                     AlertDialog dialog = new MaterialAlertDialogBuilder(MainActivity.this)
                             .setMessage("Error occurred on step: " + stepName + " - " + error)
-                            .setNeutralButton("OK", (d, w) -> {
+                            .setNegativeButton("OK", (d, w) -> {
                                 d.dismiss();
                             })
                             .setCancelable(false)
@@ -206,6 +206,9 @@ public class MainActivity extends BaseActivity {
                 runOnUiThread(() -> {
                     refresh();
                     LoadingDialog.dismiss();
+                    if (result) {
+                        Message.snack("Operation completed successfully");
+                    }
                 });
             }
         };
@@ -225,6 +228,11 @@ public class MainActivity extends BaseActivity {
                     public void onResult(boolean result) throws RemoteException {
                         runOnUiThread(() -> {
                             isRunning = result;
+                            setEnabledRecursively(binding.secFiles.getContentContainer(), !result);
+                            binding.secFiles.getContentContainer().setAlpha(result ? 0.5f : 1);
+                            setEnabledRecursively(binding.secSettings.getContentContainer(), !result);
+                            binding.secSettings.getContentContainer().setAlpha(result ? 0.5f : 1);
+
                             if (isRunning) {
                                 binding.doAction.setImageResource(R.drawable.ic_stop);
                             } else {
@@ -242,6 +250,16 @@ public class MainActivity extends BaseActivity {
 
         if (LoadingDialog.getDialogId() == DIALOG_INIT && LoadingDialog.isShowing()) {
             LoadingDialog.dismiss();
+        }
+    }
+
+    public static void setEnabledRecursively(View view, boolean enabled) {
+        view.setEnabled(enabled);
+        if (view instanceof ViewGroup) {
+            ViewGroup group = (ViewGroup) view;
+            for (int i = 0; i < group.getChildCount(); i++) {
+                setEnabledRecursively(group.getChildAt(i), enabled);
+            }
         }
     }
 
