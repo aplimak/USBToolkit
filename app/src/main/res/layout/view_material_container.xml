@@ -29,8 +29,7 @@
             android:orientation="vertical"
             android:divider="?attr/colorOutlineVariant"
             android:dividerPadding="@dimen/gap_xlarge"
-            android:showDividers="middle"
-            android:paddingVertical="8dp" />
+            android:showDividers="middle" />
     </com.google.android.material.card.MaterialCardView>
 
 </merge>
