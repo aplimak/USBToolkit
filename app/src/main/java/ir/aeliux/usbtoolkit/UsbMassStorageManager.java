@@ -168,6 +168,26 @@ public class UsbMassStorageManager {
     }
 
     /**
+     * Lists existing USB Gadgets.
+     *
+     * @return a sorted list of USB Gadget names.
+     * @throws UsbGadgetException if the Gadgets directory cannot be read.
+     */
+    public static List<String> getGadgetList(Path configfs) throws UsbGadgetException {
+        if (!Files.exists(configfs)) {
+            throw new UsbGadgetException("configfs directory does not exist: " + configfs);
+        }
+        try (Stream<Path> paths = Files.list(configfs)) {
+            return paths
+                    .map(p -> p.getFileName().toString())
+                    .sorted()
+                    .collect(Collectors.toList());
+        } catch (IOException e) {
+            throw new UsbGadgetException("Failed to list Gadgets", e);
+        }
+    }
+
+    /**
      * Checks whether a gadget with the given name exists in configfs.
      *
      * @param configfs   the configfs mount point.

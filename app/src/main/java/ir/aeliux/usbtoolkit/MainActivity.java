@@ -30,7 +30,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import ir.aeliux.usbtoolkit.callback.IUdcListCallback;
+import ir.aeliux.usbtoolkit.callback.IStringListCallback;
 import ir.aeliux.usbtoolkit.callback.IUsbMassStorageCallback;
 import ir.aeliux.usbtoolkit.callback.IBooleanCallback;
 import ir.aeliux.usbtoolkit.data.MassStorageConfig;
@@ -162,11 +162,11 @@ public class MainActivity extends BaseActivity {
                         });
                     }
                 });
-                rootService.getUdcList(new IUdcListCallback.Stub() {
+                rootService.getUdcList(new IStringListCallback.Stub() {
                     @Override
                     public void onResult(List<String> result) {
                         runOnUiThread(() -> {
-                            if (result.isEmpty()) {
+                            if (result == null && result.isEmpty()) {
                                 showFatalError("No UDC is found.");
                                 return;
                             }

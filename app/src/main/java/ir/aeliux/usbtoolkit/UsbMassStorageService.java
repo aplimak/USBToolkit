@@ -14,7 +14,8 @@ import java.nio.file.Path;
 import java.util.List;
 
 import ir.aeliux.usbtoolkit.callback.IBooleanCallback;
-import ir.aeliux.usbtoolkit.callback.IUdcListCallback;
+import ir.aeliux.usbtoolkit.callback.IGadgetStateCallback;
+import ir.aeliux.usbtoolkit.callback.IStringListCallback;
 import ir.aeliux.usbtoolkit.callback.IUsbMassStorageCallback;
 import ir.aeliux.usbtoolkit.data.MassStorageConfig;
 
@@ -22,94 +23,120 @@ public class UsbMassStorageService extends RootService {
     private final String TAG = "UsbMassStorageService";
     private final IUsbMassStorageService.Stub binder = new IUsbMassStorageService.Stub() {
         @Override
-        public void start(MassStorageConfig config,
-                          IUsbMassStorageCallback callback) {
+        public void start(MassStorageConfig config, IUsbMassStorageCallback callback) {
             Log.d(TAG, "binder.Start");
-
-            try {
-                UsbMassStorageManager.setupMassStorage(config, getCallback(callback));
-                Log.d(TAG, "firing onEnd with result: " + true);
-                callback.onEnd(true);
-            } catch (UsbGadgetException e) {
+            safeCall(() -> {
                 try {
+                    UsbMassStorageManager.setupMassStorage(config, getCallback(callback));
+                    Log.d(TAG, "firing onEnd with result: " + true);
+                    callback.onEnd(true);
+                } catch (UsbGadgetException e) {
                     Log.e(TAG, "Error happened in binder.start: ", e);
                     Log.d(TAG, "firing onEnd with result: " + false);
                     callback.onEnd(false);
-                } catch (RemoteException ignored1) {}
-            } catch (RemoteException ignored) {}
+                }
+            });
         }
 
         @Override
         public void stop(IUsbMassStorageCallback callback) {
             Log.d(TAG, "binder.stop");
-            try {
-                Path configfs;
+            safeCall(() -> {
                 try {
-                    configfs = UsbMassStorageManager.getConfigfsMountPoint();
+                    Path configfs = UsbMassStorageManager.getConfigfsMountPoint();
+                    UsbMassStorageManager.cleanupGadget(configfs, UsbMassStorageManager.GADGET_NAME, getCallback(callback));
+                    Log.d(TAG, "firing onEnd with result: " + true);
+                    callback.onEnd(true);
                 } catch (UsbGadgetException e) {
-                    var cause = e.getCause();
-                    callback.onStepFailed("Get ConfigFS mountpoint", e + (cause != null ? "\n Caused by: " + cause : ""));
-                    throw e;
-                }
-                UsbMassStorageManager.cleanupGadget(configfs, UsbMassStorageManager.GADGET_NAME, getCallback(callback));
-                Log.d(TAG, "firing onEnd with result: " + true);
-                callback.onEnd(true);
-            } catch (UsbGadgetException e) {
-                try {
                     Log.e(TAG, "Error happened in binder.stop: ", e);
                     Log.d(TAG, "firing onEnd with result: " + false);
                     callback.onEnd(false);
-                } catch (RemoteException ignored) {}
-            } catch (RemoteException ignored) {}
+                }
+            });
         }
 
         @Override
         public void isRunning(IBooleanCallback callback) {
             Log.d(TAG, "binder.isRunning");
-            try {
-                var state = UsbMassStorageManager.detectExistingGadget();
-                var result = state != null && state.bound;
-                Log.d(TAG, "firing onResult with result: " + result);
-                callback.onResult(result);
-            } catch (UsbGadgetException e) {
+            safeCall(() -> {
                 try {
+                    var state = UsbMassStorageManager.detectExistingGadget();
+                    var result = state != null && state.bound;
+                    Log.d(TAG, "firing onResult with result: " + result);
+                    callback.onResult(result);
+                } catch (UsbGadgetException e) {
                     Log.e(TAG, "Error happened in binder.isRunning: ", e);
                     Log.d(TAG, "firing onResult with result: " + false);
                     callback.onResult(false);
-                } catch (RemoteException ignored) {}
-            } catch (RemoteException ignored) {}
+                }
+            });
         }
 
         @Override
         public void supportsConfigfs(IBooleanCallback callback) {
             Log.d(TAG, "binder.supportsConfigfs");
-            try {
-                UsbMassStorageManager.getConfigfsMountPoint();
-                Log.d(TAG, "firing onResult with result: " + true);
-                callback.onResult(true);
-            } catch (UsbGadgetException e) {
+            safeCall(() -> {
                 try {
+                    UsbMassStorageManager.getConfigfsMountPoint();
+                    Log.d(TAG, "firing onResult with result: " + true);
+                    callback.onResult(true);
+                } catch (UsbGadgetException e) {
                     Log.e(TAG, "Error happened in binder.supportsConfigfs: ", e);
                     Log.d(TAG, "firing onResult with result: " + false);
                     callback.onResult(false);
-                } catch (RemoteException ignored) {}
-            } catch (RemoteException ignored) {}
+                }
+            });
         }
 
         @Override
-        public void getUdcList(IUdcListCallback callback) {
+        public void getUdcList(IStringListCallback callback) {
             Log.d(TAG, "binder.getUdcList");
-            try {
-                var result = UsbMassStorageManager.getUdcList();
-                Log.d(TAG, "firing onResult with result: " + result);
-                callback.onResult(result);
-            } catch (UsbGadgetException e) {
+            safeCall(() -> {
                 try {
+                    var result = UsbMassStorageManager.getUdcList();
+                    Log.d(TAG, "firing onResult with result: " + result);
+                    callback.onResult(result);
+                } catch (UsbGadgetException e) {
                     Log.e(TAG, "Error happened in binder.getUdcList: ", e);
                     Log.d(TAG, "firing onResult with result: " + null);
                     callback.onResult(null);
-                } catch (RemoteException ignored) {}
-            } catch (RemoteException ignored) {}
+                }
+            });
+        }
+
+        @Override
+        public void getGadgetList(IStringListCallback callback) {
+            Log.d(TAG, "binder.getGadgetList");
+            safeCall(() -> {
+                try {
+                    var configfs = UsbMassStorageManager.getConfigfsMountPoint();
+                    var result = UsbMassStorageManager.getGadgetList(configfs);
+                    Log.d(TAG, "firing onResult with result: " + result);
+                    callback.onResult(result);
+                } catch (UsbGadgetException e) {
+                    Log.e(TAG, "Error happened in binder.getGadgetList: ", e);
+                    Log.d(TAG, "firing onResult with result: " + null);
+                    callback.onResult(null);
+                }
+            });
+        }
+
+        @Override
+        public void getGadgetState(String name, IGadgetStateCallback callback) {
+            Log.d(TAG, "binder.getGadgetState");
+            safeCall(() -> {
+                try {
+                    var configfs = UsbMassStorageManager.getConfigfsMountPoint();
+                    var result = UsbMassStorageManager.getGadgetState(configfs, name);
+                    Log.d(TAG, "firing onResult with result: " + result);
+                    callback.onResult(result);
+                } catch (UsbGadgetException e) {
+                    Log.e(TAG, "Error happened in binder.getGadgetState: ", e);
+                    Log.d(TAG, "firing onError");
+                    var cause = e.getCause();
+                    callback.onError(e + (cause != null ? "\n Caused by: " + cause : ""));
+                }
+            });
         }
 
         @NonNull
@@ -117,35 +144,43 @@ public class UsbMassStorageService extends RootService {
             return new UsbMassStorageManager.ProgressCallback() {
                 @Override
                 public void onStepStart(String stepName) {
-                    try {
+                    safeCall(() -> {
                         Log.d(TAG, "firing onStepStart with step: " + stepName);
                         callback.onStepStart(stepName);
-                    } catch (RemoteException ignored) {
-                    }
+                    });
                 }
 
                 @Override
                 public void onStepComplete(String stepName) {
-                    try {
+                    safeCall(() -> {
                         Log.d(TAG, "firing onStepComplete with step: " + stepName);
                         callback.onStepComplete(stepName);
-                    } catch (RemoteException ignored) {
-                    }
+                    });
                 }
 
                 @Override
                 public void onStepFailed(String stepName, UsbGadgetException error) {
-                    try {
+                    safeCall(() -> {
                         Log.e(TAG, "Error happened in step: " + stepName, error);
                         Log.d(TAG, "firing onStepFailed with step: " + stepName);
                         var cause = error.getCause();
                         callback.onStepFailed(stepName, error + (cause != null ? "\n Caused by: " + cause : ""));
-                    } catch (RemoteException ignored) {
-                    }
+                    });
                 }
             };
         }
     };
+
+    private interface RemoteAction {
+        void run() throws RemoteException;
+    }
+
+    private static void safeCall(RemoteAction action) {
+        try {
+            action.run();
+        } catch (RemoteException ignored) {
+        }
+    }
 
     @Nullable
     @Override

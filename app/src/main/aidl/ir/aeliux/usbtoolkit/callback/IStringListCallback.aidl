@@ -1,6 +1,6 @@
-// IUdcListCallback.aidl
+// IStringListCallback.aidl
 package ir.aeliux.usbtoolkit.callback;
 
-oneway interface IUdcListCallback {
+oneway interface IStringListCallback {
     void onResult(in List<String> result);
 }

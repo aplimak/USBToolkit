@@ -3,7 +3,8 @@ package ir.aeliux.usbtoolkit;
 
 import ir.aeliux.usbtoolkit.callback.IUsbMassStorageCallback;
 import ir.aeliux.usbtoolkit.callback.IBooleanCallback;
-import ir.aeliux.usbtoolkit.callback.IUdcListCallback;
+import ir.aeliux.usbtoolkit.callback.IStringListCallback;
+import ir.aeliux.usbtoolkit.callback.IGadgetStateCallback;
 import ir.aeliux.usbtoolkit.data.LunState;
 import ir.aeliux.usbtoolkit.data.GadgetState;
 import ir.aeliux.usbtoolkit.data.MassStorageConfig;
@@ -13,5 +14,7 @@ oneway interface IUsbMassStorageService {
     void stop(IUsbMassStorageCallback callback);
     void isRunning(IBooleanCallback callback);
     void supportsConfigfs(IBooleanCallback callback);
-    void getUdcList(IUdcListCallback callback);
+    void getUdcList(IStringListCallback callback);
+    void getGadgetList(IStringListCallback callback);
+    void getGadgetState(String name, IGadgetStateCallback callback);
 }
