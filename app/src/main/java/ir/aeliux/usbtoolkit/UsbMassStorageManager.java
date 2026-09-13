@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -819,9 +820,22 @@ public class UsbMassStorageManager {
      */
     private static String getSerialNumber() {
         try {
-            return Build.getSerial();
+            return getSystemProperty("ro.boot.serialno");
         } catch (Exception e) {
             return "0123456789ABCDEF";
         }
+    }
+
+    private static String getSystemProperty(String key) {
+        String value = null;
+        try {
+            Class<?> systemPropertiesClass = Class.forName("android.os.SystemProperties");
+            Method getMethod = systemPropertiesClass.getMethod("get", String.class);
+            value = (String) getMethod.invoke(null, key);
+        } catch (Exception e) {
+            // Handle exceptions (e.g., class not found, method not found)
+            e.printStackTrace();
+        }
+        return value;
     }
 }
