@@ -21,15 +21,18 @@ import ir.aeliux.usbtoolkit.R;
 
 public class MaterialItem extends ConstraintLayout {
     private LinearLayout textContainer;
-    private TextView title, subtitle, dropdownValue;
+    private TextView title, subtitle;
     private ImageView icon, chevron;
     private View divider;
     private MaterialSwitch switchWidget;
-    private LinearLayout trailingContainer;
 
+    private boolean clickable = false;
     private boolean hasChevron = false;
     private boolean masterListenerEnabled = false;
     private CharSequence[] dropdownEntries;
+    private int selectedDropdownEntry = -1;
+    private boolean hasDropdown;
+
     private OnClickListener clickListener;
     private CompoundButton.OnCheckedChangeListener checkedChangeListener;
     private DialogInterface.OnClickListener dropdownItemSelectedListener;
@@ -50,8 +53,6 @@ public class MaterialItem extends ConstraintLayout {
         chevron = findViewById(R.id.chevron);
         divider = findViewById(R.id.divider);
         switchWidget = findViewById(R.id.switchWidget);
-        dropdownValue = findViewById(R.id.dropdownValue);
-        trailingContainer = findViewById(R.id.trailingContainer);
 
         // Base padding to match Material 3 settings rows
         setPadding(dpToPx(24), dpToPx(12), dpToPx(24), dpToPx(12));
@@ -65,12 +66,12 @@ public class MaterialItem extends ConstraintLayout {
             String s = a.getString(R.styleable.MaterialItem_itemSubtitle);
             int iconRes = a.getResourceId(R.styleable.MaterialItem_itemIcon, 0);
 
+            clickable = a.getBoolean(R.styleable.MaterialItem_isClickable, true);
             boolean showSwitch = a.getBoolean(R.styleable.MaterialItem_showSwitch, false);
-            boolean showDropdown = a.getBoolean(R.styleable.MaterialItem_showDropdown, false);
-            hasChevron = (showSwitch || showDropdown) && a.getBoolean(R.styleable.MaterialItem_showChevron, false);
-            boolean clickableAttr = a.getBoolean(R.styleable.MaterialItem_isClickable, true);
+            hasDropdown = a.getBoolean(R.styleable.MaterialItem_showDropdown, false);
+            hasChevron = clickable && showSwitch && a.getBoolean(R.styleable.MaterialItem_showChevron, false);
             boolean checked = showSwitch &&  a.getBoolean(R.styleable.MaterialItem_isChecked, false);
-            int dropdownEntriesRes = showDropdown ? a.getResourceId(R.styleable.MaterialItem_dropdownEntries, 0) : 0;
+            int dropdownEntriesRes = hasDropdown ? a.getResourceId(R.styleable.MaterialItem_dropdownEntries, 0) : 0;
 
             if (t != null) title.setText(t);
             if (s != null) {
@@ -89,30 +90,31 @@ public class MaterialItem extends ConstraintLayout {
             }
 
             // Configure trailing elements
+            if (hasChevron) {
+                chevron.setVisibility(View.VISIBLE);
+                divider.setVisibility(View.VISIBLE);
+            }
+
             if (showSwitch) {
                 switchWidget.setVisibility(View.VISIBLE);
-                switchWidget.setClickable(hasChevron);
-                switchWidget.setFocusable(hasChevron);
-                switchWidget.setChecked(checked);
+                switchWidget.setClickable(!clickable || hasChevron);
+                switchWidget.setFocusable(!clickable || hasChevron);
+                setCheckedInternal(checked);
                 switchWidget.setDuplicateParentStateEnabled(hasChevron);
                 switchWidget.setOnCheckedChangeListener((btn, isChecked) -> {
                     if (checkedChangeListener != null) checkedChangeListener.onCheckedChanged(btn, isChecked);
                 });
-                if (!hasChevron) {
+                if (clickable && !hasChevron) {
                     switchWidget.setBackground(null);
                 }
             }
 
-            if (showDropdown) {
-                dropdownValue.setVisibility(View.VISIBLE);
-                if (dropdownEntriesRes != 0) {
-                    dropdownEntries = context.getResources().getTextArray(dropdownEntriesRes);
-                }
-                setupDropdown();
+            if (hasDropdown && dropdownEntriesRes != 0) {
+                setDropdownEntries(context.getResources().getTextArray(dropdownEntriesRes));
             }
 
             // Full-row clickable
-            if (clickableAttr) {
+            if (clickable) {
                 setClickable(true);
                 setFocusable(true);
 
@@ -122,8 +124,8 @@ public class MaterialItem extends ConstraintLayout {
                         setClicked = true;
                     } else if (showSwitch) {
                         switchWidget.performClick();
-                    } else if (showDropdown) {
-                        dropdownValue.performClick();
+                    } else if (hasDropdown) {
+                        showDropdown();
                     } else {
                         setClicked = true;
                     }
@@ -190,30 +192,27 @@ public class MaterialItem extends ConstraintLayout {
         }
     }
 
-    private void setupDropdown() {
-        if (dropdownEntries == null || dropdownEntries.length == 0) return;
+    private void showDropdown() {
+        new com.google.android.material.dialog.MaterialAlertDialogBuilder(getContext())
+                .setTitle(title.getText())
+                .setItems(dropdownEntries, (dialog, which) -> {
+                    setSelectedItemInternal(which, false);
+                })
+                .show();
+    }
 
-        // Set initial value
-        dropdownValue.setText(dropdownEntries[0]);
-
-        dropdownValue.setClickable(hasChevron);
-        dropdownValue.setFocusable(hasChevron);
-        dropdownValue.setDuplicateParentStateEnabled(hasChevron);
-        if (!hasChevron) {
-            dropdownValue.setBackground(null);
+    private void setSelectedItemInternal(int which, boolean forced) {
+        if (!forced && selectedDropdownEntry == which) return;
+        CharSequence value = dropdownEntries[which];
+        selectedDropdownEntry = which;
+        setSubtitle(value);
+        if (!forced && dropdownItemSelectedListener != null) {
+            dropdownItemSelectedListener.onClick(null, which);
         }
+    }
 
-        dropdownValue.setOnClickListener(v -> {
-            new androidx.appcompat.app.AlertDialog.Builder(getContext())
-                    .setTitle(title.getText())
-                    .setItems(dropdownEntries, (dialog, which) -> {
-                        dropdownValue.setText(dropdownEntries[which]);
-                        if (dropdownItemSelectedListener != null) {
-                            dropdownItemSelectedListener.onClick(dialog, which);
-                        }
-                    })
-                    .show();
-        });
+    private void setCheckedInternal(boolean checked) {
+        switchWidget.setChecked(checked);
     }
 
     private void requiresSwitch() {
@@ -223,19 +222,9 @@ public class MaterialItem extends ConstraintLayout {
     }
 
     private void requiresDropdown() {
-        if (dropdownValue.getVisibility() != View.VISIBLE) {
+        if (!hasDropdown) {
             throw new IllegalStateException("This item has no dropdown");
         }
-    }
-
-    public void setChecked(boolean checked) {
-        requiresSwitch();
-        switchWidget.setChecked(checked);
-    }
-
-    public boolean isChecked() {
-        requiresSwitch();
-        return switchWidget.isChecked();
     }
 
     public void setTitle(CharSequence text) { title.setText(text); }
@@ -250,10 +239,34 @@ public class MaterialItem extends ConstraintLayout {
         return subtitle.getText();
     }
 
+    public void setChecked(boolean checked) {
+        requiresSwitch();
+        setCheckedInternal(checked);
+    }
+
+    public boolean isChecked() {
+        requiresSwitch();
+        return switchWidget.isChecked();
+    }
+
     public void setDropdownEntries(CharSequence[] entries) {
         requiresDropdown();
+        if (entries == null || entries.length == 0) return;
         this.dropdownEntries = entries;
-        setupDropdown();
+        setSelectedItemInternal(0, true);
+    }
+    public CharSequence[] getDropdownEntries() {
+        requiresDropdown();
+        return this.dropdownEntries;
+    }
+    public int getSelectedItem() {
+        requiresDropdown();
+        return selectedDropdownEntry;
+    }
+
+    public void setSelectedItem(int index) {
+        requiresDropdown();
+        setSelectedItemInternal(index, false);
     }
 
     private int dpToPx(int dp) {

@@ -47,7 +47,7 @@
             tools:visibility="visible" />
     </LinearLayout>
 
-    <!-- Trailing container: chevron + divider + switch/dropdown -->
+    <!-- Trailing container: chevron + divider + switch -->
     <LinearLayout
         android:id="@+id/trailingContainer"
         android:layout_width="wrap_content"
@@ -58,7 +58,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <!-- Chevron (shown for clickable/dropdown items) -->
+        <!-- Chevron -->
         <ImageView
             android:id="@+id/chevron"
             android:layout_width="24dp"
@@ -82,19 +82,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:visibility="gone" />
-
-        <!-- Dropdown trigger (invisible TextView, tapped to open popup) -->
-        <TextView
-            android:id="@+id/dropdownValue"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:drawableEnd="@drawable/ic_arrow_drop_down"
-            android:drawablePadding="4dp"
-            android:gravity="center_vertical"
-            android:textAppearance="?attr/textAppearanceBodyMedium"
-            android:textColor="?attr/colorOnSurfaceVariant"
-            android:visibility="gone"
-            tools:text="System default" />
     </LinearLayout>
 
 </merge>

@@ -120,6 +120,8 @@ public class MainActivity extends BaseActivity {
             addMountFilesLauncher.launch(intent);
         });
 
+        binding.selUdc.setDropdownEntries(new String[]{"ss", "test"});
+
         LoadingDialog.updateMessage("Waiting for Root Service");
 
         Intent intent = new Intent(this, UsbMassStorageService.class);

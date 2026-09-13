@@ -98,6 +98,16 @@
                     app:itemSubtitle="Mount files as removable disks"
                     app:itemTitle="Removable"
                     app:showSwitch="true" />
+
+                <ir.aeliux.usbtoolkit.widgets.MaterialItem
+                    android:id="@+id/sel_udc"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:isClickable="true"
+                    app:itemTitle="UDC"
+                    app:itemSubtitle="Set USB Device Controller to bind gadget to it"
+                    app:itemIcon="@drawable/ic_usb"
+                    app:showDropdown="true" />
             </ir.aeliux.usbtoolkit.widgets.MaterialContainer>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
