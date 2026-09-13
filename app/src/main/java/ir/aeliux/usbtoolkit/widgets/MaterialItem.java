@@ -1,12 +1,14 @@
 package ir.aeliux.usbtoolkit.widgets;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.res.TypedArray;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -18,12 +20,6 @@ import com.google.android.material.materialswitch.MaterialSwitch;
 import ir.aeliux.usbtoolkit.R;
 
 public class MaterialItem extends ConstraintLayout {
-    public interface OnSettingChangeListener {
-        void onCheckedChanged(boolean isChecked);
-        void onClicked();
-        void onDropdownItemSelected(int index, String value);
-    }
-
     private LinearLayout textContainer;
     private TextView title, subtitle, dropdownValue;
     private ImageView icon, chevron;
@@ -31,23 +27,18 @@ public class MaterialItem extends ConstraintLayout {
     private MaterialSwitch switchWidget;
     private LinearLayout trailingContainer;
 
-    private OnSettingChangeListener listener;
     private boolean hasChevron = false;
+    private boolean masterListenerEnabled = false;
     private CharSequence[] dropdownEntries;
+    private OnClickListener clickListener;
+    private CompoundButton.OnCheckedChangeListener checkedChangeListener;
+    private DialogInterface.OnClickListener dropdownItemSelectedListener;
 
-    // --- Constructors ---
     public MaterialItem(@NonNull Context context) {
         this(context, null);
     }
-
-    public MaterialItem(@NonNull Context context, @Nullable AttributeSet attrs) {
-        this(context, attrs, 0);
-    }
-
-    public MaterialItem(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
-        init(context, attrs);
-    }
+    public MaterialItem(@NonNull Context context, @Nullable AttributeSet attrs) { this(context, attrs, 0); }
+    public MaterialItem(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) { super(context, attrs, defStyleAttr);init(context, attrs); }
 
     private void init(Context context, AttributeSet attrs) {
         LayoutInflater.from(context).inflate(R.layout.view_material_item, this, true);
@@ -105,7 +96,7 @@ public class MaterialItem extends ConstraintLayout {
                 switchWidget.setChecked(checked);
                 switchWidget.setDuplicateParentStateEnabled(hasChevron);
                 switchWidget.setOnCheckedChangeListener((btn, isChecked) -> {
-                    if (listener != null) listener.onCheckedChanged(isChecked);
+                    if (checkedChangeListener != null) checkedChangeListener.onCheckedChanged(btn, isChecked);
                 });
                 if (!hasChevron) {
                     switchWidget.setBackground(null);
@@ -113,6 +104,7 @@ public class MaterialItem extends ConstraintLayout {
             }
 
             if (showDropdown) {
+                dropdownValue.setVisibility(View.VISIBLE);
                 if (dropdownEntriesRes != 0) {
                     dropdownEntries = context.getResources().getTextArray(dropdownEntriesRes);
                 }
@@ -123,6 +115,24 @@ public class MaterialItem extends ConstraintLayout {
             if (clickableAttr) {
                 setClickable(true);
                 setFocusable(true);
+
+                setOnClickListener(v -> {
+                    boolean setClicked = false;
+                    if (hasChevron) {
+                        setClicked = true;
+                    } else if (showSwitch) {
+                        switchWidget.performClick();
+                    } else if (showDropdown) {
+                        dropdownValue.performClick();
+                    } else {
+                        setClicked = true;
+                    }
+
+                    if (setClicked && clickListener != null) {
+                        clickListener.onClick(this);
+                    }
+                });
+                masterListenerEnabled = true;
             }
 
             a.recycle();
@@ -137,29 +147,31 @@ public class MaterialItem extends ConstraintLayout {
                 textContainer.setLayoutParams(params);
             }
         });
-
-        setOnClickListener(v -> {
-            boolean setClicked = false;
-            if (hasChevron) {
-                setClicked = true;
-            } else if (switchWidget.getVisibility() == View.VISIBLE) {
-                switchWidget.performClick();
-            } else if (dropdownValue.getVisibility() == View.VISIBLE) {
-                dropdownValue.performClick();
-            } else {
-                setClicked = true;
-            }
-
-            if (setClicked && listener != null) {
-                listener.onClicked();
-            }
-        });
     }
 
     @Override
     public void setClickable(boolean clickable) {
         super.setClickable(clickable);
         applySelectableBackground(this, clickable);
+    }
+
+    @Override
+    public void setOnClickListener(@Nullable OnClickListener l) {
+        if (!masterListenerEnabled) {
+            super.setOnClickListener(l);
+        } else {
+            clickListener = l;
+        }
+    }
+
+    public void setOnCheckedChangeListener(@Nullable CompoundButton.OnCheckedChangeListener l) {
+        requiresSwitch();
+        checkedChangeListener = l;
+    }
+
+    public void setOnDropdownItemSelectedListener(@Nullable DialogInterface.OnClickListener l) {
+        requiresDropdown();
+        dropdownItemSelectedListener = l;
     }
 
     private void applySelectableBackground(View view, boolean enable) {
@@ -184,7 +196,6 @@ public class MaterialItem extends ConstraintLayout {
         // Set initial value
         dropdownValue.setText(dropdownEntries[0]);
 
-        dropdownValue.setVisibility(View.VISIBLE);
         dropdownValue.setClickable(!hasChevron);
         dropdownValue.setFocusable(!hasChevron);
         dropdownValue.setDuplicateParentStateEnabled(hasChevron);
@@ -197,24 +208,33 @@ public class MaterialItem extends ConstraintLayout {
                     .setTitle(title.getText())
                     .setItems(dropdownEntries, (dialog, which) -> {
                         dropdownValue.setText(dropdownEntries[which]);
-                        if (listener != null) {
-                            listener.onDropdownItemSelected(which, dropdownEntries[which].toString());
+                        if (dropdownItemSelectedListener != null) {
+                            dropdownItemSelectedListener.onClick(dialog, which);
                         }
                     })
                     .show();
         });
     }
 
-    // --- Public API ---
-    public void setOnSettingChangeListener(OnSettingChangeListener l) {
-        this.listener = l;
+    private void requiresSwitch() {
+        if (switchWidget.getVisibility() != View.VISIBLE) {
+            throw new IllegalStateException("This item has no switch");
+        }
+    }
+
+    private void requiresDropdown() {
+        if (dropdownValue.getVisibility() != View.VISIBLE) {
+            throw new IllegalStateException("This item has no dropdown");
+        }
     }
 
     public void setChecked(boolean checked) {
+        requiresSwitch();
         switchWidget.setChecked(checked);
     }
 
     public boolean isChecked() {
+        requiresSwitch();
         return switchWidget.isChecked();
     }
 
@@ -226,7 +246,12 @@ public class MaterialItem extends ConstraintLayout {
         subtitle.setText(text);
         subtitle.setVisibility(text == null || text.length() == 0 ? View.GONE : View.VISIBLE);
     }
+    public CharSequence setSubtitle() {
+        return subtitle.getText();
+    }
+
     public void setDropdownEntries(CharSequence[] entries) {
+        requiresDropdown();
         this.dropdownEntries = entries;
         setupDropdown();
     }
