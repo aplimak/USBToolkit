@@ -1,9 +1,9 @@
 // IUsbMassStorageService.aidl
 package ir.aeliux.usbtoolkit;
 
-import ir.aeliux.usbtoolkit.IUsbMassStorageCallback;
-import ir.aeliux.usbtoolkit.IBooleanCallback;
-import ir.aeliux.usbtoolkit.IUdcListCallback;
+import ir.aeliux.usbtoolkit.callback.IUsbMassStorageCallback;
+import ir.aeliux.usbtoolkit.callback.IBooleanCallback;
+import ir.aeliux.usbtoolkit.callback.IUdcListCallback;
 import ir.aeliux.usbtoolkit.data.LunState;
 import ir.aeliux.usbtoolkit.data.GadgetState;
 import ir.aeliux.usbtoolkit.data.MassStorageConfig;

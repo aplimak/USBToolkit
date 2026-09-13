@@ -30,9 +30,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import ir.aeliux.usbtoolkit.callback.IUdcListCallback;
+import ir.aeliux.usbtoolkit.callback.IUsbMassStorageCallback;
+import ir.aeliux.usbtoolkit.callback.IBooleanCallback;
 import ir.aeliux.usbtoolkit.data.MassStorageConfig;
 import ir.aeliux.usbtoolkit.databinding.ActivityMainBinding;
-import ir.aeliux.usbtoolkit.widgets.MaterialItem;
+import ir.aeliux.usbtoolkit.widget.MaterialItem;
 
 public class MainActivity extends BaseActivity {
     private final int DIALOG_INIT = 1;

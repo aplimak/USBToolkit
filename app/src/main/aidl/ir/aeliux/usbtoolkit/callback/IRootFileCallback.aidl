@@ -1,8 +1,7 @@
 // IRootFileCallback.aidl
-package ir.aeliux.usbtoolkit;
+package ir.aeliux.usbtoolkit.callback;
 
-import ir.aeliux.usbtoolkit.FileEntry;
-import java.util.List;
+import ir.aeliux.usbtoolkit.data.FileEntry;
 
 oneway interface IRootFileCallback {
     void onFileList(in List<FileEntry> entries);

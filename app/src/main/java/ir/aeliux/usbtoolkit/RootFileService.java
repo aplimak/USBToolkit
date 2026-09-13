@@ -13,6 +13,10 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import ir.aeliux.usbtoolkit.callback.IRootFileCallback;
+import ir.aeliux.usbtoolkit.callback.IRootFileExistCallback;
+import ir.aeliux.usbtoolkit.data.FileEntry;
+
 public class RootFileService extends RootService {
 
     private final IRootFileService.Stub binder = new IRootFileService.Stub() {

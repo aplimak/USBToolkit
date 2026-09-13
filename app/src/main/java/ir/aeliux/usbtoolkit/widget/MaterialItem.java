@@ -1,4 +1,4 @@
-package ir.aeliux.usbtoolkit.widgets;
+package ir.aeliux.usbtoolkit.widget;
 
 import android.content.Context;
 import android.content.DialogInterface;

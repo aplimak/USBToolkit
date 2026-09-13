@@ -13,6 +13,9 @@ import com.topjohnwu.superuser.ipc.RootService;
 import java.nio.file.Path;
 import java.util.List;
 
+import ir.aeliux.usbtoolkit.callback.IBooleanCallback;
+import ir.aeliux.usbtoolkit.callback.IUdcListCallback;
+import ir.aeliux.usbtoolkit.callback.IUsbMassStorageCallback;
 import ir.aeliux.usbtoolkit.data.MassStorageConfig;
 
 public class UsbMassStorageService extends RootService {

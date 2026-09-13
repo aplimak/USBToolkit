@@ -19,6 +19,8 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 
+import ir.aeliux.usbtoolkit.data.FileEntry;
+
 public class FileEntryAdapter extends ListAdapter<FileEntry, FileEntryAdapter.ViewHolder> {
 
     public interface OnDirectoryClick { void onClick(FileEntry entry); }
