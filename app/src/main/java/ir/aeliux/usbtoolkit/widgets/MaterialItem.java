@@ -259,9 +259,13 @@ public class MaterialItem extends ConstraintLayout {
         requiresDropdown();
         return this.dropdownEntries;
     }
-    public int getSelectedItem() {
+    public int getSelectedItemIndex() {
         requiresDropdown();
         return selectedDropdownEntry;
+    }
+    public CharSequence getSelectedItem() {
+        requiresDropdown();
+        return dropdownEntries[selectedDropdownEntry];
     }
 
     public void setSelectedItem(int index) {

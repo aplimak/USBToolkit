@@ -21,6 +21,7 @@ public class UsbMassStorageService extends RootService {
                           boolean readOnly,
                           boolean cdrom,
                           boolean removable,
+                          String udc,
                           IUsbMassStorageCallback callback) {
             Log.d(TAG, "binder.Start");
             UsbMassStorageManager.MassStorageConfig.Builder builder = new UsbMassStorageManager.MassStorageConfig.Builder();
@@ -30,6 +31,7 @@ public class UsbMassStorageService extends RootService {
             UsbMassStorageManager.MassStorageConfig config = builder.setCdrom(cdrom)
                                                                     .setReadOnly(readOnly)
                                                                     .setRemovable(removable)
+                                                                    .setUdc(udc)
                                                                     .build();
 
             try {
@@ -82,6 +84,38 @@ public class UsbMassStorageService extends RootService {
                     Log.e(TAG, "Error happened in binder.isRunning: ", e);
                     Log.d(TAG, "firing onResult with result: " + false);
                     callback.onResult(false);
+                } catch (RemoteException ignored) {}
+            } catch (RemoteException ignored) {}
+        }
+
+        @Override
+        public void supportsConfigfs(IBooleanCallback callback) {
+            Log.d(TAG, "binder.supportsConfigfs");
+            try {
+                UsbMassStorageManager.getConfigfsMountPoint();
+                Log.d(TAG, "firing onResult with result: " + true);
+                callback.onResult(true);
+            } catch (UsbGadgetException e) {
+                try {
+                    Log.e(TAG, "Error happened in binder.supportsConfigfs: ", e);
+                    Log.d(TAG, "firing onResult with result: " + false);
+                    callback.onResult(false);
+                } catch (RemoteException ignored) {}
+            } catch (RemoteException ignored) {}
+        }
+
+        @Override
+        public void getUdcList(IUdcListCallback callback) {
+            Log.d(TAG, "binder.getUdcList");
+            try {
+                var result = UsbMassStorageManager.getUdcList();
+                Log.d(TAG, "firing onResult with result: " + result);
+                callback.onResult(result);
+            } catch (UsbGadgetException e) {
+                try {
+                    Log.e(TAG, "Error happened in binder.getUdcList: ", e);
+                    Log.d(TAG, "firing onResult with result: " + null);
+                    callback.onResult(null);
                 } catch (RemoteException ignored) {}
             } catch (RemoteException ignored) {}
         }

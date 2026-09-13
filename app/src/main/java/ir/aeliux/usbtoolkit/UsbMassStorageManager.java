@@ -100,12 +100,14 @@ public class UsbMassStorageManager {
         public final boolean cdrom;
         public final boolean readOnly;
         public final boolean removable;
+        public final String udc;
 
         private MassStorageConfig(Builder builder) {
             this.imagePaths = Collections.unmodifiableList(new ArrayList<>(builder.imagePaths));
             this.cdrom = builder.cdrom;
             this.readOnly = builder.readOnly;
             this.removable = builder.removable;
+            this.udc = builder.udc;
         }
 
         public static class Builder {
@@ -113,6 +115,7 @@ public class UsbMassStorageManager {
             private boolean cdrom = false;
             private boolean readOnly = false;
             private boolean removable = true;
+            private String udc;
 
             /**
              * Adds an image file (will be resolved to an absolute path during setup).
@@ -144,9 +147,17 @@ public class UsbMassStorageManager {
                 return this;
             }
 
+            public Builder setUdc(String udc) {
+                this.udc = udc;
+                return this;
+            }
+
             public MassStorageConfig build() {
                 if (imagePaths.isEmpty()) {
                     throw new IllegalArgumentException("At least one image path is required");
+                }
+                if (udc == null) {
+                    throw new IllegalArgumentException("UDC is not set");
                 }
                 return new MassStorageConfig(this);
             }
@@ -591,12 +602,8 @@ public class UsbMassStorageManager {
 
         // Step 5: Bind to first available UDC
         step(callback, "Bind to UDC", () -> {
-            List<String> udcs = getUdcList();
-            if (udcs.isEmpty()) {
-                throw new UsbGadgetException("No UDC available for binding");
-            }
             var gadgetUdc = gadgetPath.resolve("UDC");
-            var selectedUdc = udcs.get(0);
+            var selectedUdc = config.udc;
 
             StringBuilder existingUdcs = new StringBuilder("echo unbinding");
 

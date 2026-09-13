@@ -27,6 +27,7 @@ import com.topjohnwu.superuser.Shell;
 import com.topjohnwu.superuser.ipc.RootService;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import ir.aeliux.usbtoolkit.databinding.ActivityMainBinding;
@@ -120,12 +121,82 @@ public class MainActivity extends BaseActivity {
             addMountFilesLauncher.launch(intent);
         });
 
-        binding.selUdc.setDropdownEntries(new String[]{"ss", "test"});
-
         LoadingDialog.updateMessage("Waiting for Root Service");
 
         Intent intent = new Intent(this, UsbMassStorageService.class);
         RootService.bind(intent, serviceConnection);
+    }
+
+    private void refresh() {
+        if (isBound) {
+            try {
+                rootService.isRunning(new IBooleanCallback.Stub() {
+                    @Override
+                    public void onResult(boolean result) throws RemoteException {
+                        runOnUiThread(() -> {
+                            isRunning = result;
+                            setEnabledRecursively(binding.secFiles.getContentContainer(), !result);
+                            binding.secFiles.getContentContainer().setAlpha(result ? 0.5f : 1);
+                            setEnabledRecursively(binding.secSettings.getContentContainer(), !result);
+                            binding.secSettings.getContentContainer().setAlpha(result ? 0.5f : 1);
+
+                            if (isRunning) {
+                                binding.doAction.setImageResource(R.drawable.ic_stop);
+                            } else {
+                                binding.doAction.setImageResource(R.drawable.ic_play_arrow);
+                            }
+                            binding.doAction.setVisibility(View.VISIBLE);
+                        });
+                    }
+                });
+                rootService.supportsConfigfs(new IBooleanCallback.Stub() {
+                    @Override
+                    public void onResult(boolean result) {
+                        if (result) return;
+                        runOnUiThread(() -> {
+                            showFatalError("ConfigFS either not supported or not mounted.");
+                        });
+                    }
+                });
+                rootService.getUdcList(new IUdcListCallback.Stub() {
+                    @Override
+                    public void onResult(List<String> result) {
+                        runOnUiThread(() -> {
+                            if (result.isEmpty()) {
+                                showFatalError("No UDC is found.");
+                                return;
+                            }
+                            var currentDropdownEntries = binding.selUdc.getDropdownEntries();
+                            if (contentsEqual(result, currentDropdownEntries != null ? Arrays.asList(currentDropdownEntries) : new ArrayList<>())) return;
+                            binding.selUdc.setDropdownEntries(result.toArray(new CharSequence[0]));
+                        });
+                    }
+                });
+            } catch (RemoteException e) {
+                showRootServiceConnectionLostError();
+            }
+        } else {
+            showRootRequiredError();
+        }
+
+        if (LoadingDialog.getDialogId() == DIALOG_INIT && LoadingDialog.isShowing()) {
+            LoadingDialog.dismiss();
+        }
+    }
+
+    public static boolean contentsEqual(List<? extends CharSequence> a,
+                                        List<? extends CharSequence> b) {
+        if (a.size() != b.size()) return false;
+        for (int i = 0; i < a.size(); i++) {
+            CharSequence x = a.get(i);
+            CharSequence y = b.get(i);
+            if (x == null || y == null) {
+                if (x != y) return false;
+            } else if (!x.toString().equals(y.toString())) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private void doUmount() {
@@ -157,6 +228,7 @@ public class MainActivity extends BaseActivity {
                     binding.schReadonly.isChecked(),
                     binding.schCdrom.isChecked(),
                     binding.schRemovable.isChecked(),
+                    (String) binding.selUdc.getSelectedItem(),
                     getUsbMassStorageCallback());
         } catch (RemoteException e) {
             showRootServiceConnectionLostError();
@@ -209,40 +281,6 @@ public class MainActivity extends BaseActivity {
         ViewGroup parent = (ViewGroup) view.getParent();
         parent.removeView(view);
         refresh();
-    }
-
-    private void refresh() {
-        if (isBound) {
-            try {
-                rootService.isRunning(new IBooleanCallback.Stub() {
-                    @Override
-                    public void onResult(boolean result) throws RemoteException {
-                        runOnUiThread(() -> {
-                            isRunning = result;
-                            setEnabledRecursively(binding.secFiles.getContentContainer(), !result);
-                            binding.secFiles.getContentContainer().setAlpha(result ? 0.5f : 1);
-                            setEnabledRecursively(binding.secSettings.getContentContainer(), !result);
-                            binding.secSettings.getContentContainer().setAlpha(result ? 0.5f : 1);
-
-                            if (isRunning) {
-                                binding.doAction.setImageResource(R.drawable.ic_stop);
-                            } else {
-                                binding.doAction.setImageResource(R.drawable.ic_play_arrow);
-                            }
-                            binding.doAction.setVisibility(View.VISIBLE);
-                        });
-                    }
-                });
-            } catch (RemoteException e) {
-                showRootServiceConnectionLostError();
-            }
-        } else {
-            showRootRequiredError();
-        }
-
-        if (LoadingDialog.getDialogId() == DIALOG_INIT && LoadingDialog.isShowing()) {
-            LoadingDialog.dismiss();
-        }
     }
 
     public static void setEnabledRecursively(View view, boolean enabled) {
