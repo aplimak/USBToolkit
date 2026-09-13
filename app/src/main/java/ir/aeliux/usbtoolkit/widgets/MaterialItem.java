@@ -18,7 +18,6 @@ import com.google.android.material.materialswitch.MaterialSwitch;
 import ir.aeliux.usbtoolkit.R;
 
 public class MaterialItem extends ConstraintLayout {
-
     public interface OnSettingChangeListener {
         void onCheckedChanged(boolean isChecked);
         void onClicked();
@@ -117,7 +116,7 @@ public class MaterialItem extends ConstraintLayout {
                 if (clickableAttr) {
                     textContainer.setClickable(true);
                     textContainer.setFocusable(true);
-                    applySelectableBackground(textContainer);
+                    applySelectableBackground(textContainer, true);
                 }
             }
 
@@ -134,7 +133,6 @@ public class MaterialItem extends ConstraintLayout {
             if (clickableAttr && !showChevron && !showDropdown) {
                 setClickable(true);
                 setFocusable(true);
-                applySelectableBackground(this);
                 setOnClickListener(v -> {
                     if (listener != null) listener.onClicked();
                 });
@@ -162,7 +160,17 @@ public class MaterialItem extends ConstraintLayout {
         });
     }
 
-    private void applySelectableBackground(View view) {
+    @Override
+    public void setClickable(boolean clickable) {
+        super.setClickable(clickable);
+        applySelectableBackground(this, clickable);
+    }
+
+    private void applySelectableBackground(View view, boolean enable) {
+        if (!enable) {
+            view.setBackgroundResource(0);
+            return;
+        }
         TypedValue outValue = new TypedValue();
         boolean resolved = getContext().getTheme().resolveAttribute(
                 android.R.attr.selectableItemBackground,
@@ -209,6 +217,9 @@ public class MaterialItem extends ConstraintLayout {
     }
 
     public void setTitle(CharSequence text) { title.setText(text); }
+    public CharSequence getText() {
+        return title.getText();
+    }
     public void setSubtitle(CharSequence text) {
         subtitle.setText(text);
         subtitle.setVisibility(text == null || text.length() == 0 ? View.GONE : View.VISIBLE);

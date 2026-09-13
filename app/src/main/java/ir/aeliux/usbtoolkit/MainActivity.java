@@ -12,6 +12,8 @@ import android.os.Looper;
 import android.os.RemoteException;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
@@ -33,6 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ir.aeliux.usbtoolkit.databinding.ActivityMainBinding;
+import ir.aeliux.usbtoolkit.widgets.MaterialItem;
 
 public class MainActivity extends BaseActivity {
     private final int DIALOG_INIT = 1;
@@ -58,6 +61,8 @@ public class MainActivity extends BaseActivity {
 
     private final Handler handler = new Handler(Looper.getMainLooper());
 
+    private boolean isRunning = false;
+
     private ActivityMainBinding binding;
     private final ActivityResultLauncher<Intent> addMountFilesLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
@@ -67,13 +72,15 @@ public class MainActivity extends BaseActivity {
                                     .getStringArrayListExtra(FilePickerActivity.EXTRA_SELECTED_PATHS);
                             if (paths == null) return;
 
-                            var container = binding.layoutSelectedFiles;
+                            var container = binding.secFiles;
 
                             for (String path : paths) {
-                                TextView tv = new TextView(this);
-                                tv.setText(path);
-                                tv.setPadding(16, 16, 16, 16);
-                                container.addView(tv);
+                                MaterialItem item = new MaterialItem(this);
+                                item.setTitle(path);
+                                item.setClickable(true);
+                                item.setFocusable(true);
+                                item.setOnClickListener(this::handleFileClick);
+                                container.addView(item);
                             }
 
                             refresh();
@@ -110,38 +117,11 @@ public class MainActivity extends BaseActivity {
 
         LoadingDialog.show(this, DIALOG_INIT, "Initializing");
 
-        binding.btnStart.setOnClickListener(v -> {
-            List<String> files = new ArrayList<>();
-            for (int i = 0; i < binding.layoutSelectedFiles.getChildCount(); i++) {
-                TextView tv = (TextView) binding.layoutSelectedFiles.getChildAt(i);
-                files.add(tv.getText().toString());
-            }
-
-            if (files.isEmpty()) {
-                Message.snack("At least one file required");
-                return;
-            }
-
-            LoadingDialog.show(this, DIALOG_MASS_STORAGE, "Processing");
-
-            try {
-                rootService.start(files,
-                        binding.schReadonly.isChecked(),
-                        binding.schCdrom.isChecked(),
-                        binding.schRemovable.isChecked(),
-                        getUsbMassStorageCallback());
-            } catch (RemoteException e) {
-                showRootRequiredError();
-            }
-        });
-
-        binding.btnStop.setOnClickListener(v -> {
-            LoadingDialog.show(this, DIALOG_MASS_STORAGE, "Processing");
-
-            try {
-                rootService.stop(getUsbMassStorageCallback());
-            } catch (RemoteException e) {
-                showRootRequiredError();
+        binding.doAction.setOnClickListener(v -> {
+            if (isRunning) {
+                doUmount();
+            } else {
+                doMount();
             }
         });
 
@@ -153,13 +133,43 @@ public class MainActivity extends BaseActivity {
             addMountFilesLauncher.launch(intent);
         });
 
-        binding.btnClearFiles.setOnClickListener(v -> {
-            binding.layoutSelectedFiles.removeAllViews();
-            refresh();
-        });
-
         Intent intent = new Intent(this, UsbMassStorageService.class);
         RootService.bind(intent, serviceConnection);
+    }
+
+    private void doUmount() {
+        LoadingDialog.show(this, DIALOG_MASS_STORAGE, "Processing");
+
+        try {
+            rootService.stop(getUsbMassStorageCallback());
+        } catch (RemoteException e) {
+            showRootRequiredError();
+        }
+    }
+
+    private void doMount() {
+        List<String> files = new ArrayList<>();
+        for (int i = 1; i < binding.secFiles.getContentContainer().getChildCount(); i++) {
+            MaterialItem item = (MaterialItem) binding.secFiles.getContentContainer().getChildAt(i);
+            files.add(item.getText().toString());
+        }
+
+        if (files.isEmpty()) {
+            Message.snack("At least one file required");
+            return;
+        }
+
+        LoadingDialog.show(this, DIALOG_MASS_STORAGE, "Processing");
+
+        try {
+            rootService.start(files,
+                    binding.schReadonly.isChecked(),
+                    binding.schCdrom.isChecked(),
+                    binding.schRemovable.isChecked(),
+                    getUsbMassStorageCallback());
+        } catch (RemoteException e) {
+            showRootRequiredError();
+        }
     }
 
     @NonNull
@@ -201,17 +211,25 @@ public class MainActivity extends BaseActivity {
         };
     }
 
-    private void refresh() {
-        binding.containerSelectedFiles.setVisibility(binding.layoutSelectedFiles.getChildCount() > 0 ? View.VISIBLE : View.GONE);
+    private void handleFileClick(View view) {
+        ViewGroup parent = (ViewGroup) view.getParent();
+        parent.removeView(view);
+        refresh();
+    }
 
+    private void refresh() {
         if (isBound) {
             try {
                 rootService.isRunning(new IBooleanCallback.Stub() {
                     @Override
                     public void onResult(boolean result) throws RemoteException {
                         runOnUiThread(() -> {
-                            binding.btnStart.setEnabled(!result);
-                            binding.btnStop.setEnabled(result);
+                            isRunning = result;
+                            if (isRunning) {
+                                binding.doAction.setImageResource(R.drawable.ic_stop);
+                            } else {
+                                binding.doAction.setImageResource(R.drawable.ic_play_arrow);
+                            }
                         });
                     }
                 });
