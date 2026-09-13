@@ -6,6 +6,7 @@ import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -93,6 +94,12 @@ public class MaterialItem extends ConstraintLayout {
             if (iconRes != 0) {
                 icon.setImageResource(iconRes);
                 icon.setVisibility(View.VISIBLE);
+            } else {
+                ViewGroup.MarginLayoutParams params =
+                        (ViewGroup.MarginLayoutParams) textContainer.getLayoutParams();
+
+                params.setMarginStart(0);
+                textContainer.setLayoutParams(params);
             }
 
             // Configure trailing elements
