@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout
+<androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -91,104 +91,48 @@
                     android:layout_height="wrap_content">
                 </LinearLayout>
             </ScrollView>
-            <com.google.android.material.materialswitch.MaterialSwitch
-                android:id="@+id/sch_readonly"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:minHeight="48dp"
-                android:layout_marginTop="@dimen/gap_large"
-                android:checked="true"
-                android:clickable="true"
-                android:focusable="true"
-                android:foreground="?attr/selectableItemBackground"
-                android:textSize="16sp"
-                android:text="@string/read_only"/>
-            <com.google.android.material.materialswitch.MaterialSwitch
-                android:id="@+id/sch_cdrom"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:minHeight="48dp"
-                android:layout_marginTop="@dimen/gap_medium"
-                android:checked="true"
-                android:clickable="true"
-                android:focusable="true"
-                android:foreground="?attr/selectableItemBackground"
-                android:textSize="16sp"
-                android:text="@string/cd_rom"/>
-            <com.google.android.material.materialswitch.MaterialSwitch
-                android:id="@+id/sch_removable"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:minHeight="48dp"
-                android:layout_marginTop="@dimen/gap_medium"
-                android:checked="true"
-                android:clickable="true"
-                android:focusable="true"
-                android:foreground="?attr/selectableItemBackground"
-                android:textSize="16sp"
-                android:text="@string/removable"/>
         </LinearLayout>
 
     </androidx.core.widget.NestedScrollView>
 
-    <com.google.android.material.card.MaterialCardView
+    <ir.aeliux.usbtoolkit.widgets.MaterialContainer
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="16dp"
-        android:layout_marginTop="@dimen/gap_large"
-        app:cardBackgroundColor="?attr/colorSurfaceContainer"
-        app:cardCornerRadius="28dp"
-        app:cardElevation="3dp"
-        app:strokeWidth="0dp">
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:headerText="Settings">
 
-        <LinearLayout
+        <ir.aeliux.usbtoolkit.widgets.MaterialItem
+            android:id="@+id/sch_readonly"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:divider="?attr/colorOutlineVariant"
-            android:showDividers="middle"
-            android:dividerPadding="@dimen/gap_xlarge"
-            android:paddingVertical="8dp">
+            app:itemTitle="Read-Only"
+            app:itemSubtitle="Mount files as immutable read only disks"
+            app:itemIcon="@drawable/ic_edit_off"
+            app:showSwitch="true"
+            app:isClickable="true"
+            app:isChecked="false" />
 
-            <!-- Toggle with subtitle -->
-            <ir.aeliux.usbtoolkit.widgets.MaterialItem
-                android:id="@+id/itemAutoSync"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:itemTitle="Auto sync"
-                app:itemSubtitle="Sync files automatically in background"
-                app:showSwitch="true"
-                app:isClickable="true"
-                app:isChecked="true" />
+        <ir.aeliux.usbtoolkit.widgets.MaterialItem
+            android:id="@+id/sch_cdrom"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:itemTitle="CD-ROM"
+            app:itemSubtitle="Mount files as CD-ROM disks"
+            app:itemIcon="@drawable/ic_album"
+            app:showSwitch="true"
+            app:isClickable="true"
+            app:isChecked="false" />
 
-            <!-- Clickable row (chevron only, no switch) -->
-            <ir.aeliux.usbtoolkit.widgets.MaterialItem
-                android:id="@+id/itemNotifications"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:itemTitle="Notifications"
-                app:itemSubtitle="Get alerts when files are updated"
-                app:isClickable="true"
-                app:showChevron="true" />
-
-            <!-- Toggle without subtitle -->
-            <ir.aeliux.usbtoolkit.widgets.MaterialItem
-                android:id="@+id/itemDarkMode"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:itemTitle="Dark theme"
-                app:showSwitch="true"
-                app:isChecked="false" />
-
-            <!-- Dropdown -->
-            <ir.aeliux.usbtoolkit.widgets.MaterialItem
-                android:id="@+id/itemTheme"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:itemTitle="App Theme"
-                app:showDropdown="true"
-                app:showChevron="true"/>
-
-        </LinearLayout>
-    </com.google.android.material.card.MaterialCardView>
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+        <ir.aeliux.usbtoolkit.widgets.MaterialItem
+            android:id="@+id/sch_removable"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:itemTitle="Removable"
+            app:itemSubtitle="Mount files as removable disks"
+            app:itemIcon="@drawable/ic_eject"
+            app:showSwitch="true"
+            app:isClickable="true"
+            app:isChecked="true" />
+    </ir.aeliux.usbtoolkit.widgets.MaterialContainer>
+</androidx.constraintlayout.widget.ConstraintLayout>
