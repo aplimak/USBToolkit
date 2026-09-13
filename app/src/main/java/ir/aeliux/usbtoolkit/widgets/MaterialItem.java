@@ -91,8 +91,8 @@ public class MaterialItem extends ConstraintLayout {
             // Configure trailing elements
             if (showSwitch) {
                 switchWidget.setVisibility(View.VISIBLE);
-                switchWidget.setClickable(!hasChevron);
-                switchWidget.setFocusable(!hasChevron);
+                switchWidget.setClickable(hasChevron);
+                switchWidget.setFocusable(hasChevron);
                 switchWidget.setChecked(checked);
                 switchWidget.setDuplicateParentStateEnabled(hasChevron);
                 switchWidget.setOnCheckedChangeListener((btn, isChecked) -> {
@@ -196,8 +196,8 @@ public class MaterialItem extends ConstraintLayout {
         // Set initial value
         dropdownValue.setText(dropdownEntries[0]);
 
-        dropdownValue.setClickable(!hasChevron);
-        dropdownValue.setFocusable(!hasChevron);
+        dropdownValue.setClickable(hasChevron);
+        dropdownValue.setFocusable(hasChevron);
         dropdownValue.setDuplicateParentStateEnabled(hasChevron);
         if (!hasChevron) {
             dropdownValue.setBackground(null);
