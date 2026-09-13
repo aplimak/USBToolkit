@@ -10,24 +10,19 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.RemoteException;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.topjohnwu.superuser.Shell;
 import com.topjohnwu.superuser.ipc.RootService;
 
@@ -133,6 +128,8 @@ public class MainActivity extends BaseActivity {
             addMountFilesLauncher.launch(intent);
         });
 
+        LoadingDialog.updateMessage("Waiting for Root Service");
+
         Intent intent = new Intent(this, UsbMassStorageService.class);
         RootService.bind(intent, serviceConnection);
     }
@@ -143,7 +140,7 @@ public class MainActivity extends BaseActivity {
         try {
             rootService.stop(getUsbMassStorageCallback());
         } catch (RemoteException e) {
-            showRootRequiredError();
+            showRootServiceConnectionLostError();
         }
     }
 
@@ -168,7 +165,7 @@ public class MainActivity extends BaseActivity {
                     binding.schRemovable.isChecked(),
                     getUsbMassStorageCallback());
         } catch (RemoteException e) {
-            showRootRequiredError();
+            showRootServiceConnectionLostError();
         }
     }
 
@@ -238,11 +235,12 @@ public class MainActivity extends BaseActivity {
                             } else {
                                 binding.doAction.setImageResource(R.drawable.ic_play_arrow);
                             }
+                            binding.doAction.setVisibility(View.VISIBLE);
                         });
                     }
                 });
             } catch (RemoteException e) {
-                showRootRequiredError();
+                showRootServiceConnectionLostError();
             }
         } else {
             showRootRequiredError();
@@ -263,10 +261,18 @@ public class MainActivity extends BaseActivity {
         }
     }
 
+    private void showRootServiceConnectionLostError() {
+        showFatalError("Connection to the root service is lost, you must restart the app.");
+    }
+
     private void showRootRequiredError() {
+        showFatalError("This app needs root access to work.");
+    }
+
+    private void showFatalError(String text) {
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
         builder.setTitle("Error");
-        builder.setMessage("This app needs root access to work.");
+        builder.setMessage(text);
         builder.setCancelable(false);
 
         builder.setNegativeButton("Exit", (dialog, which) -> {

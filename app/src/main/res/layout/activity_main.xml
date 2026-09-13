@@ -15,6 +15,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         android:src="@drawable/ic_play_arrow"
+        android:visibility="gone"
         android:layout_margin="@dimen/gap_xlarge" />
 
     <ir.aeliux.usbtoolkit.widgets.MaterialContainer
