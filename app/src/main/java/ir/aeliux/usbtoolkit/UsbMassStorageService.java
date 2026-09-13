@@ -19,22 +19,9 @@ public class UsbMassStorageService extends RootService {
     private final String TAG = "UsbMassStorageService";
     private final IUsbMassStorageService.Stub binder = new IUsbMassStorageService.Stub() {
         @Override
-        public void start(List<String> files,
-                          boolean readOnly,
-                          boolean cdrom,
-                          boolean removable,
-                          String udc,
+        public void start(MassStorageConfig config,
                           IUsbMassStorageCallback callback) {
             Log.d(TAG, "binder.Start");
-            MassStorageConfig.Builder builder = new MassStorageConfig.Builder();
-            for (String path : files) {
-                builder.addImage(path);
-            }
-            MassStorageConfig config = builder.setCdrom(cdrom)
-                                                                    .setReadOnly(readOnly)
-                                                                    .setRemovable(removable)
-                                                                    .setUdc(udc)
-                                                                    .build();
 
             try {
                 UsbMassStorageManager.setupMassStorage(config, getCallback(callback));

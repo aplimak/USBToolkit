@@ -1,4 +1,4 @@
 // LunState.aidl
-package ir.aeliux.usbtoolkit;
+package ir.aeliux.usbtoolkit.data;
 
 parcelable LunState;

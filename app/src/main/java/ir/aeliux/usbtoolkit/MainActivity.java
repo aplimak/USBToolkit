@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import ir.aeliux.usbtoolkit.data.MassStorageConfig;
 import ir.aeliux.usbtoolkit.databinding.ActivityMainBinding;
 import ir.aeliux.usbtoolkit.widgets.MaterialItem;
 
@@ -210,26 +211,29 @@ public class MainActivity extends BaseActivity {
     }
 
     private void doMount() {
-        List<String> files = new ArrayList<>();
+        MassStorageConfig.Builder builder = new MassStorageConfig.Builder();
+        boolean hasFiles = false;
         for (int i = 1; i < binding.secFiles.getContentContainer().getChildCount(); i++) {
             MaterialItem item = (MaterialItem) binding.secFiles.getContentContainer().getChildAt(i);
-            files.add(item.getText().toString());
+            builder.addImage(item.getText().toString());
+            hasFiles = true;
         }
 
-        if (files.isEmpty()) {
+        if (!hasFiles) {
             Message.snack("At least one file required");
             return;
         }
 
+        MassStorageConfig config = builder.setReadOnly(binding.schReadonly.isChecked())
+                                    .setCdrom(binding.schCdrom.isChecked())
+                                    .setRemovable(binding.schRemovable.isChecked())
+                                    .setUdc((String) binding.selUdc.getSelectedItem())
+                                    .build();
+
         LoadingDialog.show(this, DIALOG_MASS_STORAGE, "Processing");
 
         try {
-            rootService.start(files,
-                    binding.schReadonly.isChecked(),
-                    binding.schCdrom.isChecked(),
-                    binding.schRemovable.isChecked(),
-                    (String) binding.selUdc.getSelectedItem(),
-                    getUsbMassStorageCallback());
+            rootService.start(config, getUsbMassStorageCallback());
         } catch (RemoteException e) {
             showRootServiceConnectionLostError();
         }
