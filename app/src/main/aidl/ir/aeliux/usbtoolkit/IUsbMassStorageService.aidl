@@ -4,6 +4,9 @@ package ir.aeliux.usbtoolkit;
 import ir.aeliux.usbtoolkit.IUsbMassStorageCallback;
 import ir.aeliux.usbtoolkit.IBooleanCallback;
 import ir.aeliux.usbtoolkit.IUdcListCallback;
+import ir.aeliux.usbtoolkit.LunState;
+import ir.aeliux.usbtoolkit.GadgetState;
+import ir.aeliux.usbtoolkit.MassStorageConfig;
 
 oneway interface IUsbMassStorageService {
     void start(in List<String> files,

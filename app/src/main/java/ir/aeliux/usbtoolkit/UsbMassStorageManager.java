@@ -19,6 +19,10 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import ir.aeliux.usbtoolkit.data.GadgetState;
+import ir.aeliux.usbtoolkit.data.LunState;
+import ir.aeliux.usbtoolkit.data.MassStorageConfig;
+
 /**
  * Manages a USB Mass Storage gadget on Android via configfs.
  * <p>
@@ -85,136 +89,6 @@ public class UsbMassStorageManager {
             Log.e(TAG, msg, new SecurityException("caller trace"));
 
             throw new SecurityException(msg);
-        }
-    }
-
-    // ------------------------------------------------------------------------
-    // Configuration Object
-    // ------------------------------------------------------------------------
-
-    /**
-     * Immutable configuration for a mass storage gadget setup.
-     * Use the {@link Builder} to create an instance.
-     */
-    public static class MassStorageConfig {
-        public final List<Path> imagePaths;
-        public final boolean cdrom;
-        public final boolean readOnly;
-        public final boolean removable;
-        public final String udc;
-
-        private MassStorageConfig(Builder builder) {
-            this.imagePaths = Collections.unmodifiableList(new ArrayList<>(builder.imagePaths));
-            this.cdrom = builder.cdrom;
-            this.readOnly = builder.readOnly;
-            this.removable = builder.removable;
-            this.udc = builder.udc;
-        }
-
-        public static class Builder {
-            private final List<Path> imagePaths = new ArrayList<>();
-            private boolean cdrom = false;
-            private boolean readOnly = false;
-            private boolean removable = true;
-            private String udc;
-
-            /**
-             * Adds an image file (will be resolved to an absolute path during setup).
-             */
-            public Builder addImage(String image) {
-                return addImage(new File(image).toPath());
-            }
-
-            /**
-             * Adds an image file (will be resolved to an absolute path during setup).
-             */
-            public Builder addImage(Path image) {
-                imagePaths.add(Objects.requireNonNull(image, "image path cannot be null"));
-                return this;
-            }
-
-            public Builder setCdrom(boolean cdrom) {
-                this.cdrom = cdrom;
-                return this;
-            }
-
-            public Builder setReadOnly(boolean readOnly) {
-                this.readOnly = readOnly;
-                return this;
-            }
-
-            public Builder setRemovable(boolean removable) {
-                this.removable = removable;
-                return this;
-            }
-
-            public Builder setUdc(String udc) {
-                this.udc = udc;
-                return this;
-            }
-
-            public MassStorageConfig build() {
-                if (imagePaths.isEmpty()) {
-                    throw new IllegalArgumentException("At least one image path is required");
-                }
-                if (udc == null) {
-                    throw new IllegalArgumentException("UDC is not set");
-                }
-                return new MassStorageConfig(this);
-            }
-        }
-    }
-
-    // ------------------------------------------------------------------------
-    // Data Classes for State Information
-    // ------------------------------------------------------------------------
-
-    /**
-     * Represents a snapshot of a gadget's state inside configfs.
-     */
-    public static class GadgetState {
-        public final Path gadgetPath;
-        public final boolean bound;
-        public final String boundUdc;
-        public final int vendorId;
-        public final int productId;
-        public final String manufacturer;
-        public final String product;
-        public final String serialNumber;
-        public final Map<String, LunState> luns;
-
-        GadgetState(Path gadgetPath, boolean bound, String boundUdc,
-                    int vendorId, int productId, String manufacturer,
-                    String product, String serialNumber,
-                    Map<String, LunState> luns) {
-            this.gadgetPath = gadgetPath;
-            this.bound = bound;
-            this.boundUdc = boundUdc;
-            this.vendorId = vendorId;
-            this.productId = productId;
-            this.manufacturer = manufacturer;
-            this.product = product;
-            this.serialNumber = serialNumber;
-            this.luns = Collections.unmodifiableMap(luns);
-        }
-    }
-
-    /**
-     * Represents the state of a single LUN (Logical Unit Number).
-     */
-    public static class LunState {
-        public final int lunNumber;
-        public final Path file;
-        public final boolean cdrom;
-        public final boolean readOnly;
-        public final boolean removable;
-
-        LunState(int lunNumber, Path file, boolean cdrom, boolean readOnly, boolean removable) {
-            this.lunNumber = lunNumber;
-            this.file = file;
-            this.cdrom = cdrom;
-            this.readOnly = readOnly;
-            this.removable = removable;
         }
     }
 

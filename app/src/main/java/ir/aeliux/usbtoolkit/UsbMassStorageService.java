@@ -13,6 +13,8 @@ import com.topjohnwu.superuser.ipc.RootService;
 import java.nio.file.Path;
 import java.util.List;
 
+import ir.aeliux.usbtoolkit.data.MassStorageConfig;
+
 public class UsbMassStorageService extends RootService {
     private final String TAG = "UsbMassStorageService";
     private final IUsbMassStorageService.Stub binder = new IUsbMassStorageService.Stub() {
@@ -24,11 +26,11 @@ public class UsbMassStorageService extends RootService {
                           String udc,
                           IUsbMassStorageCallback callback) {
             Log.d(TAG, "binder.Start");
-            UsbMassStorageManager.MassStorageConfig.Builder builder = new UsbMassStorageManager.MassStorageConfig.Builder();
+            MassStorageConfig.Builder builder = new MassStorageConfig.Builder();
             for (String path : files) {
                 builder.addImage(path);
             }
-            UsbMassStorageManager.MassStorageConfig config = builder.setCdrom(cdrom)
+            MassStorageConfig config = builder.setCdrom(cdrom)
                                                                     .setReadOnly(readOnly)
                                                                     .setRemovable(removable)
                                                                     .setUdc(udc)
