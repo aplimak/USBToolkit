@@ -32,7 +32,7 @@ public class MaterialItem extends ConstraintLayout {
     private LinearLayout trailingContainer;
 
     private OnSettingChangeListener listener;
-    private boolean isDropdown = false;
+    private boolean hasChevron = false;
     private CharSequence[] dropdownEntries;
 
     // --- Constructors ---
@@ -75,15 +75,11 @@ public class MaterialItem extends ConstraintLayout {
             int iconRes = a.getResourceId(R.styleable.MaterialItem_itemIcon, 0);
 
             boolean showSwitch = a.getBoolean(R.styleable.MaterialItem_showSwitch, false);
-            boolean showChevron = a.getBoolean(R.styleable.MaterialItem_showChevron, false);
             boolean showDropdown = a.getBoolean(R.styleable.MaterialItem_showDropdown, false);
+            hasChevron = (showSwitch || showDropdown) && a.getBoolean(R.styleable.MaterialItem_showChevron, false);
             boolean clickableAttr = a.getBoolean(R.styleable.MaterialItem_isClickable, true);
-            boolean checked = a.getBoolean(R.styleable.MaterialItem_isChecked, false);
-            int dropdownEntriesRes = a.getResourceId(R.styleable.MaterialItem_dropdownEntries, 0);
-
-            if (showChevron && !(showSwitch || showDropdown)) {
-                showChevron = false; // No point on it
-            }
+            boolean checked = showSwitch &&  a.getBoolean(R.styleable.MaterialItem_isChecked, false);
+            int dropdownEntriesRes = showDropdown ? a.getResourceId(R.styleable.MaterialItem_dropdownEntries, 0) : 0;
 
             if (t != null) title.setText(t);
             if (s != null) {
@@ -104,25 +100,19 @@ public class MaterialItem extends ConstraintLayout {
             // Configure trailing elements
             if (showSwitch) {
                 switchWidget.setVisibility(View.VISIBLE);
+                switchWidget.setClickable(!hasChevron);
+                switchWidget.setFocusable(!hasChevron);
                 switchWidget.setChecked(checked);
+                switchWidget.setDuplicateParentStateEnabled(hasChevron);
                 switchWidget.setOnCheckedChangeListener((btn, isChecked) -> {
                     if (listener != null) listener.onCheckedChanged(isChecked);
                 });
-            }
-
-            if (showChevron) {
-                chevron.setVisibility(View.VISIBLE);
-                divider.setVisibility(View.VISIBLE);
-                if (clickableAttr) {
-                    textContainer.setClickable(true);
-                    textContainer.setFocusable(true);
-                    applySelectableBackground(textContainer, true);
+                if (!hasChevron) {
+                    switchWidget.setBackground(null);
                 }
             }
 
             if (showDropdown) {
-                this.isDropdown = true;
-                dropdownValue.setVisibility(View.VISIBLE);
                 if (dropdownEntriesRes != 0) {
                     dropdownEntries = context.getResources().getTextArray(dropdownEntriesRes);
                 }
@@ -130,12 +120,9 @@ public class MaterialItem extends ConstraintLayout {
             }
 
             // Full-row clickable
-            if (clickableAttr && !showChevron && !showDropdown) {
+            if (clickableAttr) {
                 setClickable(true);
                 setFocusable(true);
-                setOnClickListener(v -> {
-                    if (listener != null) listener.onClicked();
-                });
             }
 
             a.recycle();
@@ -152,9 +139,18 @@ public class MaterialItem extends ConstraintLayout {
         });
 
         setOnClickListener(v -> {
-            if (switchWidget.getVisibility() == View.VISIBLE) {
-                switchWidget.setChecked(!switchWidget.isChecked());
-            } else if (!isDropdown && listener != null) {
+            boolean setClicked = false;
+            if (hasChevron) {
+                setClicked = true;
+            } else if (switchWidget.getVisibility() == View.VISIBLE) {
+                switchWidget.performClick();
+            } else if (dropdownValue.getVisibility() == View.VISIBLE) {
+                dropdownValue.performClick();
+            } else {
+                setClicked = true;
+            }
+
+            if (setClicked && listener != null) {
                 listener.onClicked();
             }
         });
@@ -187,10 +183,16 @@ public class MaterialItem extends ConstraintLayout {
 
         // Set initial value
         dropdownValue.setText(dropdownEntries[0]);
-        setClickable(true);
-        setFocusable(true);
 
-        setOnClickListener(v -> {
+        dropdownValue.setVisibility(View.VISIBLE);
+        dropdownValue.setClickable(!hasChevron);
+        dropdownValue.setFocusable(!hasChevron);
+        dropdownValue.setDuplicateParentStateEnabled(hasChevron);
+        if (!hasChevron) {
+            dropdownValue.setBackground(null);
+        }
+
+        dropdownValue.setOnClickListener(v -> {
             new androidx.appcompat.app.AlertDialog.Builder(getContext())
                     .setTitle(title.getText())
                     .setItems(dropdownEntries, (dialog, which) -> {
