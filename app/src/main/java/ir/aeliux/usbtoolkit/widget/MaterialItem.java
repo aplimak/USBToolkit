@@ -58,7 +58,7 @@ public class MaterialItem extends ConstraintLayout {
         setPadding(dpToPx(24), dpToPx(12), dpToPx(24), dpToPx(12));
         setMinimumHeight(dpToPx(72));
 
-        // --- Read custom attributes ---
+        // NOTE: This part wont be executed on runtime created widgets
         if (attrs != null) {
             TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.MaterialItem);
 
@@ -81,12 +81,6 @@ public class MaterialItem extends ConstraintLayout {
             if (iconRes != 0) {
                 icon.setImageResource(iconRes);
                 icon.setVisibility(View.VISIBLE);
-            } else {
-                ViewGroup.MarginLayoutParams params =
-                        (ViewGroup.MarginLayoutParams) textContainer.getLayoutParams();
-
-                params.setMarginStart(0);
-                textContainer.setLayoutParams(params);
             }
 
             // Configure trailing elements
@@ -142,10 +136,12 @@ public class MaterialItem extends ConstraintLayout {
 
         // Adjust text container start margin if icon is hidden
         post(() -> {
-            ConstraintLayout.LayoutParams params = (ConstraintLayout.LayoutParams) textContainer.getLayoutParams();
+            var params = textContainer.getLayoutParams();
+
             if (icon.getVisibility() == View.GONE) {
-                params.startToEnd = ConstraintLayout.LayoutParams.UNSET;
-                params.startToStart = ConstraintLayout.LayoutParams.PARENT_ID;
+                ((ViewGroup.MarginLayoutParams)params).setMarginStart(0);
+                ((ConstraintLayout.LayoutParams)params).startToEnd = ConstraintLayout.LayoutParams.UNSET;
+                ((ConstraintLayout.LayoutParams)params).startToStart = ConstraintLayout.LayoutParams.PARENT_ID;
                 textContainer.setLayoutParams(params);
             }
         });
