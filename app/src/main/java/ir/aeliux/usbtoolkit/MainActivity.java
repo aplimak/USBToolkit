@@ -63,8 +63,6 @@ public class MainActivity extends BaseActivity {
         }
     };
 
-    private final Handler handler = new Handler(Looper.getMainLooper());
-
     private boolean isRunning = false;
 
     private ActivityMainBinding binding;
@@ -97,14 +95,9 @@ public class MainActivity extends BaseActivity {
         EdgeToEdge.enable(this);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        
         setupToolbar(binding.toolbar);
-
-        ViewCompat.setOnApplyWindowInsetsListener(binding.main, (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-
-            return insets;
-        });
+        applyWindowInsets(binding.main);
 
         if (Shell.cmd("ls /data/adb").exec().getCode() > 0) {
             showRootRequiredError();

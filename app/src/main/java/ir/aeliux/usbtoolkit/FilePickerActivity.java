@@ -77,14 +77,9 @@ public class FilePickerActivity extends BaseActivity {
         EdgeToEdge.enable(this);
         binding = ActivityFilePickerBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
         setupToolbar(binding.toolbar);
-
-        ViewCompat.setOnApplyWindowInsetsListener(binding.main, (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-
-            return insets;
-        });
+        applyWindowInsets(binding.main);
 
         allowMultiple = getIntent().getBooleanExtra(EXTRA_ALLOW_MULTIPLE, true);
 
@@ -99,26 +94,9 @@ public class FilePickerActivity extends BaseActivity {
         String start = getIntent().getStringExtra(EXTRA_START_PATH);
         if (start != null) currentPath = start;
 
-        setupToolbar();
         setupRecyclerView();
         setupButtons();
         bindRootService();
-    }
-
-    private void setupToolbar() {
-        binding.actionConfirm.setOnClickListener(v -> {
-            if (selectedPaths.isEmpty()) {
-                Message.snack("At least one item is required");
-                return;
-            }
-            Intent result = new Intent();
-            result.putStringArrayListExtra(
-                    EXTRA_SELECTED_PATHS,
-                    new ArrayList<>(selectedPaths)
-            );
-            setResult(Activity.RESULT_OK, result);
-            finish();
-        });
     }
 
     private void setupRecyclerView() {
@@ -150,6 +128,20 @@ public class FilePickerActivity extends BaseActivity {
     }
 
     private void setupButtons() {
+        binding.actionConfirm.setOnClickListener(v -> {
+            if (selectedPaths.isEmpty()) {
+                Message.snack("At least one item is required");
+                return;
+            }
+            Intent result = new Intent();
+            result.putStringArrayListExtra(
+                    EXTRA_SELECTED_PATHS,
+                    new ArrayList<>(selectedPaths)
+            );
+            setResult(Activity.RESULT_OK, result);
+            finish();
+        });
+
         binding.btnUp.setOnClickListener(v -> {
             File parent = new File(currentPath).getParentFile();
             if (parent != null) {
