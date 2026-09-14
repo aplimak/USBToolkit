@@ -1,7 +1,6 @@
-package ir.aeliux.usbtoolkit;
+package ir.aeliux.usbtoolkit.util;
 
 import android.annotation.SuppressLint;
-import android.os.Build;
 import android.util.Log;
 
 import java.io.BufferedReader;
@@ -14,7 +13,6 @@ import java.io.Reader;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -732,5 +730,18 @@ public class UsbMassStorageManager {
             e.printStackTrace();
         }
         return value;
+    }
+
+    /**
+     * Thrown when any operation on the USB gadget fails.
+     */
+    public static class UsbGadgetException extends Exception {
+        public UsbGadgetException(String message) {
+            super(message);
+        }
+
+        public UsbGadgetException(String message, Throwable cause) {
+            super(message, cause);
+        }
     }
 }

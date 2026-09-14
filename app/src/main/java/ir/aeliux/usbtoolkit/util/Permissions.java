@@ -1,4 +1,4 @@
-package ir.aeliux.usbtoolkit;
+package ir.aeliux.usbtoolkit.util;
 
 import android.app.Activity;
 import android.content.pm.PackageManager;

@@ -1,4 +1,4 @@
-package ir.aeliux.usbtoolkit;
+package ir.aeliux.usbtoolkit.util;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,6 +19,7 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 
+import ir.aeliux.usbtoolkit.R;
 import ir.aeliux.usbtoolkit.data.FileEntry;
 
 public class FileEntryAdapter extends ListAdapter<FileEntry, FileEntryAdapter.ViewHolder> {

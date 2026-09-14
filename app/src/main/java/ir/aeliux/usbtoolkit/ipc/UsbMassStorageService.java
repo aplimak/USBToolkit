@@ -12,9 +12,8 @@ import com.topjohnwu.superuser.ipc.RootService;
 
 import java.nio.file.Path;
 
-import ir.aeliux.usbtoolkit.IUsbMassStorageService;
-import ir.aeliux.usbtoolkit.UsbGadgetException;
-import ir.aeliux.usbtoolkit.UsbMassStorageManager;
+import ir.aeliux.usbtoolkit.util.UsbMassStorageManager;
+import ir.aeliux.usbtoolkit.util.UsbMassStorageManager.UsbGadgetException;
 import ir.aeliux.usbtoolkit.callback.IBooleanCallback;
 import ir.aeliux.usbtoolkit.callback.IGadgetStateCallback;
 import ir.aeliux.usbtoolkit.callback.IStringListCallback;

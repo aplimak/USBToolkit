@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-import ir.aeliux.usbtoolkit.IRootFileService;
 import ir.aeliux.usbtoolkit.callback.IRootFileCallback;
 import ir.aeliux.usbtoolkit.callback.IRootFileExistCallback;
 import ir.aeliux.usbtoolkit.data.FileEntry;

@@ -1,5 +1,5 @@
 // IRootFileService.aidl
-package ir.aeliux.usbtoolkit;
+package ir.aeliux.usbtoolkit.ipc;
 
 import ir.aeliux.usbtoolkit.callback.IRootFileCallback;
 import ir.aeliux.usbtoolkit.callback.IRootFileExistCallback;

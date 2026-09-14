@@ -1,5 +1,5 @@
 // IUsbMassStorageService.aidl
-package ir.aeliux.usbtoolkit;
+package ir.aeliux.usbtoolkit.ipc;
 
 import ir.aeliux.usbtoolkit.callback.IUsbMassStorageCallback;
 import ir.aeliux.usbtoolkit.callback.IBooleanCallback;

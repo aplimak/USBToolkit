@@ -1,22 +1,19 @@
-package ir.aeliux.usbtoolkit;
+package ir.aeliux.usbtoolkit.util;
 
 import android.app.Activity;
 import android.app.Application;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.Window;
 import android.widget.TextView;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.lang.ref.WeakReference;
+
+import ir.aeliux.usbtoolkit.R;
 
 public final class LoadingDialog {
 

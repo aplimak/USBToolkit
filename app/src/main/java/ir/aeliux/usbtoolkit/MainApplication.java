@@ -8,6 +8,9 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.PrintWriter;
 
+import ir.aeliux.usbtoolkit.util.App;
+import ir.aeliux.usbtoolkit.util.LoadingDialog;
+
 public class MainApplication extends Application {
     @Override
     public void onCreate() {
