@@ -207,6 +207,9 @@ public class MainActivity extends BaseActivity {
                     for (GadgetState gadget : result) {
                         MaterialItem item = new MaterialItem(MainActivity.this);
                         item.setTitle(gadget.name);
+                        if (gadget.bound) {
+                            item.setSubtitle("Bound");
+                        }
                         item.setIconResource(R.drawable.ic_gadget);
                         item.setOnClickListener((v) -> {
                             Intent intent = GadgetDetailsActivity.intent(MainActivity.this, gadget);

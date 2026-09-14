@@ -5,11 +5,13 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.LinearLayout;
 
 import androidx.activity.EdgeToEdge;
 
 import ir.aeliux.usbtoolkit.data.GadgetState;
 import ir.aeliux.usbtoolkit.databinding.ActivityGadgetDetailsBinding;
+import ir.aeliux.usbtoolkit.util.DataConversion;
 import ir.aeliux.usbtoolkit.util.Message;
 
 public class GadgetDetailsActivity extends BaseActivity {
@@ -44,5 +46,20 @@ public class GadgetDetailsActivity extends BaseActivity {
             finish();
             return;
         }
+
+        refresh();
+    }
+
+    private void refresh() {
+        binding.toolbar.setSubtitle(gadget.name);
+
+        binding.infoBound.setSubtitle(gadget.bound ? "Bound" : "Not Bound");
+        binding.infoBoundUdc.setSubtitle(gadget.bound ? gadget.boundUdc : null);
+
+        binding.infoVendorId.setSubtitle(DataConversion.intToString(gadget.vendorId, 16));
+        binding.infoProductId.setSubtitle(DataConversion.intToString(gadget.productId, 16));
+        binding.infoManufacturer.setSubtitle(gadget.manufacturer);
+        binding.infoProduct.setSubtitle(gadget.product);
+        binding.infoSerialNumber.setSubtitle(gadget.serialNumber);
     }
 }

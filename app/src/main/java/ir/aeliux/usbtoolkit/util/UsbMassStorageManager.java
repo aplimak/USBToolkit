@@ -612,11 +612,8 @@ public class UsbMassStorageManager {
      */
     private static int readConfigfsInt(Path path, int radix) throws UsbGadgetException {
         String str = readConfigfsString(path);
-        if (radix == 16 && (str.startsWith("0x") || str.startsWith("0X"))) {
-            str = str.substring(2);
-        }
         try {
-            return Integer.parseInt(str, radix);
+            return DataConversion.stringToInt(str, radix);
         } catch (NumberFormatException e) {
             throw new UsbGadgetException("Invalid integer at " + path + ": " + str, e);
         }
@@ -637,7 +634,7 @@ public class UsbMassStorageManager {
      * Writes an integer to a configfs file in the given radix (e.g., 16 for hex).
      */
     private static void writeConfigfsInt(Path path, int value, int radix) throws UsbGadgetException {
-        writeConfigfsString(path,(radix == 16 ? "0x" : "") + Integer.toString(value, radix));
+        writeConfigfsString(path,DataConversion.intToString(value, radix));
     }
 
     /**
