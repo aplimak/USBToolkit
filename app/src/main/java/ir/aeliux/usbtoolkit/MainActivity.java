@@ -183,7 +183,7 @@ public class MainActivity extends BaseActivity {
                     }
                     CharSequence[] currentDropdownEntries = null;
                     try {
-                        binding.selUdc.getDropdownEntries();
+                        currentDropdownEntries = binding.selUdc.getDropdownEntries();
                     } catch (IllegalStateException ignored) {}
                     if (contentsEqual(result, currentDropdownEntries != null ? Arrays.asList(currentDropdownEntries) : new ArrayList<>())) return;
                     binding.selUdc.setDropdownEntries(result.toArray(new CharSequence[0]));

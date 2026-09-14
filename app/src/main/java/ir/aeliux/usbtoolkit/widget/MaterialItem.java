@@ -7,7 +7,6 @@ import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -76,13 +75,13 @@ public class MaterialItem extends ConstraintLayout {
             setSubtitle(s);
             setIconResource(iconRes);
 
-            setMasterListener(attachMasterListener);
-            setHasSwitchValue(showSwitch);
+            setAttachMasterListener(attachMasterListener);
+            setShowSwitch(showSwitch);
             if (hasSwitch) {
                 setCheckedInternal(checked);
             }
             setDropdownEntries(dropdownEntriesRes != 0 ? context.getResources().getTextArray(dropdownEntriesRes) : null);
-            setChevronValue(a.getBoolean(R.styleable.MaterialItem_showChevron, false));
+            setShowChevron(a.getBoolean(R.styleable.MaterialItem_showChevron, false));
 
             a.recycle();
         }
@@ -93,7 +92,7 @@ public class MaterialItem extends ConstraintLayout {
 
     private void refreshElements() {
         if (initializing) return;
-        var chevronValue = getChevronValue();
+        boolean chevronValue = getChevronValue();
         boolean hasIcon = icon.getVisibility() != View.GONE;
         var textContainerLayoutParams = textContainer.getLayoutParams();
 
@@ -102,14 +101,7 @@ public class MaterialItem extends ConstraintLayout {
         ((LayoutParams)textContainerLayoutParams).startToStart = hasIcon ? LayoutParams.UNSET : LayoutParams.PARENT_ID;
         textContainer.setLayoutParams(textContainerLayoutParams);
 
-        if (hasDropdown) {
-            if (!masterListenerEnabled) {
-                throw new IllegalStateException("Dropdown requires attachMasterListener to handle clicks");
-            }
-            if (hasSwitch && !chevronValue) {
-                throw new IllegalStateException("Can't have dropdown and switch at the same time, either disable one or enable chevron to handle both.");
-            }
-        }
+        dropdownSanityCheck();
 
         chevron.setVisibility(chevronValue ? View.VISIBLE : View.GONE);
         divider.setVisibility(chevronValue ? View.VISIBLE : View.GONE);
@@ -117,9 +109,15 @@ public class MaterialItem extends ConstraintLayout {
         refreshSwitch();
     }
 
-    private void setHasSwitchValue(boolean enable) {
-        hasSwitch = enable;
-        post(this::refreshElements);
+    private void dropdownSanityCheck() {
+        if (!hasDropdown) return;
+        boolean chevronValue = getChevronValue();
+        if (!masterListenerEnabled) {
+            throw new IllegalStateException("Dropdown requires attachMasterListener to handle clicks");
+        }
+        if (hasSwitch && !chevronValue) {
+            throw new IllegalStateException("Can't have dropdown and switch at the same time, either disable one or enable chevron to handle both.");
+        }
     }
 
     private void refreshSwitch() {
@@ -141,28 +139,6 @@ public class MaterialItem extends ConstraintLayout {
 
     private boolean getChevronValue() {
         return hasChevron && masterListenerEnabled && hasSwitch;
-    }
-
-    private void setChevronValue(boolean value) {
-        hasChevron = value;
-        post(this::refreshElements);
-    }
-
-    private void setMasterListener(boolean enable) {
-        if (masterListenerEnabled == enable) return;
-        // Old status, if enabled, do not touch it as it will register master listener as normal listener
-        if (!masterListenerEnabled) {
-            attachMasterListener();
-        }
-
-        masterListenerEnabled = enable;
-
-        // No need for listener detaching as it has check guards and acts as no-op
-
-        setClickable(masterListenerEnabled);
-        setFocusable(masterListenerEnabled);
-
-        post(this::refreshElements);
     }
 
     private void attachMasterListener() {
@@ -250,7 +226,7 @@ public class MaterialItem extends ConstraintLayout {
     }
 
     private void requiresSwitch() {
-        if (switchWidget.getVisibility() != View.VISIBLE) {
+        if (!hasSwitch) {
             throw new IllegalStateException("This item has no switch");
         }
     }
@@ -284,12 +260,19 @@ public class MaterialItem extends ConstraintLayout {
     }
 
     public void setDropdownEntries(CharSequence[] entries) {
-        hasDropdown = entries != null && entries.length > 0;
+        boolean enable = entries != null && entries.length > 0;
+        if (!hasDropdown && !enable) return;
+        hasDropdown = enable;
+        try {
+            dropdownSanityCheck();
+        } catch (Throwable e) {
+            hasDropdown = false;
+            throw e;
+        }
         this.dropdownEntries = entries;
+        post(this::refreshElements);
         if (!hasDropdown) return;
         setSelectedItemInternal(0, true);
-
-        post(this::refreshElements);
     }
     public CharSequence[] getDropdownEntries() {
         requiresDropdown();
@@ -317,5 +300,34 @@ public class MaterialItem extends ConstraintLayout {
 
     private int dpToPx(int dp) {
         return (int) (dp * getResources().getDisplayMetrics().density);
+    }
+
+    public void setShowSwitch(boolean enable) {
+        if (hasSwitch == enable) return;
+        hasSwitch = enable;
+        post(this::refreshElements);
+    }
+
+    public void setShowChevron(boolean enable) {
+        if (hasChevron == enable) return;
+        hasChevron = enable;
+        post(this::refreshElements);
+    }
+
+    public void setAttachMasterListener(boolean enable) {
+        if (masterListenerEnabled == enable) return;
+        // Old status, if enabled, do not touch it as it will register master listener as normal listener
+        if (!masterListenerEnabled) {
+            attachMasterListener();
+        }
+
+        masterListenerEnabled = enable;
+
+        // No need for listener detaching as it has check guards and acts as no-op
+
+        setClickable(masterListenerEnabled);
+        setFocusable(masterListenerEnabled);
+
+        post(this::refreshElements);
     }
 }
