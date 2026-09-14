@@ -205,8 +205,9 @@ public class MaterialItem extends ConstraintLayout {
     private void showDropdown() {
         new com.google.android.material.dialog.MaterialAlertDialogBuilder(getContext())
                 .setTitle(title.getText())
-                .setItems(dropdownEntries, (dialog, which) -> {
+                .setSingleChoiceItems(dropdownEntries, selectedDropdownEntry, (dialog, which) -> {
                     setSelectedItemInternal(which, false);
+                    dialog.dismiss();
                 })
                 .show();
     }
