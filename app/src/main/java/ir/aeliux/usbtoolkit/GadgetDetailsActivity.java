@@ -61,5 +61,8 @@ public class GadgetDetailsActivity extends BaseActivity {
         binding.infoManufacturer.setSubtitle(gadget.manufacturer);
         binding.infoProduct.setSubtitle(gadget.product);
         binding.infoSerialNumber.setSubtitle(gadget.serialNumber);
-    }
+
+        binding.infoBmAttributes.setSubtitle(gadget.formatBmAttributes());
+        binding.infoBcdUsb.setSubtitle(gadget.formatBcdUsb());
+        binding.infoBcdDevice.setSubtitle(gadget.formatBcdDevice());}
 }

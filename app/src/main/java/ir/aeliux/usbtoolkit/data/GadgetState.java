@@ -9,10 +9,17 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import ir.aeliux.usbtoolkit.util.DataConversion;
+
 /**
  * Represents a snapshot of a gadget's state inside configfs.
  */
 public class GadgetState implements Parcelable {
+
+    public static final int RESERVED_BIT_7 = 0x80;
+    public static final int SELF_POWERED   = 0x40;
+    public static final int REMOTE_WAKEUP  = 0x20;
+    public static final int RESERVED_LOW   = 0x1F;
 
     public final String name;
     public final Path gadgetPath;
@@ -24,11 +31,15 @@ public class GadgetState implements Parcelable {
     public final String product;
     public final String serialNumber;
     public final Map<String, LunState> luns;
+    public final int bcdUsb;
+    public final int bcdDevice;
+    public final int bmAttributes;
 
     public GadgetState(String name, Path gadgetPath, boolean bound, String boundUdc,
                        int vendorId, int productId, String manufacturer,
                        String product, String serialNumber,
-                       Map<String, LunState> luns) {
+                       Map<String, LunState> luns, int bcdUsb, int bcdDevice,
+                       int bmAttributes) {
         this.name         = name;
         this.gadgetPath   = gadgetPath;
         this.bound        = bound;
@@ -39,6 +50,9 @@ public class GadgetState implements Parcelable {
         this.product      = product;
         this.serialNumber = serialNumber;
         this.luns         = Collections.unmodifiableMap(new HashMap<>(luns));
+        this.bcdUsb       = bcdUsb;
+        this.bcdDevice    = bcdDevice;
+        this.bmAttributes = bmAttributes & 0xFF;
     }
 
     protected GadgetState(Parcel in) {
@@ -62,6 +76,9 @@ public class GadgetState implements Parcelable {
             map.put(key, value);
         }
         luns = Collections.unmodifiableMap(map);
+        bcdUsb = in.readInt();
+        bcdDevice = in.readInt();
+        bmAttributes = in.readInt();
     }
 
     @Override
@@ -81,6 +98,9 @@ public class GadgetState implements Parcelable {
             dest.writeString(e.getKey());
             dest.writeParcelable(e.getValue(), flags);
         }
+        dest.writeInt(bcdUsb);
+        dest.writeInt(bcdDevice);
+        dest.writeInt(bmAttributes);
     }
 
     @Override
@@ -92,4 +112,52 @@ public class GadgetState implements Parcelable {
         @Override public GadgetState createFromParcel(Parcel in) { return new GadgetState(in); }
         @Override public GadgetState[] newArray(int size)          { return new GadgetState[size]; }
     };
+
+    public boolean isReservedBit7Set() {
+        return (bmAttributes & RESERVED_BIT_7) != 0;
+    }
+
+    public boolean isSelfPowered() {
+        return (bmAttributes & SELF_POWERED) != 0;
+    }
+
+    public boolean isRemoteWakeup() {
+        return (bmAttributes & REMOTE_WAKEUP) != 0;
+    }
+
+    public int reservedLowBits() {
+        return bmAttributes & RESERVED_LOW;
+    }
+
+    public String formatBcdUsb() {
+        return DataConversion.formatBcd(bcdUsb);
+    }
+
+    public String formatBcdDevice() {
+        return DataConversion.formatBcd(bcdDevice);
+    }
+
+    public String formatBmAttributes() {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(String.format("0x%02X (", bmAttributes));
+
+        sb.append(isSelfPowered() ? "Self-Powered" : "Bus-Powered");
+        sb.append(", Remote Wakeup: ")
+                .append(isRemoteWakeup() ? "Enabled" : "Disabled");
+
+        if (!isReservedBit7Set()) {
+            sb.append(", WARNING: bit 7 should be 1");
+        }
+
+        if (reservedLowBits() != 0) {
+            sb.append(String.format(
+                    ", WARNING: reserved low bits set: 0x%02X",
+                    reservedLowBits()
+            ));
+        }
+
+        sb.append(")");
+        return sb.toString();
+    }
 }

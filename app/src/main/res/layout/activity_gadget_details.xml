@@ -92,6 +92,32 @@
                     app:itemTitle="Serial Number"
                     app:attachMasterListener="false" />
             </ir.aeliux.usbtoolkit.widget.MaterialContainer>
+
+            <ir.aeliux.usbtoolkit.widget.MaterialContainer
+                android:id="@+id/sec_usb"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:headerText="USB">
+
+                <ir.aeliux.usbtoolkit.widget.MaterialItem
+                    android:id="@+id/info_bm_attributes"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:itemTitle="Flags"
+                    app:attachMasterListener="false" />
+                <ir.aeliux.usbtoolkit.widget.MaterialItem
+                    android:id="@+id/info_bcd_usb"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:itemTitle="USB Version"
+                    app:attachMasterListener="false" />
+                <ir.aeliux.usbtoolkit.widget.MaterialItem
+                    android:id="@+id/info_bcd_device"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:itemTitle="Device Version"
+                    app:attachMasterListener="false" />
+            </ir.aeliux.usbtoolkit.widget.MaterialContainer>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 </androidx.constraintlayout.widget.ConstraintLayout>

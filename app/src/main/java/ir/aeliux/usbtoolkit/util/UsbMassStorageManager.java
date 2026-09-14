@@ -234,6 +234,8 @@ public class UsbMassStorageManager {
         String boundUdc = bound ? readConfigfsString(gadgetPath.resolve("UDC")) : null;
         int vendorId = readConfigfsInt(gadgetPath.resolve("idVendor"), 16);
         int productId = readConfigfsInt(gadgetPath.resolve("idProduct"), 16);
+        int bcdUsb = readConfigfsInt(gadgetPath.resolve("bcdUSB"), 16);
+        int bcdDevice = readConfigfsInt(gadgetPath.resolve("bcdDevice"), 16);
 
         // Read string descriptors (if present)
         String manufacturer = null, product = null, serial = null;
@@ -243,6 +245,21 @@ public class UsbMassStorageManager {
             product = readConfigfsString(stringsBase.resolve("product"));
             serial = readConfigfsString(stringsBase.resolve("serialnumber"));
         }
+
+        Optional<Integer> bmAttributesValue = Optional.empty();
+        Path configBase = gadgetPath.resolve("configs");
+        if (Files.exists(configBase)) {
+            try (DirectoryStream<Path> stream = Files.newDirectoryStream(configBase, "*.*")) {
+                for (Path configPath : stream) {
+                    bmAttributesValue = Optional.of(readConfigfsInt(configPath.resolve("bmAttributes"), 16));
+                }
+            } catch (IOException | NumberFormatException e) {
+                throw new UsbGadgetException("Failed to parse config information", e);
+            }
+        }
+
+        int bmAttributes = bmAttributesValue.orElseThrow(
+                () -> new UsbGadgetException("No config found under " + configBase));
 
         // Parse LUNs from the mass_storage function
         Map<String, LunState> luns = new LinkedHashMap<>();
@@ -266,7 +283,7 @@ public class UsbMassStorageManager {
         }
 
         return new GadgetState(name, gadgetPath, bound, boundUdc, vendorId, productId,
-                manufacturer, product, serial, luns);
+                manufacturer, product, serial, luns, bcdUsb, bcdDevice, bmAttributes);
     }
 
     /**
