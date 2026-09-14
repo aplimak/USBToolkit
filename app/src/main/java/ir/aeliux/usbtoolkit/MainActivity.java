@@ -205,6 +205,7 @@ public class MainActivity extends BaseActivity {
                     for (String gadget : result) {
                         MaterialItem item = new MaterialItem(MainActivity.this);
                         item.setTitle(gadget);
+                        item.setIconResource(R.drawable.ic_gadget);
                         item.setOnClickListener((v) -> {
                             Message.snack("Not implemented yet");
                         });

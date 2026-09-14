@@ -24,7 +24,11 @@
         </activity>
         <activity
             android:name=".FilePickerActivity"
+            android:exported="false"
             android:theme="@style/Theme.FilePicker"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".GadgetDetailsActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
     </application>
