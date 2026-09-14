@@ -26,7 +26,6 @@ public class MaterialItem extends ConstraintLayout {
     private View divider;
     private MaterialSwitch switchWidget;
 
-    private boolean clickable = false;
     private boolean hasChevron = false;
     private boolean masterListenerEnabled = false;
     private CharSequence[] dropdownEntries;
@@ -36,6 +35,7 @@ public class MaterialItem extends ConstraintLayout {
     private OnClickListener clickListener;
     private CompoundButton.OnCheckedChangeListener checkedChangeListener;
     private DialogInterface.OnClickListener dropdownItemSelectedListener;
+    private boolean hasSwitch;
 
     public MaterialItem(@NonNull Context context) {
         this(context, null);
@@ -66,83 +66,99 @@ public class MaterialItem extends ConstraintLayout {
             String s = a.getString(R.styleable.MaterialItem_itemSubtitle);
             int iconRes = a.getResourceId(R.styleable.MaterialItem_itemIcon, 0);
 
-            clickable = a.getBoolean(R.styleable.MaterialItem_isClickable, true);
+            boolean attachMasterListener = a.getBoolean(R.styleable.MaterialItem_attachMasterListener, true);
             boolean showSwitch = a.getBoolean(R.styleable.MaterialItem_showSwitch, false);
-            hasDropdown = a.getBoolean(R.styleable.MaterialItem_showDropdown, false);
-            hasChevron = clickable && showSwitch && a.getBoolean(R.styleable.MaterialItem_showChevron, false);
-            boolean checked = showSwitch &&  a.getBoolean(R.styleable.MaterialItem_isChecked, false);
-            int dropdownEntriesRes = hasDropdown ? a.getResourceId(R.styleable.MaterialItem_dropdownEntries, 0) : 0;
+            boolean checked = a.getBoolean(R.styleable.MaterialItem_isChecked, false);
+            int dropdownEntriesRes = a.getResourceId(R.styleable.MaterialItem_dropdownEntries, 0);
 
-            if (t != null) title.setText(t);
-            if (s != null) {
-                subtitle.setText(s);
-                subtitle.setVisibility(View.VISIBLE);
-            }
-            if (iconRes != 0) {
-                icon.setImageResource(iconRes);
-                icon.setVisibility(View.VISIBLE);
-            }
+            setTitle(t);
+            setSubtitle(s);
+            setIconResource(iconRes);
 
-            // Configure trailing elements
-            if (hasChevron) {
-                chevron.setVisibility(View.VISIBLE);
-                divider.setVisibility(View.VISIBLE);
-            }
-
-            if (showSwitch) {
-                switchWidget.setVisibility(View.VISIBLE);
-                switchWidget.setClickable(!clickable || hasChevron);
-                switchWidget.setFocusable(!clickable || hasChevron);
+            setMasterListener(attachMasterListener);
+            setHasSwitchValue(showSwitch);
+            if (hasSwitch) {
                 setCheckedInternal(checked);
-                switchWidget.setDuplicateParentStateEnabled(hasChevron);
-                switchWidget.setOnCheckedChangeListener((btn, isChecked) -> {
-                    if (checkedChangeListener != null) checkedChangeListener.onCheckedChanged(btn, isChecked);
-                });
-                if (clickable && !hasChevron) {
-                    switchWidget.setBackground(null);
-                }
             }
-
-            if (hasDropdown && dropdownEntriesRes != 0) {
-                setDropdownEntries(context.getResources().getTextArray(dropdownEntriesRes));
-            }
-
-            // Full-row clickable
-            if (clickable) {
-                setClickable(true);
-                setFocusable(true);
-
-                setOnClickListener(v -> {
-                    boolean setClicked = false;
-                    if (hasChevron) {
-                        setClicked = true;
-                    } else if (showSwitch) {
-                        switchWidget.performClick();
-                    } else if (hasDropdown) {
-                        showDropdown();
-                    } else {
-                        setClicked = true;
-                    }
-
-                    if (setClicked && clickListener != null) {
-                        clickListener.onClick(this);
-                    }
-                });
-                masterListenerEnabled = true;
-            }
+            setDropdownEntries(dropdownEntriesRes != 0 ? context.getResources().getTextArray(dropdownEntriesRes) : null);
+            setChevronValue(a.getBoolean(R.styleable.MaterialItem_showChevron, false));
 
             a.recycle();
         }
 
-        // Adjust text container start margin if icon is hidden
-        post(() -> {
-            var params = textContainer.getLayoutParams();
+        post(this::refreshElements);
+    }
 
-            if (icon.getVisibility() == View.GONE) {
-                ((ViewGroup.MarginLayoutParams)params).setMarginStart(0);
-                ((ConstraintLayout.LayoutParams)params).startToEnd = ConstraintLayout.LayoutParams.UNSET;
-                ((ConstraintLayout.LayoutParams)params).startToStart = ConstraintLayout.LayoutParams.PARENT_ID;
-                textContainer.setLayoutParams(params);
+    private void refreshElements() {
+        boolean hasIcon = icon.getVisibility() != View.GONE;
+        var params = textContainer.getLayoutParams();
+
+        ((MarginLayoutParams)params).setMarginStart(hasIcon ? dpToPx(24) : 0);
+        ((LayoutParams)params).startToEnd = hasIcon ? icon.getId() : LayoutParams.UNSET;
+        ((LayoutParams)params).startToStart = hasIcon ? LayoutParams.UNSET : LayoutParams.PARENT_ID;
+        textContainer.setLayoutParams(params);
+    }
+
+    private void setHasSwitchValue(boolean enable) {
+        hasSwitch = enable;
+        switchWidget.setVisibility(hasSwitch ? View.VISIBLE : View.GONE);
+        if (!hasSwitch) return;
+
+        boolean chevronValue = getChevronValue();
+        switchWidget.setClickable(!masterListenerEnabled || chevronValue);
+        switchWidget.setFocusable(!masterListenerEnabled || chevronValue);
+        switchWidget.setDuplicateParentStateEnabled(chevronValue);
+
+        switchWidget.setOnCheckedChangeListener((btn, isChecked) -> {
+            if (hasSwitch && checkedChangeListener != null) checkedChangeListener.onCheckedChanged(btn, isChecked);
+        });
+        if (masterListenerEnabled && !chevronValue) {
+            switchWidget.setBackground(null);
+        }
+    }
+
+    private boolean getChevronValue() {
+        return hasChevron && masterListenerEnabled && hasSwitch;
+    }
+
+    private void setChevronValue(boolean value) {
+        hasChevron = value;
+        var chevronValue = getChevronValue();
+        chevron.setVisibility(chevronValue ? View.VISIBLE : View.GONE);
+        divider.setVisibility(chevronValue ? View.VISIBLE : View.GONE);
+    }
+
+    private void setMasterListener(boolean enable) {
+        if (masterListenerEnabled == enable) return;
+        // Old status, if enabled, do not touch it as it will register master listener as normal listener
+        if (!masterListenerEnabled) {
+            attachMasterListener();
+        }
+
+        masterListenerEnabled = enable;
+
+        // No need for listener detaching as it has check guards and acts as no-op
+
+        setClickable(masterListenerEnabled);
+        setFocusable(masterListenerEnabled);
+    }
+
+    private void attachMasterListener() {
+        setOnClickListener(v -> {
+            if (!masterListenerEnabled) return;
+            boolean setClicked = false;
+            if (getChevronValue() && !hasDropdown) {
+                setClicked = true;
+            } else if (hasDropdown) {
+                showDropdown();
+            } else if (hasSwitch) {
+                switchWidget.performClick();
+            } else {
+                setClicked = true;
+            }
+
+            if (setClicked && clickListener != null) {
+                clickListener.onClick(this);
             }
         });
     }
@@ -246,9 +262,17 @@ public class MaterialItem extends ConstraintLayout {
     }
 
     public void setDropdownEntries(CharSequence[] entries) {
-        requiresDropdown();
-        if (entries == null || entries.length == 0) return;
+        hasDropdown = entries != null && entries.length > 0;
+        if (hasDropdown) {
+            if (!masterListenerEnabled) {
+                throw new IllegalStateException("Dropdown requires attachMasterListener to handle clicks");
+            }
+            if (hasSwitch && !getChevronValue()) {
+                throw new IllegalStateException("Can't have dropdown and switch at the same time, either disable one or enable chevron to handle both.");
+            }
+        }
         this.dropdownEntries = entries;
+        if (!hasDropdown) return;
         setSelectedItemInternal(0, true);
     }
     public CharSequence[] getDropdownEntries() {
@@ -267,6 +291,12 @@ public class MaterialItem extends ConstraintLayout {
     public void setSelectedItem(int index) {
         requiresDropdown();
         setSelectedItemInternal(index, false);
+    }
+
+    public void setIconResource(int iconRes) {
+        icon.setImageResource(iconRes);
+        icon.setVisibility(iconRes != 0 ? View.VISIBLE : View.GONE);
+        post(this::refreshElements);
     }
 
     private int dpToPx(int dp) {

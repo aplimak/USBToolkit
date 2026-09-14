@@ -56,8 +56,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     app:itemTitle="Add"
-                    app:itemIcon="@drawable/ic_add"
-                    app:isClickable="true" />
+                    app:itemIcon="@drawable/ic_add" />
             </ir.aeliux.usbtoolkit.widget.MaterialContainer>
 
             <ir.aeliux.usbtoolkit.widget.MaterialContainer
@@ -71,7 +70,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     app:isChecked="false"
-                    app:isClickable="true"
                     app:itemIcon="@drawable/ic_edit_off"
                     app:itemSubtitle="Mount files as immutable read only disks"
                     app:itemTitle="Read-Only"
@@ -82,7 +80,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     app:isChecked="false"
-                    app:isClickable="true"
                     app:itemIcon="@drawable/ic_album"
                     app:itemSubtitle="Mount files as CD-ROM disks"
                     app:itemTitle="CD-ROM"
@@ -93,7 +90,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     app:isChecked="true"
-                    app:isClickable="true"
                     app:itemIcon="@drawable/ic_eject"
                     app:itemSubtitle="Mount files as removable disks"
                     app:itemTitle="Removable"
@@ -103,11 +99,9 @@
                     android:id="@+id/sel_udc"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:isClickable="true"
                     app:itemTitle="UDC"
                     app:itemSubtitle="Set USB Device Controller to bind gadget to it"
-                    app:itemIcon="@drawable/ic_usb"
-                    app:showDropdown="true" />
+                    app:itemIcon="@drawable/ic_usb" />
             </ir.aeliux.usbtoolkit.widget.MaterialContainer>
 
             <ir.aeliux.usbtoolkit.widget.MaterialContainer

@@ -8,13 +8,10 @@
 
         <!-- Behavioral toggles -->
         <attr name="showSwitch" format="boolean" />
-        <attr name="showChevron" format="boolean" />
-        <attr name="isClickable" format="boolean" />
-        <attr name="isChecked" format="boolean" />
-
-        <!-- Dropdown support -->
-        <attr name="showDropdown" format="boolean" />
         <attr name="dropdownEntries" format="reference" />
+        <attr name="showChevron" format="boolean" />
+        <attr name="attachMasterListener" format="boolean" />
+        <attr name="isChecked" format="boolean" />
     </declare-styleable>
     <declare-styleable name="MaterialContainer">
         <attr name="headerText" format="string" />

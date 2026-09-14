@@ -95,7 +95,7 @@ public class MainActivity extends BaseActivity {
         EdgeToEdge.enable(this);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        
+
         setupToolbar(binding.toolbar);
         applyWindowInsets(binding.main);
 
@@ -181,7 +181,10 @@ public class MainActivity extends BaseActivity {
                         showFatalError("No UDC is found.");
                         return;
                     }
-                    var currentDropdownEntries = binding.selUdc.getDropdownEntries();
+                    CharSequence[] currentDropdownEntries = null;
+                    try {
+                        binding.selUdc.getDropdownEntries();
+                    } catch (IllegalStateException ignored) {}
                     if (contentsEqual(result, currentDropdownEntries != null ? Arrays.asList(currentDropdownEntries) : new ArrayList<>())) return;
                     binding.selUdc.setDropdownEntries(result.toArray(new CharSequence[0]));
                 });
