@@ -37,7 +37,7 @@ import ir.aeliux.usbtoolkit.data.MassStorageConfig;
  * can detect an existing gadget and either take over or clean it up.
  */
 @SuppressLint("MissingPermission")
-public class UsbMassStorageManager {
+public final class UsbMassStorageManager {
     private static final String TAG = "UsbMassStorageManager";
 
     // ------------------------------------------------------------------------

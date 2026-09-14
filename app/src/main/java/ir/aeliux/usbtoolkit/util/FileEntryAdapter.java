@@ -22,7 +22,7 @@ import java.util.Set;
 import ir.aeliux.usbtoolkit.R;
 import ir.aeliux.usbtoolkit.data.FileEntry;
 
-public class FileEntryAdapter extends ListAdapter<FileEntry, FileEntryAdapter.ViewHolder> {
+public final class FileEntryAdapter extends ListAdapter<FileEntry, FileEntryAdapter.ViewHolder> {
 
     public interface OnDirectoryClick { void onClick(FileEntry entry); }
     public interface OnFileSelect { void onSelect(FileEntry entry, boolean checked); }

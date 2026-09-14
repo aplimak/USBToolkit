@@ -1,6 +1,6 @@
 package ir.aeliux.usbtoolkit.util;
 
-public class DataConversion {
+public final class DataConversion {
     public static int stringToInt(String value, int radix) {
         if (radix == 16 && (value.startsWith("0x") || value.startsWith("0X"))) {
             value = value.substring(2);

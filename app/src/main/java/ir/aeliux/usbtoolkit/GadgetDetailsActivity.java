@@ -13,6 +13,8 @@ import ir.aeliux.usbtoolkit.data.GadgetState;
 import ir.aeliux.usbtoolkit.databinding.ActivityGadgetDetailsBinding;
 import ir.aeliux.usbtoolkit.util.DataConversion;
 import ir.aeliux.usbtoolkit.util.Message;
+import ir.aeliux.usbtoolkit.util.Views;
+import ir.aeliux.usbtoolkit.widget.MaterialContainer;
 
 public class GadgetDetailsActivity extends BaseActivity {
     private final String TAG = "GadgetDetailsActivity";
@@ -53,6 +55,10 @@ public class GadgetDetailsActivity extends BaseActivity {
     private void refresh() {
         binding.toolbar.setSubtitle(gadget.name);
 
+        disableContainer(binding.secUdc);
+        disableContainer(binding.secDevice);
+        disableContainer(binding.secUsb);
+
         binding.infoBound.setSubtitle(gadget.bound ? "Bound" : "Not Bound");
         binding.infoBoundUdc.setSubtitle(gadget.bound ? gadget.boundUdc : null);
 
@@ -64,5 +70,11 @@ public class GadgetDetailsActivity extends BaseActivity {
 
         binding.infoBmAttributes.setSubtitle(gadget.formatBmAttributes());
         binding.infoBcdUsb.setSubtitle(gadget.formatBcdUsb());
-        binding.infoBcdDevice.setSubtitle(gadget.formatBcdDevice());}
+        binding.infoBcdDevice.setSubtitle(gadget.formatBcdDevice());
+    }
+
+    private void disableContainer(MaterialContainer container) {
+        Views.setEnabledRecursively(container.getContentContainer(), false);
+        container.getContentContainer().setAlpha(0.75f);
+    }
 }

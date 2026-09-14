@@ -41,6 +41,7 @@ import ir.aeliux.usbtoolkit.ipc.IUsbMassStorageService;
 import ir.aeliux.usbtoolkit.ipc.UsbMassStorageService;
 import ir.aeliux.usbtoolkit.util.LoadingDialog;
 import ir.aeliux.usbtoolkit.util.Message;
+import ir.aeliux.usbtoolkit.util.Views;
 import ir.aeliux.usbtoolkit.widget.MaterialItem;
 
 public class MainActivity extends BaseActivity {
@@ -152,9 +153,9 @@ public class MainActivity extends BaseActivity {
             public void onResult(boolean result) throws RemoteException {
                 runOnUiThread(() -> {
                     isRunning = result;
-                    setEnabledRecursively(binding.secFiles.getContentContainer(), !result);
+                    Views.setEnabledRecursively(binding.secFiles.getContentContainer(), !result);
                     binding.secFiles.getContentContainer().setAlpha(result ? 0.5f : 1);
-                    setEnabledRecursively(binding.secSettings.getContentContainer(), !result);
+                    Views.setEnabledRecursively(binding.secSettings.getContentContainer(), !result);
                     binding.secSettings.getContentContainer().setAlpha(result ? 0.5f : 1);
 
                     if (isRunning) {
@@ -327,16 +328,6 @@ public class MainActivity extends BaseActivity {
         ViewGroup parent = (ViewGroup) view.getParent();
         parent.removeView(view);
         refresh();
-    }
-
-    public static void setEnabledRecursively(View view, boolean enabled) {
-        view.setEnabled(enabled);
-        if (view instanceof ViewGroup) {
-            ViewGroup group = (ViewGroup) view;
-            for (int i = 0; i < group.getChildCount(); i++) {
-                setEnabledRecursively(group.getChildAt(i), enabled);
-            }
-        }
     }
 
     private void showRootServiceConnectionLostError() {
