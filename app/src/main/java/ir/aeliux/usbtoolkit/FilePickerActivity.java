@@ -29,6 +29,7 @@ import java.util.Set;
 import ir.aeliux.usbtoolkit.callback.IRootFileCallback;
 import ir.aeliux.usbtoolkit.data.FileEntry;
 import ir.aeliux.usbtoolkit.databinding.ActivityFilePickerBinding;
+import ir.aeliux.usbtoolkit.ipc.RootFileService;
 
 public class FilePickerActivity extends BaseActivity {
 

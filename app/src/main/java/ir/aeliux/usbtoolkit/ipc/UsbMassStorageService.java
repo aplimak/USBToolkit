@@ -1,4 +1,4 @@
-package ir.aeliux.usbtoolkit;
+package ir.aeliux.usbtoolkit.ipc;
 
 import android.content.Intent;
 import android.os.IBinder;
@@ -11,8 +11,10 @@ import androidx.annotation.Nullable;
 import com.topjohnwu.superuser.ipc.RootService;
 
 import java.nio.file.Path;
-import java.util.List;
 
+import ir.aeliux.usbtoolkit.IUsbMassStorageService;
+import ir.aeliux.usbtoolkit.UsbGadgetException;
+import ir.aeliux.usbtoolkit.UsbMassStorageManager;
 import ir.aeliux.usbtoolkit.callback.IBooleanCallback;
 import ir.aeliux.usbtoolkit.callback.IGadgetStateCallback;
 import ir.aeliux.usbtoolkit.callback.IStringListCallback;

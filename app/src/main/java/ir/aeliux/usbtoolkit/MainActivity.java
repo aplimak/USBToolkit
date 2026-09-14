@@ -35,6 +35,7 @@ import ir.aeliux.usbtoolkit.callback.IUsbMassStorageCallback;
 import ir.aeliux.usbtoolkit.callback.IBooleanCallback;
 import ir.aeliux.usbtoolkit.data.MassStorageConfig;
 import ir.aeliux.usbtoolkit.databinding.ActivityMainBinding;
+import ir.aeliux.usbtoolkit.ipc.UsbMassStorageService;
 import ir.aeliux.usbtoolkit.widget.MaterialItem;
 
 public class MainActivity extends BaseActivity {

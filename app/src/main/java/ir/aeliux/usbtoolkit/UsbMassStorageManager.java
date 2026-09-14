@@ -47,7 +47,7 @@ public class UsbMassStorageManager {
     // ------------------------------------------------------------------------
     private static final String CONFIGFS_TYPE = "configfs";
     private static final String GADGETS_BASE = "usb_gadget";
-    static final String GADGET_NAME = "mass_storage_gadget";   // fixed name for state detection
+    public static final String GADGET_NAME = "mass_storage_gadget";   // fixed name for state detection
     private static final String FUNCTION_NAME = "mass_storage.0";
     private static final String CONFIG_NAME = "c.1";
 
