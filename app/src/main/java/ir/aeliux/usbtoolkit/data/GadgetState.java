@@ -14,6 +14,7 @@ import java.util.Map;
  */
 public class GadgetState implements Parcelable {
 
+    public final String name;
     public final Path gadgetPath;
     public final boolean bound;
     public final String boundUdc;
@@ -24,10 +25,11 @@ public class GadgetState implements Parcelable {
     public final String serialNumber;
     public final Map<String, LunState> luns;
 
-    public GadgetState(Path gadgetPath, boolean bound, String boundUdc,
+    public GadgetState(String name, Path gadgetPath, boolean bound, String boundUdc,
                        int vendorId, int productId, String manufacturer,
                        String product, String serialNumber,
                        Map<String, LunState> luns) {
+        this.name         = name;
         this.gadgetPath   = gadgetPath;
         this.bound        = bound;
         this.boundUdc     = boundUdc;
@@ -40,9 +42,9 @@ public class GadgetState implements Parcelable {
     }
 
     protected GadgetState(Parcel in) {
+        name         = in.readString();
         String gp = in.readString();
-        gadgetPath = (gp == null) ? null : Paths.get(gp);
-
+        gadgetPath   = (gp == null) ? null : Paths.get(gp);
         bound        = in.readByte() != 0;
         boundUdc     = in.readString();
         vendorId     = in.readInt();
@@ -64,8 +66,8 @@ public class GadgetState implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(name);
         dest.writeString(gadgetPath == null ? null : gadgetPath.toString());
-
         dest.writeByte((byte) (bound ? 1 : 0));
         dest.writeString(boundUdc);
         dest.writeInt(vendorId);

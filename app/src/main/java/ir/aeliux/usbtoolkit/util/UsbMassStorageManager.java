@@ -229,6 +229,7 @@ public class UsbMassStorageManager {
             throw new UsbGadgetException("Gadget does not exist: " + gadgetPath);
         }
 
+        String name = gadgetPath.getFileName().toString();
         boolean bound = isGadgetBound(gadgetPath);
         String boundUdc = bound ? readConfigfsString(gadgetPath.resolve("UDC")) : null;
         int vendorId = readConfigfsInt(gadgetPath.resolve("idVendor"), 16);
@@ -249,22 +250,22 @@ public class UsbMassStorageManager {
         if (Files.exists(functionPath)) {
             try (DirectoryStream<Path> stream = Files.newDirectoryStream(functionPath, "lun.*")) {
                 for (Path lunPath : stream) {
-                    String name = lunPath.getFileName().toString();
-                    int lunNumber = Integer.parseInt(name.substring(4)); // after "lun."
+                    String lunName = lunPath.getFileName().toString();
+                    int lunNumber = Integer.parseInt(lunName.substring(4)); // after "lun."
                     boolean cdrom = parseBoolean(readConfigfsString(lunPath.resolve("cdrom")));
                     boolean ro = parseBoolean(readConfigfsString(lunPath.resolve("ro")));
                     boolean removable = parseBoolean(readConfigfsString(lunPath.resolve("removable")));
                     String fileStr = readConfigfsString(lunPath.resolve("file"));
                     Path file = fileStr.isEmpty() ? null : new File(fileStr).toPath();
                     LunState lun = new LunState(lunNumber, file, cdrom, ro, removable);
-                    luns.put(name, lun);
+                    luns.put(lunName, lun);
                 }
             } catch (IOException | NumberFormatException e) {
                 throw new UsbGadgetException("Failed to parse LUN information", e);
             }
         }
 
-        return new GadgetState(gadgetPath, bound, boundUdc, vendorId, productId,
+        return new GadgetState(name, gadgetPath, bound, boundUdc, vendorId, productId,
                 manufacturer, product, serial, luns);
     }
 

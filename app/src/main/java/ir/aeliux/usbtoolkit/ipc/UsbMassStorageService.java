@@ -11,7 +11,11 @@ import androidx.annotation.Nullable;
 import com.topjohnwu.superuser.ipc.RootService;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
+import ir.aeliux.usbtoolkit.callback.IGadgetStateListCallback;
+import ir.aeliux.usbtoolkit.data.GadgetState;
 import ir.aeliux.usbtoolkit.util.UsbMassStorageManager;
 import ir.aeliux.usbtoolkit.util.UsbMassStorageManager.UsbGadgetException;
 import ir.aeliux.usbtoolkit.callback.IBooleanCallback;
@@ -129,6 +133,30 @@ public class UsbMassStorageService extends RootService {
                 try {
                     var configfs = UsbMassStorageManager.getConfigfsMountPoint();
                     var result = UsbMassStorageManager.getGadgetState(configfs, name);
+                    Log.d(TAG, "firing onResult with result: " + result);
+                    callback.onResult(result);
+                } catch (UsbGadgetException e) {
+                    Log.e(TAG, "Error happened in binder.getGadgetState: ", e);
+                    Log.d(TAG, "firing onError");
+                    var cause = e.getCause();
+                    callback.onError(e + (cause != null ? "\n Caused by: " + cause : ""));
+                }
+            });
+        }
+
+        @Override
+        public void getGadgetStateList(IGadgetStateListCallback callback) {
+            Log.d(TAG, "binder.getGadgetStateList");
+            safeCall(() -> {
+                try {
+                    var configfs = UsbMassStorageManager.getConfigfsMountPoint();
+                    var gadgets = UsbMassStorageManager.getGadgetList(configfs);
+
+                    List<GadgetState> result = new ArrayList<>();
+                    for (String gadget : gadgets) {
+                        result.add(UsbMassStorageManager.getGadgetState(configfs, gadget));
+                    }
+
                     Log.d(TAG, "firing onResult with result: " + result);
                     callback.onResult(result);
                 } catch (UsbGadgetException e) {

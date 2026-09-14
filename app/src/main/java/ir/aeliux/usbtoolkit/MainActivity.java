@@ -30,9 +30,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import ir.aeliux.usbtoolkit.callback.IGadgetStateListCallback;
 import ir.aeliux.usbtoolkit.callback.IStringListCallback;
 import ir.aeliux.usbtoolkit.callback.IUsbMassStorageCallback;
 import ir.aeliux.usbtoolkit.callback.IBooleanCallback;
+import ir.aeliux.usbtoolkit.data.GadgetState;
 import ir.aeliux.usbtoolkit.data.MassStorageConfig;
 import ir.aeliux.usbtoolkit.databinding.ActivityMainBinding;
 import ir.aeliux.usbtoolkit.ipc.IUsbMassStorageService;
@@ -190,9 +192,9 @@ public class MainActivity extends BaseActivity {
                 });
             }
         });
-        rootService.getGadgetList(new IStringListCallback.Stub() {
+        rootService.getGadgetStateList(new IGadgetStateListCallback.Stub() {
             @Override
-            public void onResult(List<String> result) {
+            public void onResult(List<GadgetState> result) throws RemoteException {
                 runOnUiThread(() -> {
                     if (result == null || result.isEmpty()) {
                         binding.secGadgets.setVisibility(View.GONE);
@@ -202,16 +204,22 @@ public class MainActivity extends BaseActivity {
                     var container = binding.secGadgets.getContentContainer();
                     container.removeAllViews();
 
-                    for (String gadget : result) {
+                    for (GadgetState gadget : result) {
                         MaterialItem item = new MaterialItem(MainActivity.this);
-                        item.setTitle(gadget);
+                        item.setTitle(gadget.name);
                         item.setIconResource(R.drawable.ic_gadget);
                         item.setOnClickListener((v) -> {
-                            Message.snack("Not implemented yet");
+                            Intent intent = GadgetDetailsActivity.intent(MainActivity.this, gadget);
+                            startActivity(intent);
                         });
                         container.addView(item);
                     }
                 });
+            }
+
+            @Override
+            public void onError(String error) throws RemoteException {
+
             }
         });
     }
