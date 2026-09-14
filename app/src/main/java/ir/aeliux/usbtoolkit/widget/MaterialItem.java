@@ -36,6 +36,7 @@ public class MaterialItem extends ConstraintLayout {
     private CompoundButton.OnCheckedChangeListener checkedChangeListener;
     private DialogInterface.OnClickListener dropdownItemSelectedListener;
     private boolean hasSwitch;
+    private boolean initializing = true;
 
     public MaterialItem(@NonNull Context context) {
         this(context, null);
@@ -86,21 +87,42 @@ public class MaterialItem extends ConstraintLayout {
             a.recycle();
         }
 
+        initializing = false;
         post(this::refreshElements);
     }
 
     private void refreshElements() {
+        if (initializing) return;
+        var chevronValue = getChevronValue();
         boolean hasIcon = icon.getVisibility() != View.GONE;
-        var params = textContainer.getLayoutParams();
+        var textContainerLayoutParams = textContainer.getLayoutParams();
 
-        ((MarginLayoutParams)params).setMarginStart(hasIcon ? dpToPx(24) : 0);
-        ((LayoutParams)params).startToEnd = hasIcon ? icon.getId() : LayoutParams.UNSET;
-        ((LayoutParams)params).startToStart = hasIcon ? LayoutParams.UNSET : LayoutParams.PARENT_ID;
-        textContainer.setLayoutParams(params);
+        ((MarginLayoutParams)textContainerLayoutParams).setMarginStart(hasIcon ? dpToPx(24) : 0);
+        ((LayoutParams)textContainerLayoutParams).startToEnd = hasIcon ? icon.getId() : LayoutParams.UNSET;
+        ((LayoutParams)textContainerLayoutParams).startToStart = hasIcon ? LayoutParams.UNSET : LayoutParams.PARENT_ID;
+        textContainer.setLayoutParams(textContainerLayoutParams);
+
+        if (hasDropdown) {
+            if (!masterListenerEnabled) {
+                throw new IllegalStateException("Dropdown requires attachMasterListener to handle clicks");
+            }
+            if (hasSwitch && !chevronValue) {
+                throw new IllegalStateException("Can't have dropdown and switch at the same time, either disable one or enable chevron to handle both.");
+            }
+        }
+
+        chevron.setVisibility(chevronValue ? View.VISIBLE : View.GONE);
+        divider.setVisibility(chevronValue ? View.VISIBLE : View.GONE);
+
+        refreshSwitch();
     }
 
     private void setHasSwitchValue(boolean enable) {
         hasSwitch = enable;
+        post(this::refreshElements);
+    }
+
+    private void refreshSwitch() {
         switchWidget.setVisibility(hasSwitch ? View.VISIBLE : View.GONE);
         if (!hasSwitch) return;
 
@@ -123,9 +145,7 @@ public class MaterialItem extends ConstraintLayout {
 
     private void setChevronValue(boolean value) {
         hasChevron = value;
-        var chevronValue = getChevronValue();
-        chevron.setVisibility(chevronValue ? View.VISIBLE : View.GONE);
-        divider.setVisibility(chevronValue ? View.VISIBLE : View.GONE);
+        post(this::refreshElements);
     }
 
     private void setMasterListener(boolean enable) {
@@ -141,6 +161,8 @@ public class MaterialItem extends ConstraintLayout {
 
         setClickable(masterListenerEnabled);
         setFocusable(masterListenerEnabled);
+
+        post(this::refreshElements);
     }
 
     private void attachMasterListener() {
@@ -263,17 +285,11 @@ public class MaterialItem extends ConstraintLayout {
 
     public void setDropdownEntries(CharSequence[] entries) {
         hasDropdown = entries != null && entries.length > 0;
-        if (hasDropdown) {
-            if (!masterListenerEnabled) {
-                throw new IllegalStateException("Dropdown requires attachMasterListener to handle clicks");
-            }
-            if (hasSwitch && !getChevronValue()) {
-                throw new IllegalStateException("Can't have dropdown and switch at the same time, either disable one or enable chevron to handle both.");
-            }
-        }
         this.dropdownEntries = entries;
         if (!hasDropdown) return;
         setSelectedItemInternal(0, true);
+
+        post(this::refreshElements);
     }
     public CharSequence[] getDropdownEntries() {
         requiresDropdown();
