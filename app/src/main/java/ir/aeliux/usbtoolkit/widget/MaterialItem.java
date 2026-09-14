@@ -56,7 +56,7 @@ public class MaterialItem extends ConstraintLayout {
 
         // Base padding to match Material 3 settings rows
         setPadding(dpToPx(24), dpToPx(12), dpToPx(24), dpToPx(12));
-        setMinimumHeight(dpToPx(72));
+        textContainer.setMinimumHeight(dpToPx(48));
 
         // NOTE: This part wont be executed on runtime created widgets
         if (attrs != null) {
