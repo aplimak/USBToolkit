@@ -18,11 +18,27 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    def localProperties = new Properties()
+    def localPropsFile = rootProject.file("local.properties")
+    if (localPropsFile.exists()) {
+        localProperties.load(new FileInputStream(localPropsFile))
+    }
+
+    signingConfigs {
+        release {
+            storeFile file(localProperties.getProperty("KEYSTORE_PATH"))
+            storePassword localProperties.getProperty("KEYSTORE_PASSWORD")
+            keyAlias localProperties.getProperty("KEY_ALIAS")
+            keyPassword localProperties.getProperty("KEY_PASSWORD")
+        }
+    }
+
     buildTypes {
         release {
             optimization {
                 enable false
             }
+            signingConfig signingConfigs.release
         }
         debug {
             applicationIdSuffix '.dbg'
