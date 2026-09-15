@@ -1,5 +1,12 @@
 package ir.aeliux.usbtoolkit.util;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+import android.util.Base64;
+import android.util.Log;
+
+import androidx.annotation.Nullable;
+
 import java.util.Locale;
 
 public final class DataConversion {
@@ -57,5 +64,53 @@ public final class DataConversion {
         int tens = (bcd >> 4) & 0x0F;
         int ones = bcd & 0x0F;
         return tens * 10 + ones;
+    }
+
+    /**
+     * Converts a Parcelable object to a byte array.
+     * @param parcelable The object to extract data.
+     * @return Byte array containing parcelable's data.
+     */
+    public static byte[] marshall(Parcelable parcelable) {
+        Parcel parcel = Parcel.obtain();
+        parcelable.writeToParcel(parcel, 0);
+        byte[] bytes = parcel.marshall();
+        parcel.recycle(); // Always recycle the Parcel to return it to the pool
+        return bytes;
+    }
+
+    public static String safeMarshall(Parcelable parcelable) {
+        byte[] bytes = marshall(parcelable);
+
+        // Using NO_WRAP | NO_PADDING is a common choice for cleaner string storage
+        return Base64.encodeToString(bytes, Base64.NO_WRAP | Base64.NO_PADDING);
+    }
+
+    /**
+     * Reconstructs a Parcelable object from a byte array.
+     * @param bytes Data to initialize the new object.
+     * @param creator A Parcelable creator.
+     * @return The new object.
+     * @param <T> Class to create.
+     */
+    public static <T> T unmarshall(byte[] bytes, Parcelable.Creator<T> creator) {
+        Parcel parcel = Parcel.obtain();
+        parcel.unmarshall(bytes, 0, bytes.length);
+        parcel.setDataPosition(0); // CRITICAL: Rewind the Parcel to the start
+        T result = creator.createFromParcel(parcel);
+        parcel.recycle();
+        return result;
+    }
+
+    @Nullable
+    public static <T> T safeUnmarshall(String base64String, Parcelable.Creator<T> creator) {
+        try {
+            byte[] bytes = Base64.decode(base64String, Base64.NO_WRAP | Base64.NO_PADDING);
+            return unmarshall(bytes, creator);
+        } catch (Exception e) {
+            // This can happen if the Parcel format is incompatible (e.g., after an OS update)
+            Log.w("safeUnmarshall", "Invalid data supplied: " + base64String, e);
+            return null;
+        }
     }
 }
