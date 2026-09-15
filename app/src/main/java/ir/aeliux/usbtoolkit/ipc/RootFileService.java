@@ -10,7 +10,6 @@ import com.topjohnwu.superuser.ipc.RootService;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 import ir.aeliux.usbtoolkit.callback.IRootFileCallback;
@@ -48,14 +47,11 @@ public class RootFileService extends RootService {
                     }
                 }
 
-                entries.sort(new Comparator<FileEntry>() {
-                    @Override
-                    public int compare(FileEntry a, FileEntry b) {
-                        if (a.isDirectory() != b.isDirectory()) {
-                            return a.isDirectory() ? -1 : 1;
-                        }
-                        return a.getName().compareToIgnoreCase(b.getName());
+                entries.sort((a, b) -> {
+                    if (a.isDirectory() != b.isDirectory()) {
+                        return a.isDirectory() ? -1 : 1;
                     }
+                    return a.getName().compareToIgnoreCase(b.getName());
                 });
 
                 callback.onFileList(entries);

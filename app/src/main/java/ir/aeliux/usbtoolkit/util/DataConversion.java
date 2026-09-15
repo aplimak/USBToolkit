@@ -18,11 +18,11 @@ public final class DataConversion {
     /**
      * Formats a 16-bit BCD value (e.g., bcdUSB, bcdDevice) into a human-readable
      * version string like "2.00" or "1.10".
-     *
+     * <p>
      * The BCD encoding packs two decimal digits per byte:
      *   high byte = major version (integer part)
      *   low byte  = minor version (fractional part, two decimal digits)
-     *
+     * <p>
      * Example:
      *   0x0200 -> "2.00"
      *   0x0110 -> "1.10"
@@ -44,7 +44,7 @@ public final class DataConversion {
     /**
      * Converts a single byte in BCD format to its decimal integer value.
      * Each nibble represents a decimal digit.
-     *
+     * <p>
      * Example:
      *   0x02 -> 2
      *   0x10 -> 10

@@ -1,5 +1,6 @@
 package ir.aeliux.usbtoolkit.data;
 
+import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -49,7 +50,7 @@ public class GadgetState implements Parcelable {
         this.manufacturer = manufacturer;
         this.product      = product;
         this.serialNumber = serialNumber;
-        this.luns         = Collections.unmodifiableMap(new HashMap<>(luns));
+        this.luns         = Map.copyOf(luns);
         this.bcdUsb       = bcdUsb;
         this.bcdDevice    = bcdDevice;
         this.bmAttributes = bmAttributes & 0xFF;
@@ -72,7 +73,12 @@ public class GadgetState implements Parcelable {
         ClassLoader cl = LunState.class.getClassLoader();
         for (int i = 0; i < size; i++) {
             String key = in.readString();
-            LunState value = in.readParcelable(cl);
+            LunState value;
+            if (Build.VERSION.SDK_INT >= 33) {
+                value = in.readParcelable(cl, LunState.class);
+            } else {
+                value = in.readParcelable(cl);
+            }
             map.put(key, value);
         }
         luns = Collections.unmodifiableMap(map);
@@ -108,9 +114,16 @@ public class GadgetState implements Parcelable {
         return 0;
     }
 
-    public static final Creator<GadgetState> CREATOR = new Creator<GadgetState>() {
-        @Override public GadgetState createFromParcel(Parcel in) { return new GadgetState(in); }
-        @Override public GadgetState[] newArray(int size)          { return new GadgetState[size]; }
+    public static final Creator<GadgetState> CREATOR = new Creator<>() {
+        @Override
+        public GadgetState createFromParcel(Parcel in) {
+            return new GadgetState(in);
+        }
+
+        @Override
+        public GadgetState[] newArray(int size) {
+            return new GadgetState[size];
+        }
     };
 
     public boolean isReservedBit7Set() {

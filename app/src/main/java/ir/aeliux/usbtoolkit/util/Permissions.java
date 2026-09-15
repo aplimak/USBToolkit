@@ -36,7 +36,11 @@ public final class Permissions {
         Result cb = pending.remove(requestCode);
         if (cb == null) return;
         boolean all = grantResults.length > 0;
-        for (int r : grantResults) if (r != PackageManager.PERMISSION_GRANTED) all = false;
+        for (int r : grantResults)
+            if (r != PackageManager.PERMISSION_GRANTED) {
+                all = false;
+                break;
+            }
         cb.onResult(all);
     }
 }

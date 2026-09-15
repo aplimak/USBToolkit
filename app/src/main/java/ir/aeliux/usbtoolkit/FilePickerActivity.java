@@ -13,9 +13,6 @@ import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.Nullable;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.topjohnwu.superuser.ipc.RootService;
@@ -150,13 +147,9 @@ public class FilePickerActivity extends BaseActivity {
             }
         });
 
-        binding.btnRoot.setOnClickListener(v -> {
-            changeDirectory(ROOT_PATH);
-        });
+        binding.btnRoot.setOnClickListener(v -> changeDirectory(ROOT_PATH));
 
-        binding.btnHome.setOnClickListener(v -> {
-            changeDirectory(HOME_PATH);
-        });
+        binding.btnHome.setOnClickListener(v -> changeDirectory(HOME_PATH));
     }
 
     private void changeDirectory(String path) {
@@ -191,14 +184,12 @@ public class FilePickerActivity extends BaseActivity {
             service.listFiles(currentPath, new IRootFileCallback.Stub() {
                 @Override
                 public void onFileList(List<FileEntry> entries) {
-                    runOnUiThread(() -> {
-                        adapter.submitList(new ArrayList<>(entries), () -> {
-                            showLoading(false);
-                            binding.tvEmpty.setVisibility(
-                                    entries.isEmpty() ? View.VISIBLE : View.GONE);
-                            adapter.restoreSelection(selectedPaths);
-                        });
-                    });
+                    runOnUiThread(() -> adapter.submitList(new ArrayList<>(entries), () -> {
+                        showLoading(false);
+                        binding.tvEmpty.setVisibility(
+                                entries.isEmpty() ? View.VISIBLE : View.GONE);
+                        adapter.restoreSelection(selectedPaths);
+                    }));
                 }
 
                 @Override

@@ -68,17 +68,17 @@ public final class UsbMassStorageManager {
     private static final int BM_ATTRIBUTES = 0x80;    // self‑powered
 
     private UsbMassStorageManager() {
-        assertRoot("[constructor]");
+        assertRoot();
     }
 
     /**
      * Single chokepoint for the root check.
      * Call this at the top of every public method AND the constructor.
      */
-    private static void assertRoot(String where) {
+    private static void assertRoot() {
         int uid = android.os.Process.myUid();
         if (uid != 0) {
-            String msg = "UsbMassStorageManager." + where
+            String msg = "UsbMassStorageManager." + "[constructor]"
                     + " called from non-root process"
                     + " (uid=" + uid
                     + ", pid=" + android.os.Process.myPid()
@@ -404,9 +404,7 @@ public final class UsbMassStorageManager {
         });
 
         // Step 5: Delete gadget directory
-        step(callback, "Delete gadget directory", () -> {
-            Files.delete(gadgetPath);
-        });
+        step(callback, "Delete gadget directory", () -> Files.delete(gadgetPath));
     }
 
     // ------------------------------------------------------------------------
@@ -437,9 +435,7 @@ public final class UsbMassStorageManager {
         Path configfs = getConfigfsMountPoint();
 
         // Step 0: Clean existing instance (if any)
-        step(callback, "Clean previous gadget", () -> {
-            cleanupGadget(configfs, GADGET_NAME, callback);
-        });
+        step(callback, "Clean previous gadget", () -> cleanupGadget(configfs, GADGET_NAME, callback));
 
         Path gadgetPath = configfs.resolve(GADGETS_BASE).resolve(GADGET_NAME);
 

@@ -1,16 +1,8 @@
 package ir.aeliux.usbtoolkit.data;
 
 import java.io.File;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
 
-/**
- * Immutable configuration for a mass storage gadget setup.
- * Use the {@link Builder} to create an instance.
- */
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -20,6 +12,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Immutable configuration for a mass storage gadget setup.
+ * Use the {@link Builder} to create an instance.
+ */
 public class MassStorageConfig implements Parcelable {
 
     public final List<Path> imagePaths;
@@ -29,7 +25,7 @@ public class MassStorageConfig implements Parcelable {
     public final String udc;
 
     private MassStorageConfig(Builder builder) {
-        this.imagePaths = Collections.unmodifiableList(new ArrayList<>(builder.imagePaths));
+        this.imagePaths = List.copyOf(builder.imagePaths);
         this.cdrom       = builder.cdrom;
         this.readOnly    = builder.readOnly;
         this.removable   = builder.removable;
@@ -67,9 +63,16 @@ public class MassStorageConfig implements Parcelable {
         return 0;
     }
 
-    public static final Creator<MassStorageConfig> CREATOR = new Creator<MassStorageConfig>() {
-        @Override public MassStorageConfig createFromParcel(Parcel in) { return new MassStorageConfig(in); }
-        @Override public MassStorageConfig[] newArray(int size)          { return new MassStorageConfig[size]; }
+    public static final Creator<MassStorageConfig> CREATOR = new Creator<>() {
+        @Override
+        public MassStorageConfig createFromParcel(Parcel in) {
+            return new MassStorageConfig(in);
+        }
+
+        @Override
+        public MassStorageConfig[] newArray(int size) {
+            return new MassStorageConfig[size];
+        }
     };
 
     public static class Builder {

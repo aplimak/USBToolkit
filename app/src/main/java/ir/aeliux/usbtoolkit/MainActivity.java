@@ -6,9 +6,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Handler;
 import android.os.IBinder;
-import android.os.Looper;
 import android.os.RemoteException;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,9 +16,6 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.topjohnwu.superuser.Shell;
@@ -150,7 +145,7 @@ public class MainActivity extends BaseActivity {
     private void rootRefresh() throws RemoteException {
         rootService.isRunning(new IBooleanCallback.Stub() {
             @Override
-            public void onResult(boolean result) throws RemoteException {
+            public void onResult(boolean result) {
                 runOnUiThread(() -> {
                     isRunning = result;
                     Views.setEnabledRecursively(binding.secFiles.getContentContainer(), !result);
@@ -171,9 +166,7 @@ public class MainActivity extends BaseActivity {
             @Override
             public void onResult(boolean result) {
                 if (result) return;
-                runOnUiThread(() -> {
-                    showFatalError("ConfigFS either not supported or not mounted.");
-                });
+                runOnUiThread(() -> showFatalError("ConfigFS either not supported or not mounted."));
             }
         });
         rootService.getUdcList(new IStringListCallback.Stub() {
@@ -195,7 +188,7 @@ public class MainActivity extends BaseActivity {
         });
         rootService.getGadgetStateList(new IGadgetStateListCallback.Stub() {
             @Override
-            public void onResult(List<GadgetState> result) throws RemoteException {
+            public void onResult(List<GadgetState> result) {
                 runOnUiThread(() -> {
                     if (result == null || result.isEmpty()) {
                         binding.secGadgets.setVisibility(View.GONE);
@@ -222,7 +215,7 @@ public class MainActivity extends BaseActivity {
             }
 
             @Override
-            public void onError(String error) throws RemoteException {
+            public void onError(String error) {
 
             }
         });
@@ -287,9 +280,7 @@ public class MainActivity extends BaseActivity {
         return new IUsbMassStorageCallback.Stub() {
             @Override
             public void onStepStart(String stepName) {
-                runOnUiThread(() -> {
-                    LoadingDialog.updateMessage(stepName);
-                });
+                runOnUiThread(() -> LoadingDialog.updateMessage(stepName));
             }
 
             @Override
@@ -301,9 +292,7 @@ public class MainActivity extends BaseActivity {
                 runOnUiThread(() -> {
                     AlertDialog dialog = new MaterialAlertDialogBuilder(MainActivity.this)
                             .setMessage("Error occurred on step: " + stepName + " - " + error)
-                            .setNegativeButton("OK", (d, w) -> {
-                                d.dismiss();
-                            })
+                            .setNegativeButton("OK", (d, w) -> d.dismiss())
                             .setCancelable(false)
                             .create();
 

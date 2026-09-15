@@ -32,7 +32,7 @@ public class FileEntry implements Parcelable {
         lastModified = in.readLong();
     }
 
-    public static final Creator<FileEntry> CREATOR = new Creator<FileEntry>() {
+    public static final Creator<FileEntry> CREATOR = new Creator<>() {
         @Override
         public FileEntry createFromParcel(Parcel in) {
             return new FileEntry(in);

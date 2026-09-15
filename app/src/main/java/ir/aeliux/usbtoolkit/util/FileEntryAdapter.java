@@ -37,7 +37,7 @@ public final class FileEntryAdapter extends ListAdapter<FileEntry, FileEntryAdap
     private final Set<String> selectedSet = new HashSet<>();
 
     private static final DiffUtil.ItemCallback<FileEntry> DIFF_CALLBACK =
-            new DiffUtil.ItemCallback<FileEntry>() {
+            new DiffUtil.ItemCallback<>() {
                 @Override
                 public boolean areItemsTheSame(@NonNull FileEntry oldItem, @NonNull FileEntry newItem) {
                     return oldItem.getAbsolutePath().equals(newItem.getAbsolutePath());
@@ -62,7 +62,7 @@ public final class FileEntryAdapter extends ListAdapter<FileEntry, FileEntryAdap
         this.allowedExtensions = allowedExtensions;
     }
 
-    static class ViewHolder extends RecyclerView.ViewHolder {
+    public static class ViewHolder extends RecyclerView.ViewHolder {
         final ImageView ivIcon;
         final TextView tvName;
         final TextView tvDetails;

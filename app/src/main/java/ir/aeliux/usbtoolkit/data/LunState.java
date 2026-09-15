@@ -49,8 +49,15 @@ public class LunState implements Parcelable {
         return 0;
     }
 
-    public static final Creator<LunState> CREATOR = new Creator<LunState>() {
-        @Override public LunState createFromParcel(Parcel in) { return new LunState(in); }
-        @Override public LunState[] newArray(int size)          { return new LunState[size]; }
+    public static final Creator<LunState> CREATOR = new Creator<>() {
+        @Override
+        public LunState createFromParcel(Parcel in) {
+            return new LunState(in);
+        }
+
+        @Override
+        public LunState[] newArray(int size) {
+            return new LunState[size];
+        }
     };
 }

@@ -5,14 +5,12 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.LinearLayout;
 
 import androidx.activity.EdgeToEdge;
 
 import ir.aeliux.usbtoolkit.data.GadgetState;
 import ir.aeliux.usbtoolkit.databinding.ActivityGadgetDetailsBinding;
 import ir.aeliux.usbtoolkit.util.DataConversion;
-import ir.aeliux.usbtoolkit.util.Message;
 import ir.aeliux.usbtoolkit.util.Views;
 import ir.aeliux.usbtoolkit.widget.MaterialContainer;
 
