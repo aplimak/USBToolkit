@@ -2,6 +2,7 @@ package ir.aeliux.usbtoolkit;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.util.TypedValue;
 import android.view.View;
 
 import androidx.annotation.NonNull;
@@ -22,6 +23,8 @@ public class BaseActivity extends AppCompatActivity {
     }
 
     protected void setupToolbar(MaterialToolbar toolbar) {
+        setToolbarHeight(toolbar);
+
         boolean isRoot = isTaskRoot()
                 || (getIntent().getFlags() & Intent.FLAG_ACTIVITY_NEW_TASK) != 0;
 
@@ -33,6 +36,24 @@ public class BaseActivity extends AppCompatActivity {
                 finish();
             });
         }
+    }
+
+    private void setToolbarHeight(MaterialToolbar toolbar) {
+        TypedValue typedValue = new TypedValue();
+        boolean resolved = getTheme().resolveAttribute(
+                androidx.appcompat.R.attr.actionBarSize,
+                typedValue,
+                true
+        );
+        if (!resolved) return;
+
+        int actionBarHeight = TypedValue.complexToDimensionPixelSize(
+                typedValue.data,
+                getResources().getDisplayMetrics()
+        );
+        var params = toolbar.getLayoutParams();
+        params.height = actionBarHeight + getResources().getDimensionPixelSize(R.dimen.header_extra_height);
+        toolbar.setLayoutParams(params);
     }
 
     protected void applyWindowInsets(View view) {

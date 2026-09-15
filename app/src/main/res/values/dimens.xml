@@ -4,4 +4,5 @@
     <dimen name="gap_medium">8dp</dimen>
     <dimen name="gap_large">16dp</dimen>
     <dimen name="gap_xlarge">24dp</dimen>
+    <dimen name="header_extra_height">0dp</dimen>
 </resources>
