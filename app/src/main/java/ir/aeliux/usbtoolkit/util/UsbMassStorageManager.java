@@ -17,6 +17,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import ir.aeliux.usbtoolkit.BuildConfig;
 import ir.aeliux.usbtoolkit.data.GadgetState;
 import ir.aeliux.usbtoolkit.data.LunState;
 import ir.aeliux.usbtoolkit.data.MassStorageConfig;
@@ -157,7 +158,7 @@ public final class UsbMassStorageManager {
         try (Stream<Path> paths = Files.list(udcDir)) {
             return paths
                     .map(p -> p.getFileName().toString())
-                    .filter(name -> !name.contains("dummy"))
+                    .filter(name -> BuildConfig.DEBUG || !name.contains("dummy"))
                     .sorted()
                     .collect(Collectors.toList());
         } catch (IOException e) {
