@@ -102,7 +102,7 @@ public class MainActivity extends BaseActivity {
             return;
         }
 
-        LoadingDialog.show(this, DIALOG_INIT, "Initializing");
+        LoadingDialog.show(this, DIALOG_INIT, getString(R.string.initializing));
 
         binding.doAction.setOnClickListener(v -> {
             if (isRunning) {
@@ -120,7 +120,7 @@ public class MainActivity extends BaseActivity {
             addMountFilesLauncher.launch(intent);
         });
 
-        LoadingDialog.updateMessage("Waiting for Root Service");
+        LoadingDialog.updateMessage(getString(R.string.binder_waiting));
 
         Intent intent = new Intent(this, UsbMassStorageService.class);
         RootService.bind(intent, serviceConnection);
@@ -154,8 +154,10 @@ public class MainActivity extends BaseActivity {
                     binding.secSettings.getContentContainer().setAlpha(result ? 0.5f : 1);
 
                     if (isRunning) {
+                        binding.doAction.setContentDescription(getString(R.string.stop));
                         binding.doAction.setImageResource(R.drawable.ic_stop);
                     } else {
+                        binding.doAction.setContentDescription(getString(R.string.start));
                         binding.doAction.setImageResource(R.drawable.ic_play_arrow);
                     }
                     binding.doAction.setVisibility(View.VISIBLE);
@@ -166,7 +168,7 @@ public class MainActivity extends BaseActivity {
             @Override
             public void onResult(boolean result) {
                 if (result) return;
-                runOnUiThread(() -> showFatalError("ConfigFS either not supported or not mounted."));
+                runOnUiThread(() -> showFatalError(getString(R.string.error_no_configfs)));
             }
         });
         rootService.getUdcList(new IStringListCallback.Stub() {
@@ -174,7 +176,7 @@ public class MainActivity extends BaseActivity {
             public void onResult(List<String> result) {
                 runOnUiThread(() -> {
                     if (result == null || result.isEmpty()) {
-                        showFatalError("No UDC is found.");
+                        showFatalError(getString(R.string.error_no_udc));
                         return;
                     }
                     CharSequence[] currentDropdownEntries = null;
@@ -202,7 +204,7 @@ public class MainActivity extends BaseActivity {
                         MaterialItem item = new MaterialItem(MainActivity.this);
                         item.setTitle(gadget.name);
                         if (gadget.bound) {
-                            item.setSubtitle("Bound");
+                            item.setSubtitle(getString(R.string.bound));
                         }
                         item.setIconResource(R.drawable.ic_gadget);
                         item.setOnClickListener((v) -> {
@@ -215,9 +217,7 @@ public class MainActivity extends BaseActivity {
             }
 
             @Override
-            public void onError(String error) {
-
-            }
+            public void onError(String error) {}
         });
     }
 
@@ -237,7 +237,7 @@ public class MainActivity extends BaseActivity {
     }
 
     private void doUmount() {
-        LoadingDialog.show(this, DIALOG_MASS_STORAGE, "Processing");
+        LoadingDialog.show(this, DIALOG_MASS_STORAGE, getString(R.string.processing));
 
         try {
             rootService.stop(getUsbMassStorageCallback());
@@ -256,7 +256,7 @@ public class MainActivity extends BaseActivity {
         }
 
         if (!hasFiles) {
-            Message.snack("At least one file required");
+            Message.snack(getString(R.string.error_no_file));
             return;
         }
 
@@ -266,7 +266,7 @@ public class MainActivity extends BaseActivity {
                                     .setUdc((String) binding.selUdc.getSelectedItem())
                                     .build();
 
-        LoadingDialog.show(this, DIALOG_MASS_STORAGE, "Processing");
+        LoadingDialog.show(this, DIALOG_MASS_STORAGE, getString(R.string.processing));
 
         try {
             rootService.start(config, getUsbMassStorageCallback());
@@ -291,8 +291,8 @@ public class MainActivity extends BaseActivity {
             public void onStepFailed(String stepName, String error) {
                 runOnUiThread(() -> {
                     AlertDialog dialog = new MaterialAlertDialogBuilder(MainActivity.this)
-                            .setMessage("Error occurred on step: " + stepName + " - " + error)
-                            .setNegativeButton("OK", (d, w) -> d.dismiss())
+                            .setMessage(getString(R.string.error_step, stepName, error))
+                            .setNegativeButton(R.string.ok, (d, w) -> d.dismiss())
                             .setCancelable(false)
                             .create();
 
@@ -306,7 +306,7 @@ public class MainActivity extends BaseActivity {
                     refresh();
                     LoadingDialog.dismiss();
                     if (result) {
-                        Message.snack("Operation completed successfully");
+                        Message.snack(getString(R.string.op_success));
                     }
                 });
             }
@@ -320,20 +320,20 @@ public class MainActivity extends BaseActivity {
     }
 
     private void showRootServiceConnectionLostError() {
-        showFatalError("Connection to the root service is lost, you must restart the app.");
+        showFatalError(getString(R.string.error_binder_lost));
     }
 
     private void showRootRequiredError() {
-        showFatalError("This app needs root access to work.");
+        showFatalError(getString(R.string.error_root_required));
     }
 
     private void showFatalError(String text) {
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
-        builder.setTitle("Error");
+        builder.setTitle(R.string.error);
         builder.setMessage(text);
         builder.setCancelable(false);
 
-        builder.setNegativeButton("Exit", (dialog, which) -> {
+        builder.setNegativeButton(R.string.exit, (dialog, which) -> {
             dialog.dismiss();
             finishAffinity();
         });

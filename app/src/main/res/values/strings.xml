@@ -31,4 +31,23 @@
     <string name="device_version">Device Version</string>
     <string name="activity_file_picker">Select Files</string>
     <string name="confirm">Confirm</string>
+    <string name="bound">Bound</string>
+    <string name="unbound">Unbound</string>
+    <string name="processing">Processing</string>
+    <string name="op_success">Operation completed successfully</string>
+    <string name="error_binder_lost">Connection to the root service is lost, you must restart the app.</string>
+    <string name="error_root_required">This app needs root access to work.</string>
+    <string name="error">Error</string>
+    <string name="exit">Exit</string>
+    <string name="error_step">Error occurred on step: %1$s - %2$s</string>
+    <string name="ok">OK</string>
+    <string name="error_no_file">At least one file required</string>
+    <string name="error_no_udc">No UDC is found.</string>
+    <string name="error_no_configfs">ConfigFS either not supported or not mounted.</string>
+    <string name="start">Start</string>
+    <string name="stop">Stop</string>
+    <string name="binder_waiting">Waiting for Root Service</string>
+    <string name="initializing">Initializing</string>
+    <string name="error_no_binder">Root service not connected</string>
+    <string name="error_binder">IPC error: %1$s</string>
 </resources>

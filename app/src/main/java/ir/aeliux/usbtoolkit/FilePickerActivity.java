@@ -128,7 +128,7 @@ public class FilePickerActivity extends BaseActivity {
     private void setupButtons() {
         binding.actionConfirm.setOnClickListener(v -> {
             if (selectedPaths.isEmpty()) {
-                Message.snack("At least one item is required");
+                Message.snack(getString(R.string.error_no_file));
                 return;
             }
             Intent result = new Intent();
@@ -176,7 +176,7 @@ public class FilePickerActivity extends BaseActivity {
         IRootFileService service = rootService;
         if (service == null) {
             showLoading(false);
-            Toast.makeText(this, "Root service not connected", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.error_no_binder, Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -203,7 +203,7 @@ public class FilePickerActivity extends BaseActivity {
             });
         } catch (RemoteException e) {
             showLoading(false);
-            Toast.makeText(this, "IPC error: " + e.getMessage(),
+            Toast.makeText(this, getString(R.string.error_binder, e.getMessage()),
                     Toast.LENGTH_SHORT).show();
         }
     }

@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 
 import androidx.activity.EdgeToEdge;
 
@@ -57,8 +58,9 @@ public class GadgetDetailsActivity extends BaseActivity {
         disableContainer(binding.secDevice);
         disableContainer(binding.secUsb);
 
-        binding.infoBound.setSubtitle(gadget.bound ? "Bound" : "Not Bound");
+        binding.infoBound.setSubtitle(gadget.bound ? getString(R.string.bound) : getString(R.string.unbound));
         binding.infoBoundUdc.setSubtitle(gadget.bound ? gadget.boundUdc : null);
+        binding.infoBoundUdc.setVisibility(gadget.bound ? View.VISIBLE : View.GONE);
 
         binding.infoVendorId.setSubtitle(DataConversion.intToString(gadget.vendorId, 16));
         binding.infoProductId.setSubtitle(DataConversion.intToString(gadget.productId, 16));
