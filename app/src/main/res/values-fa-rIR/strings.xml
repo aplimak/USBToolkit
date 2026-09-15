@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="usb_version">نسخه USB</string>
+    <string name="device_version">نسخه دستگاه</string>
+    <string name="activity_file_picker">انتخاب فایل</string>
+    <string name="settings">تنظیمات</string>
+    <string name="files">فایل ها</string>
+    <string name="activity_gadget_details">اطلاعات گجت</string>
+    <string name="add">افزودن</string>
+    <string name="stop">توقف</string>
+    <string name="binder_waiting">در انتظار سرویس روت</string>
+    <string name="confirm">تایید</string>
+    <string name="bound">متصل</string>
+    <string name="status">وضعیت</string>
+    <string name="bound_udc">UDC متصل</string>
+    <string name="read_only_desc">اتصال فایل ها به عنوان دیسک های غیر قابل تغییر</string>
+    <string name="cd_rom_desc">اتصال فایل ها به عنوان CD-ROM</string>
+    <string name="device">دستگاه</string>
+    <string name="error_root_required">این برنامه به دسترسی روت نیاز دارد.</string>
+    <string name="error">خطا</string>
+    <string name="not_bound">متصل نیست</string>
+    <string name="processing">درحال پردازش</string>
+    <string name="op_success">عملیات با موفقیت انجام شد</string>
+    <string name="error_binder_lost">اتصال به سرویس روت قطع شده است، لازم است برنامه راه اندازی مجدد شود.</string>
+    <string name="initializing">درحال مقداردهی اولیه</string>
+    <string name="error_no_binder">سزویس روت متصل نیست</string>
+    <string name="error_no_udc">UDC یافت نشد.</string>
+    <string name="error_no_configfs">ConfigFS پشتیبانی نمی شود یا متصل نشده است.</string>
+    <string name="ok">تایید</string>
+    <string name="error_no_file">حداقل یک فایل لازم است</string>
+    <string name="exit">خروج</string>
+    <string name="usb_bm_attributes">ویژگی ها</string>
+    <string name="udc_desc">انتخاب کنترلر USB برای اتصال گجت</string>
+    <string name="gadgets">گجت ها</string>
+    <string name="root">ریشه</string>
+    <string name="home">خانه</string>
+    <string name="no_files_found">خالی</string>
+    <string name="loading">درحال بارگذاری...</string>
+    <string name="vendor_id">شناسه سازنده</string>
+    <string name="product_id">شناسه محصول</string>
+    <string name="manufacturer">سازنده</string>
+    <string name="product">محصول</string>
+    <string name="read_only">فقط خواندنی</string>
+    <string name="removable">جداشدنی</string>
+    <string name="removable_desc">اتصال فایل ها به عنوان دیسک های قابل جداسازی</string>
+    <string name="serial_number">شماره سریال</string>
+    <string name="start">شروع</string>
+</resources>

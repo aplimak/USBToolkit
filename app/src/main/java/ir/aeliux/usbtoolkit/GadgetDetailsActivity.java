@@ -58,7 +58,7 @@ public class GadgetDetailsActivity extends BaseActivity {
         disableContainer(binding.secDevice);
         disableContainer(binding.secUsb);
 
-        binding.infoBound.setSubtitle(gadget.bound ? getString(R.string.bound) : getString(R.string.unbound));
+        binding.infoBound.setSubtitle(gadget.bound ? getString(R.string.bound) : getString(R.string.not_bound));
         binding.infoBoundUdc.setSubtitle(gadget.bound ? gadget.boundUdc : null);
         binding.infoBoundUdc.setVisibility(gadget.bound ? View.VISIBLE : View.GONE);
 

@@ -103,7 +103,7 @@
                     android:id="@+id/info_bm_attributes"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:itemTitle="@string/flags"
+                    app:itemTitle="@string/usb_bm_attributes"
                     app:attachMasterListener="false" />
                 <ir.aeliux.usbtoolkit.widget.MaterialItem
                     android:id="@+id/info_bcd_usb"
