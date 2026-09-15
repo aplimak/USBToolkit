@@ -50,13 +50,13 @@
                 android:id="@+id/sec_files"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:headerText="Files">
+                app:headerText="@string/files">
 
                 <ir.aeliux.usbtoolkit.widget.MaterialItem
                     android:id="@+id/btn_add_file"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:itemTitle="Add"
+                    app:itemTitle="@string/add"
                     app:itemIcon="@drawable/ic_add" />
             </ir.aeliux.usbtoolkit.widget.MaterialContainer>
 
@@ -64,7 +64,7 @@
                 android:id="@+id/sec_settings"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:headerText="Settings">
+                app:headerText="@string/settings">
 
                 <ir.aeliux.usbtoolkit.widget.MaterialItem
                     android:id="@+id/sch_readonly"
@@ -72,8 +72,8 @@
                     android:layout_height="wrap_content"
                     app:isChecked="false"
                     app:itemIcon="@drawable/ic_edit_off"
-                    app:itemSubtitle="Mount files as immutable read only disks"
-                    app:itemTitle="Read-Only"
+                    app:itemSubtitle="@string/read_only_desc"
+                    app:itemTitle="@string/read_only"
                     app:showSwitch="true" />
 
                 <ir.aeliux.usbtoolkit.widget.MaterialItem
@@ -82,8 +82,8 @@
                     android:layout_height="wrap_content"
                     app:isChecked="false"
                     app:itemIcon="@drawable/ic_album"
-                    app:itemSubtitle="Mount files as CD-ROM disks"
-                    app:itemTitle="CD-ROM"
+                    app:itemSubtitle="@string/cd_rom_desc"
+                    app:itemTitle="@string/cd_rom"
                     app:showSwitch="true" />
 
                 <ir.aeliux.usbtoolkit.widget.MaterialItem
@@ -92,16 +92,16 @@
                     android:layout_height="wrap_content"
                     app:isChecked="true"
                     app:itemIcon="@drawable/ic_eject"
-                    app:itemSubtitle="Mount files as removable disks"
-                    app:itemTitle="Removable"
+                    app:itemSubtitle="@string/removable_desc"
+                    app:itemTitle="@string/removable"
                     app:showSwitch="true" />
 
                 <ir.aeliux.usbtoolkit.widget.MaterialItem
                     android:id="@+id/sel_udc"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:itemTitle="UDC"
-                    app:itemSubtitle="Set USB Device Controller to bind gadget to it"
+                    app:itemTitle="@string/udc"
+                    app:itemSubtitle="@string/udc_desc"
                     app:itemIcon="@drawable/ic_usb" />
             </ir.aeliux.usbtoolkit.widget.MaterialContainer>
 
@@ -109,7 +109,7 @@
                 android:id="@+id/sec_gadgets"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:headerText="Gadgets">
+                app:headerText="@string/gadgets">
 
             </ir.aeliux.usbtoolkit.widget.MaterialContainer>
         </LinearLayout>

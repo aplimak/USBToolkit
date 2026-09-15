@@ -13,7 +13,7 @@
         android:layout_width="0dp"
         android:layout_height="?attr/actionBarSize"
         android:background="?attr/colorSurfaceContainer"
-        app:title="Gadget Info"
+        app:title="@string/activity_gadget_details"
         app:titleCentered="false"
         app:navigationIcon="@drawable/ic_arrow_back"
         app:navigationIconTint="?attr/colorOnSurface"
@@ -39,19 +39,19 @@
                 android:id="@+id/sec_udc"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:headerText="UDC">
+                app:headerText="@string/udc">
 
                 <ir.aeliux.usbtoolkit.widget.MaterialItem
                     android:id="@+id/info_bound"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:itemTitle="Status"
+                    app:itemTitle="@string/status"
                     app:attachMasterListener="false" />
                 <ir.aeliux.usbtoolkit.widget.MaterialItem
                     android:id="@+id/info_bound_udc"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:itemTitle="Bound UDC"
+                    app:itemTitle="@string/bound_udc"
                     app:attachMasterListener="false" />
             </ir.aeliux.usbtoolkit.widget.MaterialContainer>
 
@@ -59,37 +59,37 @@
                 android:id="@+id/sec_device"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:headerText="Device">
+                app:headerText="@string/device">
 
                 <ir.aeliux.usbtoolkit.widget.MaterialItem
                     android:id="@+id/info_vendor_id"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:itemTitle="Vendor Id"
+                    app:itemTitle="@string/vendor_id"
                     app:attachMasterListener="false" />
                 <ir.aeliux.usbtoolkit.widget.MaterialItem
                     android:id="@+id/info_product_id"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:itemTitle="Product Id"
+                    app:itemTitle="@string/product_id"
                     app:attachMasterListener="false" />
                 <ir.aeliux.usbtoolkit.widget.MaterialItem
                     android:id="@+id/info_manufacturer"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:itemTitle="Manufacturer"
+                    app:itemTitle="@string/manufacturer"
                     app:attachMasterListener="false" />
                 <ir.aeliux.usbtoolkit.widget.MaterialItem
                     android:id="@+id/info_product"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:itemTitle="Product"
+                    app:itemTitle="@string/product"
                     app:attachMasterListener="false" />
                 <ir.aeliux.usbtoolkit.widget.MaterialItem
                     android:id="@+id/info_serial_number"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:itemTitle="Serial Number"
+                    app:itemTitle="@string/serial_number"
                     app:attachMasterListener="false" />
             </ir.aeliux.usbtoolkit.widget.MaterialContainer>
 
@@ -97,25 +97,25 @@
                 android:id="@+id/sec_usb"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:headerText="USB">
+                app:headerText="@string/usb">
 
                 <ir.aeliux.usbtoolkit.widget.MaterialItem
                     android:id="@+id/info_bm_attributes"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:itemTitle="Flags"
+                    app:itemTitle="@string/flags"
                     app:attachMasterListener="false" />
                 <ir.aeliux.usbtoolkit.widget.MaterialItem
                     android:id="@+id/info_bcd_usb"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:itemTitle="USB Version"
+                    app:itemTitle="@string/usb_version"
                     app:attachMasterListener="false" />
                 <ir.aeliux.usbtoolkit.widget.MaterialItem
                     android:id="@+id/info_bcd_device"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:itemTitle="Device Version"
+                    app:itemTitle="@string/device_version"
                     app:attachMasterListener="false" />
             </ir.aeliux.usbtoolkit.widget.MaterialContainer>
         </LinearLayout>

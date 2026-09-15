@@ -1,5 +1,7 @@
 package ir.aeliux.usbtoolkit.util;
 
+import java.util.Locale;
+
 public final class DataConversion {
     public static int stringToInt(String value, int radix) {
         if (radix == 16 && (value.startsWith("0x") || value.startsWith("0X"))) {
@@ -36,7 +38,7 @@ public final class DataConversion {
         int major = bcdToInt(highByte);
         int minor = bcdToInt(lowByte);
 
-        return String.format("%d.%02d", major, minor);
+        return String.format(Locale.ENGLISH, "%d.%02d", major, minor);
     }
 
     /**
