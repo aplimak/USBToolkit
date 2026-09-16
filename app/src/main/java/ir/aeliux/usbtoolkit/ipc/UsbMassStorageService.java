@@ -154,7 +154,11 @@ public class UsbMassStorageService extends RootService {
 
                     List<GadgetState> result = new ArrayList<>();
                     for (String gadget : gadgets) {
-                        result.add(UsbMassStorageManager.getGadgetState(configfs, gadget));
+                        try {
+                            result.add(UsbMassStorageManager.getGadgetState(configfs, gadget));
+                        } catch (UsbGadgetException e) {
+                            Log.w(TAG, "Error happened in binder.getGadgetState while getting state of gadget: " + gadget, e);
+                        }
                     }
 
                     Log.d(TAG, "firing onResult with result: " + result);
