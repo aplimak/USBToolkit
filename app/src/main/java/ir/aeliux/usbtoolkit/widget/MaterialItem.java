@@ -3,7 +3,10 @@ package ir.aeliux.usbtoolkit.widget;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.TypedArray;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.util.AttributeSet;
+import android.util.SparseArray;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -150,7 +153,7 @@ public class MaterialItem extends ConstraintLayout {
             } else if (hasDropdown) {
                 showDropdown();
             } else if (hasSwitch) {
-                switchWidget.performClick();
+                switchWidget.setChecked(!switchWidget.isChecked());
             } else {
                 setClicked = true;
             }
@@ -330,5 +333,71 @@ public class MaterialItem extends ConstraintLayout {
         setFocusable(masterListenerEnabled);
 
         post(this::refreshElements);
+    }
+
+    @Override
+    protected void dispatchSaveInstanceState(SparseArray<Parcelable> container) {
+        dispatchFreezeSelfOnly(container);
+    }
+
+    @Override
+    protected void dispatchRestoreInstanceState(SparseArray<Parcelable> container) {
+        dispatchThawSelfOnly(container);
+    }
+
+    @Override
+    protected Parcelable onSaveInstanceState() {
+        Parcelable superState = super.onSaveInstanceState();
+        SavedState ss = new SavedState(superState);
+        if (hasSwitch) {
+            ss.checked = this.isChecked();
+        }
+        return ss;
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Parcelable state) {
+        if (!(state instanceof SavedState)) {
+            super.onRestoreInstanceState(state);
+            return;
+        }
+        SavedState ss = (SavedState) state;
+        super.onRestoreInstanceState(ss.getSuperState());
+
+        if (hasSwitch) {
+            setChecked(ss.checked);
+        }
+    }
+
+    static class SavedState extends BaseSavedState {
+        boolean checked;
+
+        SavedState(Parcelable superState) {
+            super(superState);
+        }
+
+        private SavedState(Parcel in) {
+            super(in);
+            checked = in.readInt() == 1;
+        }
+
+        @Override
+        public void writeToParcel(Parcel out, int flags) {
+            super.writeToParcel(out, flags);
+            out.writeInt(checked ? 1 : 0);
+        }
+
+        public static final Parcelable.Creator<SavedState> CREATOR =
+                new Parcelable.Creator<SavedState>() {
+                    @Override
+                    public SavedState createFromParcel(Parcel in) {
+                        return new SavedState(in);
+                    }
+
+                    @Override
+                    public SavedState[] newArray(int size) {
+                        return new SavedState[size];
+                    }
+                };
     }
 }
