@@ -4,12 +4,13 @@ import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.view.View;
-import android.view.ViewGroup;
+import android.widget.LinearLayout;
 
 import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
@@ -23,6 +24,7 @@ import com.topjohnwu.superuser.ipc.RootService;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
 import ir.aeliux.usbtoolkit.callback.IGadgetStateListCallback;
@@ -63,6 +65,12 @@ public class MainActivity extends BaseActivity {
 
     private boolean isRunning = false;
 
+    private final String STATE_FILES = "state_files";
+    private final String STATE_GADGETS = "state_gadgets";
+
+    private final HashSet<String> filesList = new HashSet<>();
+    private List<GadgetState> gadgets = new ArrayList<>();
+
     private ActivityMainBinding binding;
     private final ActivityResultLauncher<Intent> addMountFilesLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
@@ -70,20 +78,10 @@ public class MainActivity extends BaseActivity {
                         if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
                             ArrayList<String> paths = result.getData()
                                     .getStringArrayListExtra(FilePickerActivity.EXTRA_SELECTED_PATHS);
-                            if (paths == null) return;
+                            if (paths == null || paths.isEmpty()) return;
 
-                            var container = binding.secFiles;
-
-                            for (String path : paths) {
-                                MaterialItem item = new MaterialItem(this);
-                                item.setTitle(path);
-                                item.setClickable(true);
-                                item.setFocusable(true);
-                                item.setOnClickListener(this::handleFileClick);
-                                container.addView(item);
-                            }
-
-                            refresh();
+                            filesList.addAll(paths);
+                            refreshFiles();
                         }
                     });
 
@@ -97,12 +95,18 @@ public class MainActivity extends BaseActivity {
         setupToolbar(binding.toolbar);
         applyWindowInsets(binding.main);
 
+        boolean firstLaunch = true;
+        if (savedInstanceState != null) {
+            firstLaunch = false;
+            restoreInstance(savedInstanceState);
+        }
+
         if (Shell.cmd("ls /data/adb").exec().getCode() > 0) {
             showRootRequiredError();
             return;
         }
 
-        LoadingDialog.show(this, DIALOG_INIT, getString(R.string.initializing));
+        if (firstLaunch) LoadingDialog.show(this, DIALOG_INIT, getString(R.string.initializing));
 
         binding.doAction.setOnClickListener(v -> {
             if (isRunning) {
@@ -120,13 +124,15 @@ public class MainActivity extends BaseActivity {
             addMountFilesLauncher.launch(intent);
         });
 
-        LoadingDialog.updateMessage(getString(R.string.binder_waiting));
+        if (firstLaunch) LoadingDialog.updateMessage(getString(R.string.binder_waiting));
 
         Intent intent = new Intent(this, UsbMassStorageService.class);
         RootService.bind(intent, serviceConnection);
     }
 
     private void refresh() {
+        if (binding == null) return;
+
         if (isBound) {
             try {
                 rootRefresh();
@@ -136,6 +142,9 @@ public class MainActivity extends BaseActivity {
         } else {
             showRootRequiredError();
         }
+
+        refreshFiles();
+        refreshGadgets();
 
         if (LoadingDialog.getDialogId() == DIALOG_INIT && LoadingDialog.isShowing()) {
             LoadingDialog.dismiss();
@@ -192,33 +201,59 @@ public class MainActivity extends BaseActivity {
             @Override
             public void onResult(List<GadgetState> result) {
                 runOnUiThread(() -> {
-                    if (result == null || result.isEmpty()) {
-                        binding.secGadgets.setVisibility(View.GONE);
-                        return;
+                    if (result == null) {
+                        gadgets.clear();
+                    } else {
+                        gadgets = result;
                     }
-                    binding.secGadgets.setVisibility(View.VISIBLE);
-                    var container = binding.secGadgets.getContentContainer();
-                    container.removeAllViews();
-
-                    for (GadgetState gadget : result) {
-                        MaterialItem item = new MaterialItem(MainActivity.this);
-                        item.setTitle(gadget.name);
-                        if (gadget.bound) {
-                            item.setSubtitle(getString(R.string.bound));
-                        }
-                        item.setIconResource(R.drawable.ic_gadget);
-                        item.setOnClickListener((v) -> {
-                            Intent intent = GadgetDetailsActivity.intent(MainActivity.this, gadget);
-                            startActivity(intent);
-                        });
-                        container.addView(item);
-                    }
+                    refreshGadgets();
                 });
             }
 
             @Override
             public void onError(String error) {}
         });
+    }
+
+    private void refreshGadgets() {
+        if (gadgets == null || gadgets.isEmpty()) {
+            binding.secGadgets.setVisibility(View.GONE);
+            return;
+        }
+        binding.secGadgets.setVisibility(View.VISIBLE);
+        var container = binding.secGadgets.getContentContainer();
+        container.removeAllViews();
+
+        for (GadgetState gadget : gadgets) {
+            MaterialItem item = new MaterialItem(MainActivity.this);
+            item.setTitle(gadget.name);
+            if (gadget.bound) {
+                item.setSubtitle(getString(R.string.bound));
+            }
+            item.setIconResource(R.drawable.ic_gadget);
+            item.setOnClickListener((v) -> {
+                Intent intent = GadgetDetailsActivity.intent(MainActivity.this, gadget);
+                startActivity(intent);
+            });
+            container.addView(item);
+        }
+    }
+
+    private void refreshFiles() {
+        LinearLayout container = binding.secFiles.getContentContainer();
+        container.removeViews(1, container.getChildCount() - 1);
+
+        for (String path : filesList) {
+            MaterialItem item = new MaterialItem(this);
+            item.setTitle(path);
+            item.setClickable(true);
+            item.setFocusable(true);
+            item.setOnClickListener((v) -> {
+                filesList.remove(path);
+                refreshFiles();
+            });
+            container.addView(item);
+        }
     }
 
     public static boolean contentsEqual(List<? extends CharSequence> a,
@@ -236,40 +271,36 @@ public class MainActivity extends BaseActivity {
         return true;
     }
 
-    private void doUmount() {
-        LoadingDialog.show(this, DIALOG_MASS_STORAGE, getString(R.string.processing));
-
-        try {
-            rootService.stop(getUsbMassStorageCallback());
-        } catch (RemoteException e) {
-            showRootServiceConnectionLostError();
-        }
-    }
-
     private void doMount() {
-        MassStorageConfig.Builder builder = new MassStorageConfig.Builder();
-        boolean hasFiles = false;
-        for (int i = 1; i < binding.secFiles.getContentContainer().getChildCount(); i++) {
-            MaterialItem item = (MaterialItem) binding.secFiles.getContentContainer().getChildAt(i);
-            builder.addImage(item.getText().toString());
-            hasFiles = true;
-        }
-
-        if (!hasFiles) {
+        if (filesList.isEmpty()) {
             Message.snack(getString(R.string.error_no_file));
             return;
         }
 
+        MassStorageConfig.Builder builder = new MassStorageConfig.Builder();
+
+        filesList.forEach(builder::addImage);
+
         MassStorageConfig config = builder.setReadOnly(binding.schReadonly.isChecked())
-                                    .setCdrom(binding.schCdrom.isChecked())
-                                    .setRemovable(binding.schRemovable.isChecked())
-                                    .setUdc((String) binding.selUdc.getSelectedItem())
-                                    .build();
+                .setCdrom(binding.schCdrom.isChecked())
+                .setRemovable(binding.schRemovable.isChecked())
+                .setUdc((String) binding.selUdc.getSelectedItem())
+                .build();
 
         LoadingDialog.show(this, DIALOG_MASS_STORAGE, getString(R.string.processing));
 
         try {
             rootService.start(config, getUsbMassStorageCallback());
+        } catch (RemoteException e) {
+            showRootServiceConnectionLostError();
+        }
+    }
+
+    private void doUmount() {
+        LoadingDialog.show(this, DIALOG_MASS_STORAGE, getString(R.string.processing));
+
+        try {
+            rootService.stop(getUsbMassStorageCallback());
         } catch (RemoteException e) {
             showRootServiceConnectionLostError();
         }
@@ -313,12 +344,6 @@ public class MainActivity extends BaseActivity {
         };
     }
 
-    private void handleFileClick(View view) {
-        ViewGroup parent = (ViewGroup) view.getParent();
-        parent.removeView(view);
-        refresh();
-    }
-
     private void showRootServiceConnectionLostError() {
         showFatalError(getString(R.string.error_binder_lost));
     }
@@ -341,9 +366,36 @@ public class MainActivity extends BaseActivity {
         builder.show();
     }
 
+    private void restoreInstance(@NonNull Bundle savedInstanceState) {
+        ArrayList<String> saved_files = savedInstanceState.getStringArrayList(STATE_FILES);
+        if (saved_files != null) {
+            filesList.addAll(saved_files);
+            refreshFiles();
+        }
+        GadgetState[] retrivedGadgets;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            retrivedGadgets = savedInstanceState.getParcelableArray(STATE_GADGETS, GadgetState.class);
+        } else {
+            retrivedGadgets = (GadgetState[]) savedInstanceState.getParcelableArray(STATE_GADGETS);
+        }
+
+        if (retrivedGadgets != null) {
+            gadgets.addAll(Arrays.asList(retrivedGadgets));
+            refreshGadgets();
+        }
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putStringArrayList(STATE_FILES, new ArrayList<>(filesList));
+        outState.putParcelableArray(STATE_GADGETS, gadgets.toArray(new GadgetState[0]));
+    }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        binding = null;
         if (isBound) {
             RootService.unbind(serviceConnection);
             isBound = false;

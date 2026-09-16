@@ -110,6 +110,7 @@
                 android:id="@+id/sec_gadgets"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:visibility="gone"
                 app:headerText="@string/gadgets">
 
             </ir.aeliux.usbtoolkit.widget.MaterialContainer>
