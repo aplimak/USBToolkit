@@ -14,8 +14,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.PrintWriter;
 
-import ir.aeliux.usbtoolkit.ipc.DummyRootService;
-import ir.aeliux.usbtoolkit.ipc.UsbMassStorageService;
+import ir.aeliux.usbtoolkit.ipc.KeepAliveRootService;
 import ir.aeliux.usbtoolkit.util.App;
 import ir.aeliux.usbtoolkit.util.LoadingDialog;
 
@@ -44,10 +43,8 @@ public class MainApplication extends Application {
         App.init(this);
         LoadingDialog.init(this);
 
-        Intent intent = new Intent(this, DummyRootService.class);
-        if (BuildConfig.DEBUG) {
-            intent.addCategory(RootService.CATEGORY_DAEMON_MODE);  // Prevents losing root service debugger
-        }
+        Log.i(TAG, "Binding Keep-Alive Root Service");
+        Intent intent = new Intent(this, KeepAliveRootService.class);
         RootService.bind(intent, serviceConnection);
     }
 

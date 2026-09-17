@@ -132,9 +132,6 @@ public class MainActivity extends BaseActivity {
         if (firstLaunch) LoadingDialog.updateMessage(getString(R.string.binder_waiting));
 
         Intent intent = new Intent(this, UsbMassStorageService.class);
-        if (BuildConfig.DEBUG) {
-            intent.addCategory(RootService.CATEGORY_DAEMON_MODE);  // Prevents losing root service debugger
-        }
         RootService.bind(intent, serviceConnection);
     }
 

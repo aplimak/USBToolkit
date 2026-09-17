@@ -162,9 +162,6 @@ public class FilePickerActivity extends BaseActivity {
 
     private void bindRootService() {
         Intent intent = new Intent(this, RootFileService.class);
-        if (BuildConfig.DEBUG) {
-            intent.addCategory(RootService.CATEGORY_DAEMON_MODE);  // Prevents losing root service debugger
-        }
         RootService.bind(intent, serviceConnection);
     }
 

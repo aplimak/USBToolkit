@@ -3,7 +3,9 @@ package ir.aeliux.usbtoolkit.ipc;
 import android.content.Intent;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.topjohnwu.superuser.ipc.RootService;
@@ -17,6 +19,7 @@ import ir.aeliux.usbtoolkit.callback.IRootFileExistCallback;
 import ir.aeliux.usbtoolkit.data.FileEntry;
 
 public class RootFileService extends RootService {
+    private final String TAG = "RootFileService";
 
     private final IRootFileService.Stub binder = new IRootFileService.Stub() {
 
@@ -105,6 +108,18 @@ public class RootFileService extends RootService {
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
+        Log.d(TAG, "onBind");
         return binder;
+    }
+
+    @Override
+    public void onRebind(@NonNull Intent intent) {
+        Log.d(TAG, "onRebind");
+    }
+
+    @Override
+    public boolean onUnbind(@NonNull Intent intent) {
+        Log.d(TAG, "onUnbind");
+        return super.onUnbind(intent);
     }
 }

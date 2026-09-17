@@ -221,4 +221,15 @@ public class UsbMassStorageService extends RootService {
         Log.d(TAG, "onBind");
         return binder;
     }
+
+    @Override
+    public void onRebind(@NonNull Intent intent) {
+        Log.d(TAG, "onRebind");
+    }
+
+    @Override
+    public boolean onUnbind(@NonNull Intent intent) {
+        Log.d(TAG, "onUnbind");
+        return super.onUnbind(intent);
+    }
 }
