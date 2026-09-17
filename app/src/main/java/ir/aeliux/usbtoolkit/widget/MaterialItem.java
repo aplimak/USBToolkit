@@ -40,6 +40,9 @@ public class MaterialItem extends ConstraintLayout {
     private boolean hasSwitch;
     private boolean initializing = true;
 
+    private int restoredChecked = -1;
+    private int restoredSelectedIndex = -1;
+
     public MaterialItem(@NonNull Context context) {
         this(context, null);
     }
@@ -276,7 +279,8 @@ public class MaterialItem extends ConstraintLayout {
         this.dropdownEntries = entries;
         post(this::refreshElements);
         if (!hasDropdown) return;
-        setSelectedItemInternal(0, true);
+        setSelectedItemInternal(restoredSelectedIndex > -1 ? restoredSelectedIndex : 0, true);
+        if (restoredSelectedIndex > -1) restoredSelectedIndex = -1;
     }
     public CharSequence[] getDropdownEntries() {
         requiresDropdown();
@@ -310,6 +314,10 @@ public class MaterialItem extends ConstraintLayout {
         if (hasSwitch == enable) return;
         hasSwitch = enable;
         post(this::refreshElements);
+        if (hasSwitch && restoredChecked > -1) {
+            setCheckedInternal(restoredChecked == 1);
+            restoredChecked = -1;
+        }
     }
 
     public void setShowChevron(boolean enable) {
@@ -350,7 +358,10 @@ public class MaterialItem extends ConstraintLayout {
         Parcelable superState = super.onSaveInstanceState();
         SavedState ss = new SavedState(superState);
         if (hasSwitch) {
-            ss.checked = this.isChecked();
+            ss.checked = this.isChecked() ? 1 : 0;
+        }
+        if (hasDropdown) {
+            ss.selectedItemIndex = selectedDropdownEntry;
         }
         return ss;
     }
@@ -364,13 +375,25 @@ public class MaterialItem extends ConstraintLayout {
         SavedState ss = (SavedState) state;
         super.onRestoreInstanceState(ss.getSuperState());
 
-        if (hasSwitch) {
-            setChecked(ss.checked);
+        if (ss.checked == 0 || ss.checked == 1) {
+            if (hasSwitch) {
+                setCheckedInternal(ss.checked == 1);
+            } else {
+                restoredChecked = ss.checked;
+            }
+        }
+        if (ss.selectedItemIndex > -1) {
+            if (hasDropdown) {
+                setSelectedItemInternal(ss.selectedItemIndex, true);
+            } else {
+                restoredSelectedIndex = ss.selectedItemIndex;
+            }
         }
     }
 
     static class SavedState extends BaseSavedState {
-        boolean checked;
+        int checked = -1;
+        int selectedItemIndex = -1;
 
         SavedState(Parcelable superState) {
             super(superState);
@@ -378,13 +401,15 @@ public class MaterialItem extends ConstraintLayout {
 
         private SavedState(Parcel in) {
             super(in);
-            checked = in.readInt() == 1;
+            checked = in.readInt();
+            selectedItemIndex = in.readInt();
         }
 
         @Override
         public void writeToParcel(Parcel out, int flags) {
             super.writeToParcel(out, flags);
-            out.writeInt(checked ? 1 : 0);
+            out.writeInt(checked);
+            out.writeInt(selectedItemIndex);
         }
 
         public static final Parcelable.Creator<SavedState> CREATOR =
