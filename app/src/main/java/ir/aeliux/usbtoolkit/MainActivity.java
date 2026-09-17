@@ -10,6 +10,7 @@ import android.os.Debug;
 import android.os.Environment;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
 
@@ -43,6 +44,7 @@ import ir.aeliux.usbtoolkit.util.Views;
 import ir.aeliux.usbtoolkit.widget.MaterialItem;
 
 public class MainActivity extends BaseActivity {
+    private final String TAG = "MainActivity";
     private final int DIALOG_INIT = 1;
     private final int DIALOG_MASS_STORAGE = 2;
 
@@ -51,6 +53,7 @@ public class MainActivity extends BaseActivity {
     private final ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
+            Log.i(TAG, "UsbMassStorageService connected");
             rootService = IUsbMassStorageService.Stub.asInterface(service);
             isBound = true;
             refresh();
@@ -58,6 +61,7 @@ public class MainActivity extends BaseActivity {
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
+            Log.i(TAG, "UsbMassStorageService disconnected");
             rootService = null;
             isBound = false;
             refresh();
