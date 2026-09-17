@@ -5,6 +5,7 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.Debug;
 import android.os.Environment;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -161,6 +162,9 @@ public class FilePickerActivity extends BaseActivity {
 
     private void bindRootService() {
         Intent intent = new Intent(this, RootFileService.class);
+        if (BuildConfig.DEBUG) {
+            intent.addCategory(RootService.CATEGORY_DAEMON_MODE);  // Prevents losing root service debugger
+        }
         RootService.bind(intent, serviceConnection);
     }
 
