@@ -372,6 +372,7 @@ public class MainActivity extends BaseActivity {
     }
 
     private void restoreInstance(@NonNull Bundle savedInstanceState) {
+        Log.d(TAG, "restoreInstance");
         ArrayList<String> saved_files = savedInstanceState.getStringArrayList(STATE_FILES);
         if (saved_files != null) {
             filesList.addAll(saved_files);
@@ -392,6 +393,7 @@ public class MainActivity extends BaseActivity {
 
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
+        Log.d(TAG, "onSaveInstanceState");
         super.onSaveInstanceState(outState);
         outState.putStringArrayList(STATE_FILES, new ArrayList<>(filesList));
         outState.putParcelableArray(STATE_GADGETS, gadgets.toArray(new GadgetState[0]));
@@ -399,6 +401,7 @@ public class MainActivity extends BaseActivity {
 
     @Override
     protected void onDestroy() {
+        Log.d(TAG, "onDestroy");
         super.onDestroy();
         binding = null;
         if (isBound) {
