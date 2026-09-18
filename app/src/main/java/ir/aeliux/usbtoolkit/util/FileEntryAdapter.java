@@ -16,6 +16,7 @@ import com.google.android.material.checkbox.MaterialCheckBox;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
@@ -150,7 +151,7 @@ public final class FileEntryAdapter extends ListAdapter<FileEntry, FileEntryAdap
         notifyDataSetChanged();
     }
 
-    public void restoreSelection(Set<String> paths) {
+    public void restoreSelection(List<String> paths) {
         selectedSet.clear();
         selectedSet.addAll(paths);
         notifyDataSetChanged();
