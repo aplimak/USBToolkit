@@ -290,7 +290,6 @@ public class MainActivity extends BaseActivity {
                     }
                     binding.selUdc.setDropdownEntries(result.toArray(new CharSequence[0]));
                     String currentDefault = model.getUdc().getValue();
-                    if (currentDefault == null || currentDefault.isEmpty()) return;
                     int index = result.indexOf(currentDefault);
                     if (index > -1) {
                         binding.selUdc.setSelectedItem(index);

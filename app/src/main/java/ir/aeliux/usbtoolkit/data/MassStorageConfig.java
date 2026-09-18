@@ -121,7 +121,7 @@ public class MassStorageConfig implements Parcelable {
             if (imagePaths.isEmpty()) {
                 throw new IllegalArgumentException("At least one image path is required");
             }
-            if (udc == null) {
+            if (udc == null || udc.isEmpty()) {
                 throw new IllegalArgumentException("UDC is not set");
             }
             return new MassStorageConfig(this);
