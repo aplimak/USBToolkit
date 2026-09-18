@@ -101,7 +101,13 @@ public class FilePickerActivity extends BaseActivity {
             loadDirectory();
         }));
         model.getFilePaths().observe(this, (value) -> {
-            binding.toolbar.setSubtitle(getString(R.string.n_file_selected, value.size()));
+            int size = value.size();
+            binding.actionConfirm.setText(getString(R.string.n_file_selected, size));
+            if (size == 0) {
+                binding.actionConfirm.shrink();
+            } else {
+                binding.actionConfirm.extend();
+            }
         });
 
         String start = getIntent().getStringExtra(EXTRA_START_PATH);
@@ -188,7 +194,7 @@ public class FilePickerActivity extends BaseActivity {
     private void loadDirectory() {
         showLoading(true);
         String currentPath = Objects.requireNonNull(model.getCurrentDirectory().getValue());
-        binding.tvCurrentPath.setText(currentPath);
+        binding.toolbar.setSubtitle(currentPath);
         if (!isBound) return;
 
         boolean hasParent = new File(currentPath).getParentFile() != null;

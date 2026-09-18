@@ -20,41 +20,26 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/action_confirm"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:contentDescription="@string/confirm"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        android:src="@drawable/ic_check"
+        android:text="@string/confirm"
+        app:icon="@drawable/ic_check"
         android:layout_margin="@dimen/gap_xlarge" />
-
-    <TextView
-        android:id="@+id/tvCurrentPath"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:paddingHorizontal="16dp"
-        android:paddingVertical="8dp"
-        android:textSize="12sp"
-        android:textColor="?attr/colorOnSurfaceVariant"
-        android:fontFamily="sans-serif-medium"
-        android:singleLine="true"
-        android:ellipsize="start"
-        app:layout_constraintTop_toBottomOf="@id/toolbar"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnUp"
         style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="4dp"
+        android:layout_marginStart="@dimen/gap_large"
+        android:layout_marginTop="@dimen/gap_large"
         app:icon="@drawable/ic_arrow_up"
         android:visibility="invisible"
-        app:layout_constraintTop_toBottomOf="@id/tvCurrentPath"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
         app:layout_constraintStart_toStartOf="parent" />
 
     <com.google.android.material.button.MaterialButton
@@ -62,12 +47,12 @@
         style="@style/Widget.Material3.Button.TonalButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
-        android:layout_marginTop="4dp"
+        android:layout_marginEnd="@dimen/gap_large"
+        android:layout_marginTop="@dimen/gap_large"
         android:text="@string/root"
         app:icon="@drawable/ic_shield"
         android:visibility="invisible"
-        app:layout_constraintTop_toBottomOf="@id/tvCurrentPath"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
         app:layout_constraintEnd_toEndOf="parent" />
 
     <com.google.android.material.button.MaterialButton
@@ -75,12 +60,12 @@
         style="@style/Widget.Material3.Button.TonalButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
-        android:layout_marginTop="4dp"
+        android:layout_marginEnd="@dimen/gap_large"
+        android:layout_marginTop="@dimen/gap_large"
         android:text="@string/home"
         app:icon="@drawable/ic_home"
         android:visibility="invisible"
-        app:layout_constraintTop_toBottomOf="@id/tvCurrentPath"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
         app:layout_constraintEnd_toStartOf="@id/btnRoot" />
 
     <androidx.recyclerview.widget.RecyclerView

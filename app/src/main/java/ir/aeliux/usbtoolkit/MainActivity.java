@@ -260,11 +260,13 @@ public class MainActivity extends BaseActivity {
                     binding.secSettings.getContentContainer().setAlpha(result ? 0.5f : 1);
 
                     if (isRunning) {
-                        binding.doAction.setContentDescription(getString(R.string.stop));
-                        binding.doAction.setImageResource(R.drawable.ic_stop);
+                        binding.doAction.setText(getString(R.string.stop));
+                        binding.doAction.setIconResource(R.drawable.ic_stop);
+                        binding.doAction.extend();
                     } else {
-                        binding.doAction.setContentDescription(getString(R.string.start));
-                        binding.doAction.setImageResource(R.drawable.ic_play_arrow);
+                        binding.doAction.setText(getString(R.string.start));
+                        binding.doAction.setIconResource(R.drawable.ic_play_arrow);
+                        binding.doAction.shrink();
                     }
                     binding.doAction.setVisibility(View.VISIBLE);
                 });
