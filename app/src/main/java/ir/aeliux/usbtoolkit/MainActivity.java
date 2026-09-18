@@ -59,12 +59,15 @@ public class MainActivity extends BaseActivity {
     private IUsbMassStorageService rootService;
     private boolean isBound = false;
 
-    private final LifecycleEventObserver refreshLifecycleCallback = (LifecycleEventObserver) (lifecycleOwner, event) -> {
-        if (event == Lifecycle.Event.ON_START) {
-            refresh();
-        }
-    };
     private final ServiceConnection serviceConnection = new ServiceConnection() {
+        private final LifecycleEventObserver refreshLifecycleCallback = (LifecycleEventObserver) (lifecycleOwner, event) -> {
+            if (this.refreshCalled) return;
+            if (event == Lifecycle.Event.ON_START) {
+                refresh();
+                this.refreshCalled = true;
+            }
+        };
+        private boolean refreshCalled = false;
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             Log.i(TAG, "UsbMassStorageService connected");
@@ -75,7 +78,9 @@ public class MainActivity extends BaseActivity {
                 refresh();
                 return;
             }
-            lc.addObserver(refreshLifecycleCallback);
+            if (!refreshCalled) {
+                lc.addObserver(refreshLifecycleCallback);
+            }
         }
 
         @Override
