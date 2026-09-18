@@ -129,9 +129,15 @@ public class MainActivity extends BaseActivity {
         if (Shell.cmd("ls /data/adb").exec().getCode() > 0) {
             showRootRequiredError();
             return;
+        } else if (BuildConfig.DEBUG) {
+            binding.doReboot.setVisibility(View.VISIBLE);
         }
 
         if (firstLaunch) LoadingDialog.show(this, DIALOG_INIT, getString(R.string.initializing));
+
+        binding.doReboot.setOnClickListener(v -> {
+            Shell.cmd("svc power reboot").exec();
+        });
 
         binding.doAction.setOnClickListener(v -> {
             if (isRunning) {

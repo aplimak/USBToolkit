@@ -51,4 +51,5 @@
     <string name="error_no_binder">Root service not connected</string>
     <string name="error_binder" translatable="false">IPC error: %1$s</string>
     <string name="n_file_selected">%1$d File Selected</string>
+    <string name="reboot">Reboot</string>
 </resources>

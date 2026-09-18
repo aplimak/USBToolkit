@@ -23,6 +23,17 @@
         app:layout_constraintEnd_toEndOf="parent" />
 
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:id="@+id/doReboot"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/doAction"
+        android:text="@string/reboot"
+        app:icon="@drawable/ic_replay"
+        android:visibility="gone"
+        android:layout_margin="@dimen/gap_xlarge" />
+
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/doAction"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
