@@ -96,6 +96,11 @@ public class FilePickerActivity extends BaseActivity {
         setupRecyclerView();
         setupButtons();
         bindRootService();
+        updateCounter();
+    }
+
+    private void updateCounter() {
+        binding.toolbar.setSubtitle(getString(R.string.n_file_selected, selectedPaths.size()));
     }
 
     private void setupRecyclerView() {
@@ -106,6 +111,7 @@ public class FilePickerActivity extends BaseActivity {
                 (entry, checked) -> { // onFileSelect (checkbox)
                     if (checked) selectedPaths.add(entry.getAbsolutePath());
                     else selectedPaths.remove(entry.getAbsolutePath());
+                    updateCounter();
                 },
                 entry -> { // onFileClick (row)
                     boolean wasSelected = selectedPaths.contains(entry.getAbsolutePath());
@@ -117,6 +123,7 @@ public class FilePickerActivity extends BaseActivity {
                     if (newState) selectedPaths.add(entry.getAbsolutePath());
                     else selectedPaths.remove(entry.getAbsolutePath());
                     adapter.setSelected(entry.getAbsolutePath(), newState);
+                    updateCounter();
                 },
                 allowMultiple,
                 allowedExtensions
