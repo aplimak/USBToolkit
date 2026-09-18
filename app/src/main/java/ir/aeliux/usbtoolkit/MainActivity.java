@@ -300,21 +300,6 @@ public class MainActivity extends BaseActivity {
         }
     }
 
-    public static boolean contentsEqual(List<? extends CharSequence> a,
-                                        List<? extends CharSequence> b) {
-        if (a.size() != b.size()) return false;
-        for (int i = 0; i < a.size(); i++) {
-            CharSequence x = a.get(i);
-            CharSequence y = b.get(i);
-            if (x == null || y == null) {
-                if (x != y) return false;
-            } else if (!x.toString().equals(y.toString())) {
-                return false;
-            }
-        }
-        return true;
-    }
-
     private void doMount() {
         if (filesList.isEmpty()) {
             Message.snack(getString(R.string.error_no_file));
