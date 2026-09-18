@@ -201,12 +201,10 @@ public class MaterialItem extends ConstraintLayout {
     }
 
     public void setOnCheckedChangeListener(@Nullable CompoundButton.OnCheckedChangeListener l) {
-        requiresSwitch();
         checkedChangeListener = l;
     }
 
     public void setOnDropdownItemSelectedListener(@Nullable DialogInterface.OnClickListener l) {
-        requiresDropdown();
         dropdownItemSelectedListener = l;
     }
 
@@ -245,18 +243,6 @@ public class MaterialItem extends ConstraintLayout {
         }
     }
 
-    private void requiresSwitch() {
-        if (!hasSwitch) {
-            throw new IllegalStateException("This item has no switch");
-        }
-    }
-
-    private void requiresDropdown() {
-        if (!hasDropdown()) {
-            throw new IllegalStateException("This item has no dropdown");
-        }
-    }
-
     private int dpToPx(int dp) {
         return (int) (dp * getResources().getDisplayMetrics().density);
     }
@@ -280,13 +266,11 @@ public class MaterialItem extends ConstraintLayout {
     }
 
     public void setChecked(boolean checked) {
-        requiresSwitch();
         this.checked = checked;
         refresh();
     }
 
     public boolean isChecked() {
-        requiresSwitch();
         return checked;
     }
 
@@ -300,20 +284,16 @@ public class MaterialItem extends ConstraintLayout {
         refresh();
     }
     public CharSequence[] getDropdownEntries() {
-        requiresDropdown();
         return this.dropdownEntries.clone();
     }
     public int getSelectedItemIndex() {
-        requiresDropdown();
         return selectedIndex;
     }
     public CharSequence getSelectedItem() {
-        requiresDropdown();
         return dropdownEntries[selectedIndex];
     }
 
     public void setSelectedItem(int index) {
-        requiresDropdown();
         if (index < 0 || index >= dropdownEntries.length) {
             throw new IndexOutOfBoundsException();
         }

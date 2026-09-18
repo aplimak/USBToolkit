@@ -19,6 +19,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.topjohnwu.superuser.Shell;
@@ -41,6 +42,7 @@ import ir.aeliux.usbtoolkit.ipc.UsbMassStorageService;
 import ir.aeliux.usbtoolkit.util.LoadingDialog;
 import ir.aeliux.usbtoolkit.util.Message;
 import ir.aeliux.usbtoolkit.util.Views;
+import ir.aeliux.usbtoolkit.viewmodel.MassStorageViewModel;
 import ir.aeliux.usbtoolkit.widget.MaterialItem;
 
 public class MainActivity extends BaseActivity {
@@ -77,6 +79,7 @@ public class MainActivity extends BaseActivity {
     private List<GadgetState> gadgets = new ArrayList<>();
 
     private ActivityMainBinding binding;
+    private MassStorageViewModel model;
     private final ActivityResultLauncher<Intent> addMountFilesLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
                     result -> {
@@ -100,6 +103,7 @@ public class MainActivity extends BaseActivity {
         setupToolbar(binding.toolbar);
         applyWindowInsets(binding.main);
 
+        model = new ViewModelProvider(this).get(MassStorageViewModel.class);
         boolean firstLaunch = true;
         if (savedInstanceState != null) {
             firstLaunch = false;
@@ -127,6 +131,38 @@ public class MainActivity extends BaseActivity {
             intent.putExtra(FilePickerActivity.EXTRA_ALLOW_MULTIPLE, true);
 
             addMountFilesLauncher.launch(intent);
+        });
+
+        binding.schReadonly.setOnCheckedChangeListener((v, checked) -> {
+            model.setReadonly(checked);
+        });
+        model.getReadonly().observe(this, (value) -> {
+            binding.schReadonly.setChecked(value);
+        });
+
+        binding.schCdrom.setOnCheckedChangeListener((v, checked) -> {
+            model.setCdrom(checked);
+        });
+        model.getCdrom().observe(this, (value) -> {
+            binding.schCdrom.setChecked(value);
+        });
+
+        binding.schRemovable.setOnCheckedChangeListener((v, checked) -> {
+            model.setRemovable(checked);
+        });
+        model.getRemovable().observe(this, (value) -> {
+            binding.schRemovable.setChecked(value);
+        });
+
+        binding.selUdc.setOnDropdownItemSelectedListener((v, index) -> {
+            String value = binding.selUdc.getSelectedItem().toString();
+            model.setUdc(value);
+        });
+        model.getUdc().observe(this, (value) -> {
+            var items = binding.selUdc.getDropdownEntries();
+            if (items.length == 0) return;
+            int index = Arrays.asList(items).indexOf(value);
+            binding.selUdc.setSelectedItem(Math.max(0, index));
         });
 
         if (firstLaunch) LoadingDialog.updateMessage(getString(R.string.binder_waiting));
@@ -193,12 +229,15 @@ public class MainActivity extends BaseActivity {
                         showFatalError(getString(R.string.error_no_udc));
                         return;
                     }
-                    CharSequence[] currentDropdownEntries = null;
-                    try {
-                        currentDropdownEntries = binding.selUdc.getDropdownEntries();
-                    } catch (IllegalStateException ignored) {}
-                    if (contentsEqual(result, currentDropdownEntries != null ? Arrays.asList(currentDropdownEntries) : new ArrayList<>())) return;
                     binding.selUdc.setDropdownEntries(result.toArray(new CharSequence[0]));
+                    String currentDefault = model.getUdc().getValue();
+                    if (currentDefault == null || currentDefault.isEmpty()) return;
+                    int index = result.indexOf(currentDefault);
+                    if (index > -1) {
+                        binding.selUdc.setSelectedItem(index);
+                    } else {
+                        model.setUdc(result.get(0));
+                    }
                 });
             }
         });
@@ -286,10 +325,10 @@ public class MainActivity extends BaseActivity {
 
         filesList.forEach(builder::addImage);
 
-        MassStorageConfig config = builder.setReadOnly(binding.schReadonly.isChecked())
-                .setCdrom(binding.schCdrom.isChecked())
-                .setRemovable(binding.schRemovable.isChecked())
-                .setUdc((String) binding.selUdc.getSelectedItem())
+        MassStorageConfig config = builder.setReadOnly(model.getReadonly().getValue())
+                .setCdrom(model.getCdrom().getValue())
+                .setRemovable(model.getRemovable().getValue())
+                .setUdc(model.getUdc().getValue())
                 .build();
 
         LoadingDialog.show(this, DIALOG_MASS_STORAGE, getString(R.string.processing));
