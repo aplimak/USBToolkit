@@ -26,6 +26,7 @@
             android:name=".FilePickerActivity"
             android:label="@string/activity_file_picker"
             android:exported="true"
+            android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".GadgetDetailsActivity"

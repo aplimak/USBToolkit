@@ -19,6 +19,9 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
+import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.LifecycleEventObserver;
+import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -41,6 +44,7 @@ import ir.aeliux.usbtoolkit.data.MassStorageConfig;
 import ir.aeliux.usbtoolkit.databinding.ActivityMainBinding;
 import ir.aeliux.usbtoolkit.ipc.IUsbMassStorageService;
 import ir.aeliux.usbtoolkit.ipc.UsbMassStorageService;
+import ir.aeliux.usbtoolkit.util.Jobs;
 import ir.aeliux.usbtoolkit.util.LoadingDialog;
 import ir.aeliux.usbtoolkit.util.Message;
 import ir.aeliux.usbtoolkit.util.Views;
@@ -54,13 +58,24 @@ public class MainActivity extends BaseActivity {
 
     private IUsbMassStorageService rootService;
     private boolean isBound = false;
+
+    private final LifecycleEventObserver refreshLifecycleCallback = (LifecycleEventObserver) (lifecycleOwner, event) -> {
+        if (event == Lifecycle.Event.ON_START) {
+            refresh();
+        }
+    };
     private final ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             Log.i(TAG, "UsbMassStorageService connected");
             rootService = IUsbMassStorageService.Stub.asInterface(service);
             isBound = true;
-            refresh();
+            var lc = getLifecycle();
+            if (lc.getCurrentState().isAtLeast(Lifecycle.State.STARTED)) {
+                refresh();
+                return;
+            }
+            lc.addObserver(refreshLifecycleCallback);
         }
 
         @Override
@@ -210,7 +225,7 @@ public class MainActivity extends BaseActivity {
     }
 
     private void refresh() {
-        if (binding == null) return;
+        if (binding == null || !getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.STARTED)) return;
 
         if (isBound) {
             try {
@@ -232,6 +247,7 @@ public class MainActivity extends BaseActivity {
             @Override
             public void onResult(boolean result) {
                 runOnUiThread(() -> {
+                    if (binding == null) return;
                     isRunning = result;
                     Views.setEnabledRecursively(binding.secFiles.getContentContainer(), !result);
                     binding.secFiles.getContentContainer().setAlpha(result ? 0.5f : 1);
@@ -252,7 +268,7 @@ public class MainActivity extends BaseActivity {
         rootService.supportsConfigfs(new IBooleanCallback.Stub() {
             @Override
             public void onResult(boolean result) {
-                if (result) return;
+                if (binding == null || result) return;
                 runOnUiThread(() -> showFatalError(getString(R.string.error_no_configfs)));
             }
         });
@@ -260,6 +276,7 @@ public class MainActivity extends BaseActivity {
             @Override
             public void onResult(List<String> result) {
                 runOnUiThread(() -> {
+                    if (binding == null) return;
                     if (result == null || result.isEmpty()) {
                         showFatalError(getString(R.string.error_no_udc));
                         return;
@@ -280,6 +297,7 @@ public class MainActivity extends BaseActivity {
             @Override
             public void onResult(List<GadgetState> result) {
                 runOnUiThread(() -> {
+                    if (binding == null) return;
                     model.setGadgets(result == null ? new ArrayList<>() : result);
                 });
             }
