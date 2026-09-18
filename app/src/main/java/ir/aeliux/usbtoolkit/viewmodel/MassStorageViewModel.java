@@ -9,7 +9,11 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import ir.aeliux.usbtoolkit.BuildConfig;
+import ir.aeliux.usbtoolkit.data.GadgetState;
 
 public class MassStorageViewModel extends AndroidViewModel {
     private final SharedPreferences sharedPreferences;
@@ -23,6 +27,8 @@ public class MassStorageViewModel extends AndroidViewModel {
     private final MutableLiveData<Boolean> cdrom = new MutableLiveData<>();
     private final MutableLiveData<Boolean> removable = new MutableLiveData<>();
     private final MutableLiveData<String> udc = new MutableLiveData<>();
+    private final MutableLiveData<List<String>> filePaths = new MutableLiveData<>(new ArrayList<>());
+    private final MutableLiveData<List<GadgetState>> gadgets = new MutableLiveData<>(new ArrayList<>());
 
     public MassStorageViewModel(@NonNull Application application) {
         super(application);
@@ -80,5 +86,25 @@ public class MassStorageViewModel extends AndroidViewModel {
 
         udc.setValue(value);
         sharedPreferences.edit().putString(KEY_UDC, value).apply();
+    }
+
+    public MutableLiveData<List<String>> getFilePaths() {
+        return filePaths;
+    }
+
+    public void setFilePaths(List<String> value) {
+        if (filePaths.getValue() != null && value.equals(filePaths.getValue())) return;
+
+        filePaths.setValue(value);
+    }
+
+    public MutableLiveData<List<GadgetState>> getGadgets() {
+        return gadgets;
+    }
+
+    public void setGadgets(List<GadgetState> value) {
+        if (gadgets.getValue() != null && value.equals(gadgets.getValue())) return;
+
+        gadgets.setValue(value);
     }
 }
