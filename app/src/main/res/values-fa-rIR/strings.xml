@@ -36,7 +36,7 @@
     <string name="root">ریشه</string>
     <string name="home">خانه</string>
     <string name="no_files_found">خالی</string>
-    <string name="loading">درحال بارگذاری...</string>
+    <string name="loading">درحال بارگذاری…</string>
     <string name="vendor_id">شناسه سازنده</string>
     <string name="product_id">شناسه محصول</string>
     <string name="manufacturer">سازنده</string>
@@ -47,4 +47,5 @@
     <string name="serial_number">شماره سریال</string>
     <string name="start">شروع</string>
     <string name="n_file_selected">%1$d فایل انتخاب شد</string>
+    <string name="reboot">راه اندازی مجدد</string>
 </resources>
