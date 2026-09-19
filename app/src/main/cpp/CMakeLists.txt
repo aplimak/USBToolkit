@@ -131,7 +131,7 @@ ExternalProject_Add(libmagic_build
         "AR=${AR}"
         "RANLIB=${RANLIB}"
         "STRIP=${STRIP}"
-        "CFLAGS=--sysroot=${SYSROOT} -fPIC -I${BZIP2_PREFIX}/includ"
+        "CFLAGS=--sysroot=${SYSROOT} -fPIC -I${BZIP2_PREFIX}/include"
         "LDFLAGS=--sysroot=${SYSROOT} -L${BZIP2_PREFIX}/lib"
         "PKG_CONFIG_PATH=${BZIP2_PREFIX}/lib/pkgconfig"
         <SOURCE_DIR>/configure
@@ -139,6 +139,8 @@ ExternalProject_Add(libmagic_build
         --prefix=${MAGIC_PREFIX}
         --enable-shared
         --disable-static
+        --enable-zlib
+        --enable-bzlib
 
         BUILD_COMMAND   make -j8
         INSTALL_COMMAND make install
