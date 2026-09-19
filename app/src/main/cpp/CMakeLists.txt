@@ -163,6 +163,64 @@ set_target_properties(magic PROPERTIES
         INTERFACE_INCLUDE_DIRECTORIES "${MAGIC_PREFIX}/include"
 )
 
+# Compile magic files
+
+set(MAGIC_MGDIR   "${MAGIC_SOURCE_DIR}/magic/Magdir")
+set(MAGIC_MGC_OUT "${CMAKE_CURRENT_SOURCE_DIR}/../assets/magic.mgc")
+
+# The host's `file` binary — required. Install it if missing.
+find_program(HOST_FILE_EXECUTABLE file)
+if(NOT HOST_FILE_EXECUTABLE)
+    message(FATAL_ERROR
+            "Host `file` binary not found. Install it: "
+            "`apt install file` / `brew install file` / `pacman -S file`")
+endif()
+
+if(NOT EXISTS "${MAGIC_MGC_OUT}" OR
+        "${MAGIC_MGDIR}" IS_NEWER_THAN "${MAGIC_MGC_OUT}")
+
+    message(STATUS "Compiling magic.mgc from ${MAGIC_MGDIR}")
+
+    # Work in the build tree so we never touch the vendored source
+    set(_mgc_work "${CMAKE_CURRENT_BINARY_DIR}/mgc")
+
+    execute_process(
+            COMMAND ${CMAKE_COMMAND} -E make_directory "${_mgc_work}"
+            RESULT_VARIABLE _rc)
+    if(NOT _rc EQUAL 0)
+        message(FATAL_ERROR "mkdir ${_mgc_work} failed")
+    endif()
+
+    execute_process(
+            COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${MAGIC_MGDIR}" "${_mgc_work}/Magdir"
+            RESULT_VARIABLE _rc)
+    if(NOT _rc EQUAL 0)
+        message(FATAL_ERROR "copy Magdir failed")
+    endif()
+
+    # `file -C -m <dir>` writes <dir>.mgc next to it
+    execute_process(
+            COMMAND "${HOST_FILE_EXECUTABLE}" -C -m "${_mgc_work}/Magdir"
+            WORKING_DIRECTORY "${_mgc_work}"
+            RESULT_VARIABLE _rc
+            OUTPUT_VARIABLE _out
+            ERROR_VARIABLE  _err)
+    if(NOT _rc EQUAL 0)
+        message(FATAL_ERROR "file -C failed: ${_err}")
+    endif()
+
+    execute_process(
+            COMMAND ${CMAKE_COMMAND} -E copy
+            "${_mgc_work}/Magdir.mgc" "${MAGIC_MGC_OUT}"
+            RESULT_VARIABLE _rc)
+    if(NOT _rc EQUAL 0)
+        message(FATAL_ERROR "copy Magdir.mgc to assets failed")
+    endif()
+
+    message(STATUS "Wrote ${MAGIC_MGC_OUT}")
+endif()
+
 # Creates and names a library, sets it as either STATIC
 # or SHARED, and provides the relative paths to its source code.
 # You can define multiple libraries, and CMake builds them for you.
