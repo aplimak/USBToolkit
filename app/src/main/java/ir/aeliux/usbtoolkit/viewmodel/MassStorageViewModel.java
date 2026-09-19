@@ -10,10 +10,13 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import ir.aeliux.usbtoolkit.BuildConfig;
 import ir.aeliux.usbtoolkit.data.GadgetState;
+import ir.aeliux.usbtoolkit.data.MagicResult;
 
 public class MassStorageViewModel extends AndroidViewModel {
     private final SharedPreferences sharedPreferences;
@@ -29,6 +32,7 @@ public class MassStorageViewModel extends AndroidViewModel {
     private final MutableLiveData<String> udc = new MutableLiveData<>();
     private final MutableLiveData<List<String>> filePaths = new MutableLiveData<>(new ArrayList<>());
     private final MutableLiveData<List<GadgetState>> gadgets = new MutableLiveData<>(new ArrayList<>());
+    private Map<String, MagicResult> fileMagicResults = new HashMap<>();
 
     public MassStorageViewModel(@NonNull Application application) {
         super(application);
@@ -106,5 +110,9 @@ public class MassStorageViewModel extends AndroidViewModel {
         if (gadgets.getValue() != null && value.equals(gadgets.getValue())) return;
 
         gadgets.setValue(value);
+    }
+
+    public Map<String, MagicResult> getFileMagicResults() {
+        return fileMagicResults;
     }
 }

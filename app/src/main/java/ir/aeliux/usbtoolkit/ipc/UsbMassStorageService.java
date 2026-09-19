@@ -14,6 +14,7 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import ir.aeliux.usbtoolkit.Native;
@@ -182,9 +183,9 @@ public class UsbMassStorageService extends RootService {
             String mgc = new File(getFilesDir(), "magic.mgc").getAbsolutePath();
             Native.magicInit(mgc);
 
-            List<MagicResult> result = paths.stream()
-                    .map(Native::magicAnalyzeFile)
-                    .collect(Collectors.toList());
+            Map<String, MagicResult> result = paths.stream()
+                            .collect(Collectors.toMap(key -> key, Native::magicAnalyzeFile));
+
 
             Native.magicRelease();
             callback.onResult(result);

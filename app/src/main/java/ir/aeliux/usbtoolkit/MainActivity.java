@@ -32,8 +32,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import ir.aeliux.usbtoolkit.callback.IGadgetStateListCallback;
 import ir.aeliux.usbtoolkit.callback.IMagicResultCallback;
@@ -106,7 +108,7 @@ public class MainActivity extends BaseActivity {
                                     .getStringArrayListExtra(FilePickerActivity.EXTRA_SELECTED_PATHS);
                             if (paths == null || paths.isEmpty()) return;
 
-                            model.setFilePaths(paths.stream()
+                            model.setFilePaths(Stream.concat(Objects.requireNonNull(model.getFilePaths().getValue()).stream(), paths.stream())
                                                     .distinct()
                                                     .collect(Collectors.toList()));
                         }
@@ -193,9 +195,20 @@ public class MainActivity extends BaseActivity {
             LinearLayout container = binding.secFiles.getContentContainer();
             container.removeViews(1, container.getChildCount() - 1);
 
+            if (value == null || value.isEmpty()) return;
+
+            Map<String, MagicResult> magicResults = model.getFileMagicResults();
+            List<String> misses = new ArrayList<>();
+
             for (String path : value) {
                 MaterialItem item = new MaterialItem(this);
                 item.setTitle(path);
+                MagicResult fileMagicResult;
+                if ((fileMagicResult = magicResults.get(path)) == null) {
+                    misses.add(path);
+                } else {
+                    item.setSubtitle(fileMagicResult.mimeType);
+                }
                 item.setClickable(true);
                 item.setFocusable(true);
                 item.setOnClickListener((v) -> {
@@ -204,17 +217,9 @@ public class MainActivity extends BaseActivity {
                             .collect(Collectors.toList()));
                 });
                 container.addView(item);
-                try {
-                    rootService.analyzeFiles(List.of(path), new IMagicResultCallback.Stub() {
-                        @Override
-                        public void onResult(List<MagicResult> result) throws RemoteException {
-                            runOnUiThread(() -> {
-                                item.setSubtitle(result.get(0).mimeType);
-                            });
-                        }
-                    });
-                } catch (RemoteException ignored) {}
             }
+
+            fetchFileMagic(misses);
         });
 
         model.getGadgets().observe(this, (value) -> {
@@ -245,6 +250,29 @@ public class MainActivity extends BaseActivity {
 
         Intent intent = new Intent(this, UsbMassStorageService.class);
         RootService.bind(intent, serviceConnection);
+    }
+
+    private void fetchFileMagic(List<String> misses) {
+        if (misses == null || misses.isEmpty()) return;
+        LinearLayout container = binding.secFiles.getContentContainer();
+        Map<String, MagicResult> magicResults = model.getFileMagicResults();
+        try {
+            rootService.analyzeFiles(misses, new IMagicResultCallback.Stub() {
+                @Override
+                public void onResult(Map<String, MagicResult> result) throws RemoteException {
+                    runOnUiThread(() -> {
+                        for (int i = 1; container.getChildCount() > i; i++) {
+                            MaterialItem item = (MaterialItem) container.getChildAt(i);
+                            String path = item.getTitle().toString();
+                            MagicResult fileMagicResult;
+                            if ((fileMagicResult = result.get(path)) == null || !fileMagicResult.isOk()) continue;
+                            magicResults.put(path, fileMagicResult);
+                            item.setSubtitle(fileMagicResult.mimeType);
+                        }
+                    });
+                }
+            });
+        } catch (RemoteException ignored) {}
     }
 
     private void refresh() {
