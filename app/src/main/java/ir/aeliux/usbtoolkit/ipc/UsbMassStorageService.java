@@ -10,12 +10,17 @@ import androidx.annotation.Nullable;
 
 import com.topjohnwu.superuser.ipc.RootService;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import ir.aeliux.usbtoolkit.Native;
 import ir.aeliux.usbtoolkit.callback.IGadgetStateListCallback;
+import ir.aeliux.usbtoolkit.callback.IMagicResultCallback;
 import ir.aeliux.usbtoolkit.data.GadgetState;
+import ir.aeliux.usbtoolkit.data.MagicResult;
 import ir.aeliux.usbtoolkit.util.UsbMassStorageManager;
 import ir.aeliux.usbtoolkit.util.UsbMassStorageManager.UsbGadgetException;
 import ir.aeliux.usbtoolkit.callback.IBooleanCallback;
@@ -170,6 +175,19 @@ public class UsbMassStorageService extends RootService {
                     callback.onError(e + (cause != null ? "\n Caused by: " + cause : ""));
                 }
             });
+        }
+
+        @Override
+        public void analyzeFiles(List<String> paths, IMagicResultCallback callback) throws RemoteException {
+            String mgc = new File(getFilesDir(), "magic.mgc").getAbsolutePath();
+            Native.magicInit(mgc);
+
+            List<MagicResult> result = paths.stream()
+                    .map(Native::magicAnalyzeFile)
+                    .collect(Collectors.toList());
+
+            Native.magicRelease();
+            callback.onResult(result);
         }
 
         @NonNull

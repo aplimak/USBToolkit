@@ -36,10 +36,12 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import ir.aeliux.usbtoolkit.callback.IGadgetStateListCallback;
+import ir.aeliux.usbtoolkit.callback.IMagicResultCallback;
 import ir.aeliux.usbtoolkit.callback.IStringListCallback;
 import ir.aeliux.usbtoolkit.callback.IUsbMassStorageCallback;
 import ir.aeliux.usbtoolkit.callback.IBooleanCallback;
 import ir.aeliux.usbtoolkit.data.GadgetState;
+import ir.aeliux.usbtoolkit.data.MagicResult;
 import ir.aeliux.usbtoolkit.data.MassStorageConfig;
 import ir.aeliux.usbtoolkit.databinding.ActivityMainBinding;
 import ir.aeliux.usbtoolkit.ipc.IUsbMassStorageService;
@@ -202,6 +204,16 @@ public class MainActivity extends BaseActivity {
                             .collect(Collectors.toList()));
                 });
                 container.addView(item);
+                try {
+                    rootService.analyzeFiles(List.of(path), new IMagicResultCallback.Stub() {
+                        @Override
+                        public void onResult(List<MagicResult> result) throws RemoteException {
+                            runOnUiThread(() -> {
+                                item.setSubtitle(result.get(0).mimeType);
+                            });
+                        }
+                    });
+                } catch (RemoteException ignored) {}
             }
         });
 

@@ -6,6 +6,7 @@ import ir.aeliux.usbtoolkit.callback.IBooleanCallback;
 import ir.aeliux.usbtoolkit.callback.IStringListCallback;
 import ir.aeliux.usbtoolkit.callback.IGadgetStateCallback;
 import ir.aeliux.usbtoolkit.callback.IGadgetStateListCallback;
+import ir.aeliux.usbtoolkit.callback.IMagicResultCallback;
 import ir.aeliux.usbtoolkit.data.LunState;
 import ir.aeliux.usbtoolkit.data.GadgetState;
 import ir.aeliux.usbtoolkit.data.MassStorageConfig;
@@ -19,4 +20,5 @@ oneway interface IUsbMassStorageService {
     void getGadgetList(IStringListCallback callback);
     void getGadgetState(String name, IGadgetStateCallback callback);
     void getGadgetStateList(IGadgetStateListCallback callback);
+    void analyzeFiles(in List<String> paths, IMagicResultCallback callback);
 }
