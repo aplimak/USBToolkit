@@ -11,7 +11,12 @@ import com.topjohnwu.superuser.Shell;
 import com.topjohnwu.superuser.ipc.RootService;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 
 import ir.aeliux.usbtoolkit.ipc.KeepAliveRootService;
@@ -46,9 +51,11 @@ public class MainApplication extends Application {
         Log.i(TAG, "Binding Keep-Alive Root Service");
         Intent intent = new Intent(this, KeepAliveRootService.class);
         RootService.bind(intent, serviceConnection);
+
+        extractMagic();
     }
 
-    public void installCrashHandler() {
+    private void installCrashHandler() {
         Thread.UncaughtExceptionHandler def = Thread.getDefaultUncaughtExceptionHandler();
         Thread.setDefaultUncaughtExceptionHandler((thread, ex) -> {
             try {
@@ -63,5 +70,20 @@ public class MainApplication extends Application {
                 def.uncaughtException(thread, ex); // let Android do its normal thing
             }
         });
+    }
+
+    private void extractMagic() {
+        File mgc = new File(getFilesDir(), "magic.mgc");
+
+        if (!mgc.exists() || mgc.length() == 0) {
+            try (InputStream in  = getAssets().open("magic.mgc");
+                 OutputStream out = new FileOutputStream(mgc)) {
+                byte[] buf = new byte[16384];
+                int n;
+                while ((n = in.read(buf)) > 0) out.write(buf, 0, n);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 }
