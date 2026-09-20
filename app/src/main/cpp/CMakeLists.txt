@@ -58,26 +58,21 @@ set(SYSROOT "${NDK_TOOLCHAIN}/sysroot")
 
 # Build bzip2
 
-set(BZIP2_VERSION "1.0.8")
-set(BZIP2_URL     "https://sourceware.org/pub/bzip2/bzip2-${BZIP2_VERSION}.tar.gz")
-set(BZIP2_SHA256  "ab5a03176ee106d3f0fa90e381da478ddae405918153cca248e682cd0c4a2269")
-
-set(BZIP2_PREFIX  "${CMAKE_CURRENT_BINARY_DIR}/deps/bzip2")
+set(BZIP2_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third_party/bzip2")
+set(BZIP2_PREFIX     "${CMAKE_CURRENT_BINARY_DIR}/deps/bzip2")
+set(BZIP2_BUILD_DIR  "${CMAKE_CURRENT_BINARY_DIR}/build/libbz2")
+file(MAKE_DIRECTORY "${BZIP2_BUILD_DIR}")
 
 ExternalProject_Add(bzip2_build
-        URL            "${BZIP2_URL}"
-        URL_HASH       "SHA256=${BZIP2_SHA256}"
-        DOWNLOAD_DIR   "${CMAKE_CURRENT_BINARY_DIR}/downloads"
+        SOURCE_DIR "${BZIP2_BUILD_DIR}"
+        PREFIX     "${BZIP2_PREFIX}"
 
-        PREFIX         "${BZIP2_PREFIX}"
-
+        DOWNLOAD_COMMAND
+        ${CMAKE_COMMAND} -E copy_directory
+        "${BZIP2_SOURCE_DIR}" "${BZIP2_BUILD_DIR}"
         CONFIGURE_COMMAND ""
-        BUILD_IN_SOURCE 1
         BUILD_COMMAND
         ${CMAKE_COMMAND} -E env
-        "CC=${CC}"
-        "AR=${AR}"
-        "RANLIB=${RANLIB}"
         make -j8
         "CC=${CC}"
         "AR=${AR}"
@@ -89,16 +84,10 @@ ExternalProject_Add(bzip2_build
 
         INSTALL_COMMAND
         ${CMAKE_COMMAND} -E env
-        "CC=${CC}"
-        "AR=${AR}"
-        "RANLIB=${RANLIB}"
         make install
-        "CC=${CC}"
-        "AR=${AR}"
-        "RANLIB=${RANLIB}"
-        "CFLAGS=--sysroot=${SYSROOT} -fPIC -O2 -Wall -D_FILE_OFFSET_BITS=64"
-        "LDFLAGS=--sysroot=${SYSROOT}"
         "PREFIX=${BZIP2_PREFIX}"
+
+        BUILD_IN_SOURCE 1
 
         BUILD_BYPRODUCTS "${BZIP2_PREFIX}/lib/libbz2.a"
 
