@@ -174,8 +174,8 @@ ExternalProject_Add(libmagic_build
         <SOURCE_DIR>/configure
         --host=${TRIPLET}
         --prefix=${MAGIC_PREFIX}
-        --enable-shared
-        --disable-static
+        --enable-static
+        --disable-shared
         --enable-zlib
         --enable-libseccomp
         --enable-landlock
@@ -185,7 +185,7 @@ ExternalProject_Add(libmagic_build
 
         DEPENDS libseccomp_build
 
-        BUILD_BYPRODUCTS "${MAGIC_PREFIX}/lib/libmagic.so"
+        BUILD_BYPRODUCTS "${MAGIC_PREFIX}/lib/libmagic.a"
 
         LOG_CONFIGURE 1
         LOG_BUILD 1
@@ -194,10 +194,10 @@ ExternalProject_Add(libmagic_build
 
 file(MAKE_DIRECTORY "${MAGIC_PREFIX}/include")
 file(MAKE_DIRECTORY "${MAGIC_PREFIX}/lib")
-add_library(magic SHARED IMPORTED GLOBAL)
+add_library(magic STATIC IMPORTED GLOBAL)
 add_dependencies(magic libmagic_build)
 set_target_properties(magic PROPERTIES
-        IMPORTED_LOCATION "${MAGIC_PREFIX}/lib/libmagic.so"
+        IMPORTED_LOCATION "${MAGIC_PREFIX}/lib/libmagic.a"
         INTERFACE_INCLUDE_DIRECTORIES "${MAGIC_PREFIX}/include"
 )
 
@@ -283,4 +283,5 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
     # List libraries link to the target library
     magic
     android
-    log)
+    log
+    z)
