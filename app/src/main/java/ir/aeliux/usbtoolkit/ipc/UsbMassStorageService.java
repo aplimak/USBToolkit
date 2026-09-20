@@ -180,6 +180,7 @@ public class UsbMassStorageService extends RootService {
 
         @Override
         public void analyzeFiles(List<String> paths, IMagicResultCallback callback) throws RemoteException {
+            Log.d(TAG, "binder.analyzeFiles");
             String mgc = new File(getFilesDir(), "magic.mgc").getAbsolutePath();
             Native.magicInit(mgc);
 
@@ -188,6 +189,7 @@ public class UsbMassStorageService extends RootService {
 
 
             Native.magicRelease();
+            Log.d(TAG, "firing onResult with result: " + result);
             callback.onResult(result);
         }
 
