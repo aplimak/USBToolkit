@@ -123,6 +123,7 @@ ExternalProject_Add(libmagic_build
         "RANLIB=${RANLIB}"
         "STRIP=${STRIP}"
         "PKG_CONFIG_PATH="
+        "CFLAGS=-O3 -flto -ffunction-sections -fdata-sections -fvisibility=hidden"
         <SOURCE_DIR>/configure
         --host=${TRIPLET}
         "--prefix=${MAGIC_PREFIX}"
@@ -226,6 +227,24 @@ endif()
 add_library(${CMAKE_PROJECT_NAME} SHARED
     # List C/C++ source files with relative paths to this CMakeLists.txt.
     magic.c)
+
+target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE
+        -O3
+        -flto
+        -ffunction-sections
+        -fdata-sections
+)
+target_link_options(${CMAKE_PROJECT_NAME} PRIVATE
+        -Wl,--exclude-libs,ALL
+        -Wl,--gc-sections
+        -Wl,--as-needed
+        -Wl,-s
+)
+set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES
+        C_VISIBILITY_PRESET hidden
+        VISIBILITY_INLINES_HIDDEN ON
+        POSITION_INDEPENDENT_CODE ON
+)
 
 # Specifies libraries CMake should link to your target library. You
 # can link libraries from various origins, such as libraries defined in this
