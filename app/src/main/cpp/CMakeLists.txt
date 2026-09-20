@@ -61,8 +61,8 @@ ExternalProject_Add(libmagic_build
         --enable-landlock
         --with-pic
 
-        BUILD_COMMAND   make -j8
-        INSTALL_COMMAND make install
+        BUILD_COMMAND   make -j8 SUBDIRS=src
+        INSTALL_COMMAND make SUBDIRS=src install
 
         BUILD_BYPRODUCTS "${MAGIC_PREFIX}/lib/libmagic.a"
 
