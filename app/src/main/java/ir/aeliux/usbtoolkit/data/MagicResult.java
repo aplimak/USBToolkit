@@ -9,22 +9,15 @@ import java.util.Objects;
 
 public final class MagicResult implements Parcelable {
     public final String mimeType;
-    public final String description;
-    public final String encoding;
     public final String error;      // null on success
 
-    public MagicResult(String mimeType, String description,
-                       String encoding, String error) {
+    public MagicResult(String mimeType, String error) {
         this.mimeType    = mimeType;
-        this.description = description;
-        this.encoding    = encoding;
         this.error       = error;
     }
 
     protected MagicResult(Parcel in) {
         this.mimeType    = in.readString();
-        this.description = in.readString();
-        this.encoding    = in.readString();
         this.error       = in.readString();
     }
 
@@ -50,8 +43,6 @@ public final class MagicResult implements Parcelable {
     @Override
     public void writeToParcel(@NonNull Parcel dest, int flags) {
         dest.writeString(mimeType);
-        dest.writeString(description);
-        dest.writeString(encoding);
         dest.writeString(error);
     }
 
@@ -59,11 +50,11 @@ public final class MagicResult implements Parcelable {
     public boolean equals(Object o) {
         if (!(o instanceof MagicResult)) return false;
         MagicResult that = (MagicResult) o;
-        return Objects.equals(mimeType, that.mimeType) && Objects.equals(description, that.description) && Objects.equals(encoding, that.encoding) && Objects.equals(error, that.error);
+        return Objects.equals(mimeType, that.mimeType) && Objects.equals(error, that.error);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(mimeType, description, encoding, error);
+        return Objects.hash(mimeType, error);
     }
 }
