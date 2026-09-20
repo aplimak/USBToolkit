@@ -56,53 +56,101 @@ set(STRIP "${NDK_TOOLCHAIN}/bin/llvm-strip")
 # Sysroot for include/lib paths
 set(SYSROOT "${NDK_TOOLCHAIN}/sysroot")
 
-# Build bzip2
+# Build bzip2 (Not needed but kept for template for other make targets)
 
-set(BZIP2_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third_party/bzip2")
-set(BZIP2_PREFIX     "${CMAKE_CURRENT_BINARY_DIR}/deps/bzip2")
-set(BZIP2_BUILD_DIR  "${CMAKE_CURRENT_BINARY_DIR}/build/libbz2")
-file(MAKE_DIRECTORY "${BZIP2_BUILD_DIR}")
+#set(BZIP2_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third_party/bzip2")
+#set(BZIP2_PREFIX     "${CMAKE_CURRENT_BINARY_DIR}/deps/bzip2")
+#set(BZIP2_BUILD_DIR  "${CMAKE_CURRENT_BINARY_DIR}/build/libbz2")
+#file(MAKE_DIRECTORY "${BZIP2_BUILD_DIR}")
+#
+#ExternalProject_Add(bzip2_build
+#        SOURCE_DIR "${BZIP2_BUILD_DIR}"
+#        PREFIX     "${BZIP2_PREFIX}"
+#
+#        DOWNLOAD_COMMAND
+#        ${CMAKE_COMMAND} -E copy_directory
+#        "${BZIP2_SOURCE_DIR}" "${BZIP2_BUILD_DIR}"
+#        CONFIGURE_COMMAND ""
+#        BUILD_COMMAND
+#        ${CMAKE_COMMAND} -E env
+#        make -j8
+#        "CC=${CC}"
+#        "AR=${AR}"
+#        "RANLIB=${RANLIB}"
+#        "CFLAGS=--sysroot=${SYSROOT} -fPIC -O2 -Wall -D_FILE_OFFSET_BITS=64"
+#        "LDFLAGS=--sysroot=${SYSROOT}"
+#        "PREFIX=${BZIP2_PREFIX}"
+#        libbz2.a
+#
+#        INSTALL_COMMAND
+#        ${CMAKE_COMMAND} -E env
+#        make install
+#        "PREFIX=${BZIP2_PREFIX}"
+#
+#        BUILD_IN_SOURCE 1
+#
+#        BUILD_BYPRODUCTS "${BZIP2_PREFIX}/lib/libbz2.a"
+#
+#        LOG_BUILD 1
+#        LOG_INSTALL 1
+#)
+#
+#file(MAKE_DIRECTORY "${BZIP2_PREFIX}/include")
+#file(MAKE_DIRECTORY "${BZIP2_PREFIX}/lib")
+#add_library(bzip2 STATIC IMPORTED GLOBAL)
+#add_dependencies(bzip2 bzip2_build)
+#set_target_properties(bzip2 PROPERTIES
+#        IMPORTED_LOCATION "${BZIP2_PREFIX}/lib/libbz2.a"
+#        INTERFACE_INCLUDE_DIRECTORIES "${BZIP2_PREFIX}/include"
+#)
 
-ExternalProject_Add(bzip2_build
-        SOURCE_DIR "${BZIP2_BUILD_DIR}"
-        PREFIX     "${BZIP2_PREFIX}"
+# Build libseccomp
 
-        DOWNLOAD_COMMAND
-        ${CMAKE_COMMAND} -E copy_directory
-        "${BZIP2_SOURCE_DIR}" "${BZIP2_BUILD_DIR}"
-        CONFIGURE_COMMAND ""
-        BUILD_COMMAND
+set(SECCOMP_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third_party/libseccomp")
+set(SECCOMP_PREFIX     "${CMAKE_CURRENT_BINARY_DIR}/deps/libseccomp")
+set(SECCOMP_BUILD_DIR  "${CMAKE_CURRENT_BINARY_DIR}/build/libseccomp")
+
+ExternalProject_Add(libseccomp_build
+        SOURCE_DIR "${SECCOMP_SOURCE_DIR}"
+        BINARY_DIR "${SECCOMP_BUILD_DIR}"
+        PREFIX     "${SECCOMP_PREFIX}"
+
+        CONFIGURE_COMMAND
         ${CMAKE_COMMAND} -E env
-        make -j8
         "CC=${CC}"
+        "CXX=${CXX}"
         "AR=${AR}"
         "RANLIB=${RANLIB}"
-        "CFLAGS=--sysroot=${SYSROOT} -fPIC -O2 -Wall -D_FILE_OFFSET_BITS=64"
+        "STRIP=${STRIP}"
+        "CFLAGS=--sysroot=${SYSROOT} -fPIC"
         "LDFLAGS=--sysroot=${SYSROOT}"
-        "PREFIX=${BZIP2_PREFIX}"
-        libbz2.a
+        "PKG_CONFIG_PATH="
+        <SOURCE_DIR>/configure
+        --host=${TRIPLET}
+        --prefix=${SECCOMP_PREFIX}
+        --enable-static
+        --disable-shared
 
-        INSTALL_COMMAND
-        ${CMAKE_COMMAND} -E env
-        make install
-        "PREFIX=${BZIP2_PREFIX}"
+        BUILD_COMMAND   make -j8
+        INSTALL_COMMAND make install
 
-        BUILD_IN_SOURCE 1
+        BUILD_BYPRODUCTS "${SECCOMP_PREFIX}/lib/libseccomp.a"
 
-        BUILD_BYPRODUCTS "${BZIP2_PREFIX}/lib/libbz2.a"
-
+        LOG_CONFIGURE 1
         LOG_BUILD 1
         LOG_INSTALL 1
 )
 
-file(MAKE_DIRECTORY "${BZIP2_PREFIX}/include")
-file(MAKE_DIRECTORY "${BZIP2_PREFIX}/lib")
-add_library(bzip2 STATIC IMPORTED GLOBAL)
-add_dependencies(bzip2 bzip2_build)
-set_target_properties(bzip2 PROPERTIES
-        IMPORTED_LOCATION "${BZIP2_PREFIX}/lib/libbz2.a"
-        INTERFACE_INCLUDE_DIRECTORIES "${BZIP2_PREFIX}/include"
+file(MAKE_DIRECTORY "${SECCOMP_PREFIX}/include")
+file(MAKE_DIRECTORY "${SECCOMP_PREFIX}/lib")
+add_library(seccomp STATIC IMPORTED GLOBAL)
+add_dependencies(seccomp libseccomp_build)
+set_target_properties(seccomp PROPERTIES
+        IMPORTED_LOCATION "${SECCOMP_PREFIX}/lib/libseccomp.a"
+        INTERFACE_INCLUDE_DIRECTORIES "${SECCOMP_PREFIX}/include"
 )
+
+# Build libmagic
 
 set(MAGIC_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third_party/file")
 set(MAGIC_PREFIX     "${CMAKE_CURRENT_BINARY_DIR}/deps/libmagic")
@@ -120,21 +168,22 @@ ExternalProject_Add(libmagic_build
         "AR=${AR}"
         "RANLIB=${RANLIB}"
         "STRIP=${STRIP}"
-        "CFLAGS=--sysroot=${SYSROOT} -fPIC -I${BZIP2_PREFIX}/include"
-        "LDFLAGS=--sysroot=${SYSROOT} -L${BZIP2_PREFIX}/lib"
-        "PKG_CONFIG_PATH=${BZIP2_PREFIX}/lib/pkgconfig"
+        "CFLAGS=--sysroot=${SYSROOT} -fPIC -I${SECCOMP_PREFIX}/include"
+        "LDFLAGS=--sysroot=${SYSROOT} -L${SECCOMP_PREFIX}/lib"
+        "PKG_CONFIG_PATH=${SECCOMP_PREFIX}/lib/pkgconfig"
         <SOURCE_DIR>/configure
         --host=${TRIPLET}
         --prefix=${MAGIC_PREFIX}
         --enable-shared
         --disable-static
         --enable-zlib
-        --enable-bzlib
+        --enable-libseccomp
+        --enable-landlock
 
         BUILD_COMMAND   make -j8
         INSTALL_COMMAND make install
 
-        DEPENDS bzip2_build
+        DEPENDS libseccomp_build
 
         BUILD_BYPRODUCTS "${MAGIC_PREFIX}/lib/libmagic.so"
 
