@@ -104,52 +104,6 @@ set(SYSROOT "${NDK_TOOLCHAIN}/sysroot")
 #        INTERFACE_INCLUDE_DIRECTORIES "${BZIP2_PREFIX}/include"
 #)
 
-# Build libseccomp
-
-set(SECCOMP_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third_party/libseccomp")
-set(SECCOMP_PREFIX     "${CMAKE_CURRENT_BINARY_DIR}/deps/libseccomp")
-set(SECCOMP_BUILD_DIR  "${CMAKE_CURRENT_BINARY_DIR}/build/libseccomp")
-
-ExternalProject_Add(libseccomp_build
-        SOURCE_DIR "${SECCOMP_SOURCE_DIR}"
-        BINARY_DIR "${SECCOMP_BUILD_DIR}"
-        PREFIX     "${SECCOMP_PREFIX}"
-
-        CONFIGURE_COMMAND
-        ${CMAKE_COMMAND} -E env
-        "CC=${CC}"
-        "CXX=${CXX}"
-        "AR=${AR}"
-        "RANLIB=${RANLIB}"
-        "STRIP=${STRIP}"
-        "CFLAGS=--sysroot=${SYSROOT} -fPIC"
-        "LDFLAGS=--sysroot=${SYSROOT}"
-        "PKG_CONFIG_PATH="
-        <SOURCE_DIR>/configure
-        --host=${TRIPLET}
-        --prefix=${SECCOMP_PREFIX}
-        --enable-static
-        --disable-shared
-
-        BUILD_COMMAND   make -j8
-        INSTALL_COMMAND make install
-
-        BUILD_BYPRODUCTS "${SECCOMP_PREFIX}/lib/libseccomp.a"
-
-        LOG_CONFIGURE 1
-        LOG_BUILD 1
-        LOG_INSTALL 1
-)
-
-file(MAKE_DIRECTORY "${SECCOMP_PREFIX}/include")
-file(MAKE_DIRECTORY "${SECCOMP_PREFIX}/lib")
-add_library(seccomp STATIC IMPORTED GLOBAL)
-add_dependencies(seccomp libseccomp_build)
-set_target_properties(seccomp PROPERTIES
-        IMPORTED_LOCATION "${SECCOMP_PREFIX}/lib/libseccomp.a"
-        INTERFACE_INCLUDE_DIRECTORIES "${SECCOMP_PREFIX}/include"
-)
-
 # Build libmagic
 
 set(MAGIC_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third_party/file")
@@ -168,22 +122,19 @@ ExternalProject_Add(libmagic_build
         "AR=${AR}"
         "RANLIB=${RANLIB}"
         "STRIP=${STRIP}"
-        "CFLAGS=--sysroot=${SYSROOT} -fPIC -I${SECCOMP_PREFIX}/include"
-        "LDFLAGS=--sysroot=${SYSROOT} -L${SECCOMP_PREFIX}/lib"
-        "PKG_CONFIG_PATH=${SECCOMP_PREFIX}/lib/pkgconfig"
+        "PKG_CONFIG_PATH="
         <SOURCE_DIR>/configure
         --host=${TRIPLET}
-        --prefix=${MAGIC_PREFIX}
+        "--prefix=${MAGIC_PREFIX}"
+        "--with-sysroot=${SYSROOT}"
         --enable-static
         --disable-shared
         --enable-zlib
-        --enable-libseccomp
         --enable-landlock
+        --with-pic
 
         BUILD_COMMAND   make -j8
         INSTALL_COMMAND make install
-
-        DEPENDS libseccomp_build
 
         BUILD_BYPRODUCTS "${MAGIC_PREFIX}/lib/libmagic.a"
 
