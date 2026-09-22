@@ -22,19 +22,22 @@ elseif(ANDROID_ABI STREQUAL "x86")
     set(TRIPLET "i686-linux-android")
 endif()
 
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set(UTK_LIB_CFLAGS  "-O0 -g3 -fno-omit-frame-pointer -fno-lto")
+    set(UTK_LIB_LDFLAGS "")
+else()
+    set(UTK_LIB_CFLAGS  "-O3 -flto -ffunction-sections -fdata-sections -fvisibility=hidden -DNDEBUG")
+    set(UTK_LIB_LDFLAGS "-Wl,--gc-sections -Wl,-s")
+endif()
+
+# Most cmake libraries respect it
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "")
+
 # Build libmagic
 
 set(MAGIC_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third_party/file")
 set(MAGIC_PREFIX     "${CMAKE_CURRENT_BINARY_DIR}/deps/libmagic")
 set(MAGIC_BUILD_DIR  "${CMAKE_CURRENT_BINARY_DIR}/build/libmagic")
-
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    set(MAGIC_CFLAGS  "-O0 -g3 -fno-omit-frame-pointer -fno-lto")
-    set(MAGIC_LDFLAGS "")
-else()
-    set(MAGIC_CFLAGS  "-O3 -flto -ffunction-sections -fdata-sections -fvisibility=hidden -DNDEBUG")
-    set(MAGIC_LDFLAGS "-Wl,--gc-sections -Wl,-s")
-endif()
 
 ExternalProject_Add(libmagic_build
         SOURCE_DIR "${MAGIC_SOURCE_DIR}"
@@ -49,8 +52,8 @@ ExternalProject_Add(libmagic_build
         "RANLIB=${CMAKE_RANLIB}"
         "STRIP=${CMAKE_STRIP}"
         "PKG_CONFIG_PATH="
-        "CFLAGS=${MAGIC_CFLAGS}"
-        "LDFLAGS=${MAGIC_LDFLAGS}"
+        "CFLAGS=${UTK_LIB_CFLAGS}"
+        "LDFLAGS=${UTK_LIB_LDFLAGS}"
         <SOURCE_DIR>/configure
         --host=${TRIPLET}
         "--prefix=${MAGIC_PREFIX}"
@@ -140,11 +143,71 @@ endif()
 
 # TinyALSA
 
-set(BUILD_SHARED_LIBS OFF CACHE BOOL "")
 set(TINYALSA_BUILD_EXAMPLES OFF CACHE BOOL "")
 set(TINYALSA_BUILD_UTILS OFF CACHE BOOL "")
 
 add_subdirectory(third_party/tinyalsa "${CMAKE_CURRENT_BINARY_DIR}/build/tinyalsa")
+
+# libconfig
+
+set(BUILD_EXAMPLES OFF CACHE BOOL "")
+set(BUILD_TESTS OFF CACHE BOOL "")
+set(BUILD_CXX OFF CACHE BOOL "")
+
+set(LIBCONFIG_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third_party/libconfig")
+set(LIBCONFIG_BUILD_DIR  "${CMAKE_CURRENT_BINARY_DIR}/build/libconfig")
+set(LIBCONFIG_OUT_DIR  "${CMAKE_CURRENT_BINARY_DIR}/out")
+add_subdirectory("${LIBCONFIG_SOURCE_DIR}" "${LIBCONFIG_BUILD_DIR}")
+
+# libusbgx
+
+set(USBGX_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third_party/libusbgx")
+set(USBGX_PREFIX     "${CMAKE_CURRENT_BINARY_DIR}/deps/libusbgx")
+set(USBGX_BUILD_DIR  "${CMAKE_CURRENT_BINARY_DIR}/build/libusbgx")
+
+ExternalProject_Add(libusbgx_build
+        SOURCE_DIR "${USBGX_SOURCE_DIR}"
+        BINARY_DIR "${USBGX_BUILD_DIR}"
+        PREFIX     "${USBGX_PREFIX}"
+
+        CONFIGURE_COMMAND
+        ${CMAKE_COMMAND} -E env
+        "CC=${CMAKE_C_COMPILER} --target=${CMAKE_C_COMPILER_TARGET} --sysroot=${CMAKE_SYSROOT}"
+        "CXX=${CMAKE_CXX_COMPILER} --target=${CMAKE_C_COMPILER_TARGET} --sysroot=${CMAKE_SYSROOT}"
+        "AR=${CMAKE_AR}"
+        "RANLIB=${CMAKE_RANLIB}"
+        "STRIP=${CMAKE_STRIP}"
+        "PKG_CONFIG_PATH="
+        "CFLAGS=${UTK_LIB_CFLAGS}"
+        "LDFLAGS=${UTK_LIB_LDFLAGS}"
+        "LIBCONFIG_CFLAGS=-I${LIBCONFIG_SOURCE_DIR}/lib"
+        "LIBCONFIG_LIBS=-L${LIBCONFIG_OUT_DIR} -lconfig"
+        <SOURCE_DIR>/configure
+        --host=${TRIPLET}
+        "--prefix=${USBGX_PREFIX}"
+        "--with-sysroot=${CMAKE_SYSROOT}"
+        --enable-static
+        --disable-shared
+        --with-pic
+
+        BUILD_COMMAND   make -j8
+        INSTALL_COMMAND make install
+
+        BUILD_BYPRODUCTS "${USBGX_PREFIX}/lib/libusbgx.a"
+
+        LOG_CONFIGURE 1
+        LOG_BUILD 1
+        LOG_INSTALL 1
+)
+
+file(MAKE_DIRECTORY "${USBGX_PREFIX}/include")
+file(MAKE_DIRECTORY "${USBGX_PREFIX}/lib")
+add_library(usbgx STATIC IMPORTED GLOBAL)
+add_dependencies(usbgx libusbgx_build)
+set_target_properties(usbgx PROPERTIES
+        IMPORTED_LOCATION "${USBGX_PREFIX}/lib/libusbgx.a"
+        INTERFACE_INCLUDE_DIRECTORIES "${USBGX_PREFIX}/include"
+)
 
 # Main Library
 
@@ -169,6 +232,8 @@ set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES
 target_link_libraries(${CMAKE_PROJECT_NAME}
     magic
     tinyalsa
+    config
+    usbgx
     android
     log
     z)
