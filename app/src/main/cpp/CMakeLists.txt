@@ -138,6 +138,14 @@ if(NOT EXISTS "${MAGIC_MGC_OUT}" OR
     message(STATUS "Wrote ${MAGIC_MGC_OUT}")
 endif()
 
+# TinyALSA
+
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "")
+set(TINYALSA_BUILD_EXAMPLES OFF CACHE BOOL "")
+set(TINYALSA_BUILD_UTILS OFF CACHE BOOL "")
+
+add_subdirectory(third_party/tinyalsa "${CMAKE_CURRENT_BINARY_DIR}/build/tinyalsa")
+
 # Main Library
 
 add_library(${CMAKE_PROJECT_NAME} SHARED
@@ -160,6 +168,7 @@ set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES
 
 target_link_libraries(${CMAKE_PROJECT_NAME}
     magic
+    tinyalsa
     android
     log
     z)
