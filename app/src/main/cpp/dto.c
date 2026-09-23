@@ -236,3 +236,30 @@ int usbtk_usbg_gadget_strs_from_kotlin(JNIEnv *env,
 
     return 0;
 }
+
+jstring usbtk_usbg_config_strs_to_jstring(JNIEnv *env,
+                                         const struct usbg_config_strs *src)
+{
+    if (!src || !src->configuration) return NULL;
+    return (*env)->NewStringUTF(env, src->configuration);
+}
+
+int usbtk_usbg_config_strs_from_jstring(JNIEnv *env,
+                                       jstring src,
+                                       struct usbg_config_strs *dst)
+{
+    if (!dst) return -1;
+
+    if (!src) {
+        dst->configuration = NULL;
+        return 0;
+    }
+
+    const char *utf = (*env)->GetStringUTFChars(env, src, NULL);
+    if (!utf) return -1;
+
+    dst->configuration = strdup(utf);
+
+    (*env)->ReleaseStringUTFChars(env, src, utf);
+    return dst->configuration ? 0 : -1;
+}
