@@ -9,7 +9,7 @@
 
 struct usbg_gadget_attrs;
 struct usbg_gadget_strs;
-struct usbg_config_attrs
+struct usbg_config_attrs;
 struct usbg_config_strs;
 
 int usbtk_dto_init(JNIEnv *env);

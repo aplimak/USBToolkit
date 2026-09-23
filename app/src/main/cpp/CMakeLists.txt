@@ -193,6 +193,8 @@ ExternalProject_Add(libusbgx_build
         BUILD_COMMAND   make -j8
         INSTALL_COMMAND make install
 
+        DEPENDS config
+
         BUILD_BYPRODUCTS "${USBGX_PREFIX}/lib/libusbgx.a"
 
         LOG_CONFIGURE 1
@@ -213,8 +215,9 @@ set_target_properties(usbgx PROPERTIES
 
 add_library(${CMAKE_PROJECT_NAME} SHARED
         core.c
-        magic.c
-        dto.c)
+        magic_jni.c
+        dto.c
+        usb_jni.c)
 
 target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE
         $<$<NOT:$<CONFIG:Debug>>:-O3;-flto;-ffunction-sections;-fdata-sections>
@@ -232,10 +235,10 @@ set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES
 )
 
 target_link_libraries(${CMAKE_PROJECT_NAME}
-    magic
-    tinyalsa
-    config
-    usbgx
-    android
-    log
-    z)
+        magic
+        usbgx
+        config
+        tinyalsa
+        android
+        log
+        z)
