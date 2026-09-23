@@ -15,6 +15,9 @@
 #define KOTLIN_USBG_GADGET_STRS_CLASS "ir/aeliux/usbtoolkit/dto/UsbgGadgetStrs"
 #define KOTLIN_USBG_GADGET_STRS_CTOR_SIG "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V"
 
+#define KOTLIN_USBG_CONFIG_ATTRS_CLASS "ir/aeliux/usbtoolkit/dto/UsbgConfigAttrs"
+#define KOTLIN_USBG_CONFIG_ATTRS_CTOR_SIG "(BB)V"
+
 typedef struct {
     jclass    cls;
     jmethodID ctor;
@@ -36,9 +39,17 @@ typedef struct {
     jfieldID  f_serial;
 } usbtk_usbg_gadget_strs_jni_t;
 
+typedef struct {
+    jclass    cls;
+    jmethodID ctor;
+    jfieldID  f_bmAttributes;
+    jfieldID  f_bMaxPower;
+} usbtk_usbg_config_attrs_jni_t;
+
 static struct {
     usbtk_usbg_gadget_attrs_jni_t gadget_attrs;
     usbtk_usbg_gadget_strs_jni_t gadget_strs;
+    usbtk_usbg_config_attrs_jni_t config_attrs;
 } g_jni = {0};
 
 /* Reads obj.<field> as a String, returns a freshly malloc'd UTF-8 copy,
@@ -153,9 +164,46 @@ static int usbtk_usbg_gadget_strs_jni_init(JNIEnv *env)
     return -1;
 }
 
+static void usbtk_usbg_config_attrs_jni_release(JNIEnv *env)
+{
+    if (g_jni.config_attrs.cls) {
+        (*env)->DeleteGlobalRef(env, g_jni.config_attrs.cls);
+        g_jni.config_attrs.cls = NULL;
+    }
+}
+
+static int usbtk_usbg_config_attrs_jni_init(JNIEnv *env)
+{
+    if (g_jni.config_attrs.cls) return 0;
+
+    jclass local = (*env)->FindClass(env, KOTLIN_USBG_CONFIG_ATTRS_CLASS);
+    if (!local) return -1;
+
+    g_jni.config_attrs.cls = (jclass)(*env)->NewGlobalRef(env, local);
+    (*env)->DeleteLocalRef(env, local);
+    if (!g_jni.config_attrs.cls) return -1;
+
+    g_jni.config_attrs.ctor = (*env)->GetMethodID(env, g_jni.config_attrs.cls, "<init>",
+                                                  KOTLIN_USBG_CONFIG_ATTRS_CTOR_SIG);
+    if (!g_jni.config_attrs.ctor) goto fail;
+
+    g_jni.config_attrs.f_bmAttributes    = (*env)->GetFieldID(env, g_jni.config_attrs.cls, "bmAttributes",    "B");
+    g_jni.config_attrs.f_bMaxPower       = (*env)->GetFieldID(env, g_jni.config_attrs.cls, "bMaxPower",       "B");
+
+    if (!g_jni.config_attrs.f_bmAttributes || !g_jni.config_attrs.f_bMaxPower) {
+        goto fail;
+    }
+    return 0;
+
+    fail:
+    usbtk_usbg_config_attrs_jni_release(env);
+    return -1;
+}
+
 int usbtk_dto_init(JNIEnv *env) {
     if (usbtk_usbg_gadget_attrs_jni_init(env)
-        || usbtk_usbg_gadget_strs_jni_init(env)) {
+        || usbtk_usbg_gadget_strs_jni_init(env)
+        || usbtk_usbg_config_attrs_jni_init(env)) {
         usbtk_dto_release(env);
         return -1;
     }
@@ -166,6 +214,7 @@ int usbtk_dto_init(JNIEnv *env) {
 void usbtk_dto_release(JNIEnv *env) {
     usbtk_usbg_gadget_attrs_jni_release(env);
     usbtk_usbg_gadget_strs_jni_release(env);
+    usbtk_usbg_config_attrs_jni_release(env);
 }
 
 jobject usbtk_usbg_gadget_attrs_to_kotlin(JNIEnv *env,
@@ -233,6 +282,28 @@ int usbtk_usbg_gadget_strs_from_kotlin(JNIEnv *env,
     dst->manufacturer = usbtk_jstring_dup(env, obj, g_jni.gadget_strs.f_manufacturer);
     dst->product      = usbtk_jstring_dup(env, obj, g_jni.gadget_strs.f_product);
     dst->serial       = usbtk_jstring_dup(env, obj, g_jni.gadget_strs.f_serial);
+
+    return 0;
+}
+
+jobject usbtk_usbg_config_attrs_to_kotlin(JNIEnv *env,
+                                          const struct usbg_config_attrs *src)
+{
+    if (!g_jni.config_attrs.cls || !src) return NULL;
+
+    return (*env)->NewObject(env, g_jni.config_attrs.cls, g_jni.config_attrs.ctor,
+                             (jbyte)  src->bmAttributes,
+                             (jbyte)  src->bMaxPower);
+}
+
+int usbtk_usbg_config_attrs_from_kotlin(JNIEnv *env,
+                                        jobject obj,
+                                        struct usbg_config_attrs *dst)
+{
+    if (!g_jni.config_attrs.cls || !obj || !dst) return -1;
+
+    dst->bmAttributes    = (uint8_t) (*env)->GetByteField (env, obj, g_jni.config_attrs.f_bmAttributes);
+    dst->bMaxPower       = (uint8_t) (*env)->GetByteField (env, obj, g_jni.config_attrs.f_bMaxPower);
 
     return 0;
 }
