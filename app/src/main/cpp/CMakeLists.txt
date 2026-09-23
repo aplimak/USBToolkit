@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.22.1)
 project("usbtoolkit")
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+option(USBTK_STRICT     "Enable aggressive warnings and -Werror on the main target" ON)
 
 set(ANDROID_CMAKE_ARGS
         -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}
@@ -219,9 +222,39 @@ add_library(${CMAKE_PROJECT_NAME} SHARED
         dto.c
         usb_jni.c)
 
+if(USBTK_STRICT)
+    target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE
+            -Wall
+            -Wextra
+            -Wpedantic
+            -Wshadow
+            -Wpointer-arith
+            -Wcast-qual
+            -Wcast-align
+            -Wstrict-prototypes
+            -Wmissing-prototypes
+            -Wmissing-declarations
+            -Wold-style-definition
+            -Wredundant-decls
+            -Wformat=2
+            -Wformat-security
+            -Wnull-dereference
+            -Wdouble-promotion
+            -Wfloat-equal
+            -Wwrite-strings
+            -Wvla
+            -Wswitch-enum
+            -Wundef
+            -Winit-self
+            -Wuninitialized
+            -Wno-unused-parameter   # JNI env/cls often unused; or use (void)env;
+            -Werror)
+endif()
+
 target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE
         $<$<NOT:$<CONFIG:Debug>>:-O3;-flto;-ffunction-sections;-fdata-sections>
         $<$<CONFIG:Debug>:-O0;-g3;-fno-omit-frame-pointer;-fno-lto>
+        "--warning-suppression-mappings=${CMAKE_CURRENT_SOURCE_DIR}/suppression_mappings.txt"
 )
 target_link_options(${CMAKE_PROJECT_NAME} PRIVATE
         $<$<NOT:$<CONFIG:Debug>>:-Wl,--gc-sections;-Wl,-s>

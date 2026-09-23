@@ -23,34 +23,45 @@ Java_ir_aeliux_usbtoolkit_Native_usbCreateGadget(JNIEnv *env, jclass cls,
     usbg_config *c = NULL;
 
     struct usbg_gadget_attrs g_attrs;
-    struct usbg_gadget_strs g_strs;
+    struct usbg_gadget_strs g_strs = {0};
     struct usbg_config_attrs c_attrs;
-    struct usbg_config_strs c_strs;
+    struct usbg_config_strs c_strs = {0};
 
     ret = usbtk_usbg_gadget_attrs_from_kotlin(env, j_gadgetAttrs, &g_attrs);
-    if (ret != 0) goto fail;
+    if (ret != 0) goto cleanup;
 
     ret = usbtk_usbg_gadget_strs_from_kotlin(env, j_gadgetStrs, &g_strs);
-    if (ret != 0) goto fail;
+    if (ret != 0) goto cleanup;
 
     ret = usbtk_usbg_config_attrs_from_kotlin(env, j_configAttrs, &c_attrs);
-    if (ret != 0) goto fail;
+    if (ret != 0) goto cleanup;
 
     ret = usbtk_usbg_config_strs_from_jstring(env, j_configStr, &c_strs);
-    if (ret != 0) goto fail;
+    if (ret != 0) goto cleanup;
 
     ret = usbg_init("/config", &s);
-    if (ret != 0) goto fail;
+    if (ret != 0) goto cleanup;
 
-    ret = usbg_create_gadget(s, "t1", g_attrs, g_strs, &g);
-    if (ret != 0) goto fail;
+    ret = usbg_create_gadget(s, gadget_name, &g_attrs, &g_strs, &g);
+    if (ret != 0) goto cleanup;
 
-    ret = usbg_create_config(g, 1, "The only one", NULL, c_strs, &c);
-    if (ret != 0) goto fail;
+    ret = usbg_create_config(g, 1, "The only one", &c_attrs, &c_strs, &c);
+    if (ret != 0) goto cleanup;
 
-    return 0;
+    ret = 0;
 
-    fail:
-    free((void *)gadget_name);
-    return -1;
+cleanup:
+    if (gadget_name) {
+        (*env)->ReleaseStringUTFChars(env, j_gadgetName, gadget_name);
+    }
+
+    if (s) {
+        usbg_cleanup(s);
+    }
+
+    // They just always exist? the function just nullify them so it doesn't matter
+    usbg_free_gadget_strs(&g_strs);
+    usbg_free_config_strs(&c_strs);
+
+    return ret;
 }
