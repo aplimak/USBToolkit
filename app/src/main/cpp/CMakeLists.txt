@@ -212,7 +212,9 @@ set_target_properties(usbgx PROPERTIES
 # Main Library
 
 add_library(${CMAKE_PROJECT_NAME} SHARED
-        magic.c)
+        core.c
+        magic.c
+        dto.c)
 
 target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE
         $<$<NOT:$<CONFIG:Debug>>:-O3;-flto;-ffunction-sections;-fdata-sections>

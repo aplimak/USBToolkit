@@ -2,16 +2,14 @@
 // Created by aeliux on 9/19/26.
 //
 
+#define LOG_TAG "libusbtk.magic"
+
 #include <jni.h>
 #include <string.h>
 #include <stdlib.h>
 #include <pthread.h>
-#include <android/log.h>
 #include <magic.h>
-
-#define LOG_TAG "libusbtoolkit.magic"
-#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
-#define LOGI(...) __android_log_print(ANDROID_LOG_INFO,  LOG_TAG, __VA_ARGS__)
+#include "log.h"
 
 #define MAGIC_RESULT_CLASS "ir/aeliux/usbtoolkit/data/MagicResult"
 
