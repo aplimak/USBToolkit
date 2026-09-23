@@ -964,6 +964,25 @@ out:
 	return ret;
 }
 
+static int is_android_system_gadget(const char *name)
+{
+	/* g1, g2, g3, ... */
+	if (name[0] != 'g') return 0;
+	if (name[1] < '0' || name[1] > '9') return 0;
+	for (const char *p = name + 2; *p; p++) {
+		if (*p < '0' || *p > '9') return 0;
+	}
+	return 1;
+}
+
+static inline int file_select_gadget(const struct dirent *dent) {
+	if ((file_select(dent) == 0) || (is_android_system_gadget(dent->d_name) == 1)) {
+		return 0;
+	} else {
+		return 1;
+	}
+}
+
 static int usbg_parse_gadgets(const char *path, usbg_state *s)
 {
 	usbg_gadget *g;
@@ -971,7 +990,7 @@ static int usbg_parse_gadgets(const char *path, usbg_state *s)
 	int ret = USBG_SUCCESS;
 	struct dirent **dent;
 
-	n = scandir(path, &dent, file_select, alphasort);
+	n = scandir(path, &dent, file_select_gadget, alphasort);
 	if (n < 0) {
 		ret = usbg_translate_error(errno);
 		goto out;
