@@ -5,14 +5,15 @@
 #include "dto.h"
 
 #include <jni.h>
+#include <stdlib.h>
+#include <string.h>
 #include <usbg/usbg.h>
 
 #define KOTLIN_USBG_GADGET_ATTRS_CLASS "ir/aeliux/usbtoolkit/dto/UsbgGadgetAttrs"
-
-/* Constructor descriptor: (S B B B B S S S)V
- *   bcdUSB(S) bDeviceClass(B) bDeviceSubClass(B) bDeviceProtocol(B)
- *   bMaxPacketSize0(B) idVendor(S) idProduct(S) bcdDevice(S) */
 #define KOTLIN_USBG_GADGET_ATTRS_CTOR_SIG "(SBBBBSSS)V"
+
+#define KOTLIN_USBG_GADGET_STRS_CLASS "ir/aeliux/usbtoolkit/dto/UsbgGadgetStrs"
+#define KOTLIN_USBG_GADGET_STRS_CTOR_SIG "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V"
 
 typedef struct {
     jclass    cls;
@@ -27,10 +28,46 @@ typedef struct {
     jfieldID  f_bcdDevice;
 } usbtk_usbg_gadget_attrs_jni_t;
 
+typedef struct {
+    jclass    cls;
+    jmethodID ctor;
+    jfieldID  f_manufacturer;
+    jfieldID  f_product;
+    jfieldID  f_serial;
+} usbtk_usbg_gadget_strs_jni_t;
+
 static struct {
     usbtk_usbg_gadget_attrs_jni_t gadget_attrs;
-    //usbtk_usbg_config_attrs_jni_t config_attrs;
+    usbtk_usbg_gadget_strs_jni_t gadget_strs;
 } g_jni = {0};
+
+/* Reads obj.<field> as a String, returns a freshly malloc'd UTF-8 copy,
+ * or NULL if the field is null. Caller frees with free(). */
+static char *usbtk_jstring_dup(JNIEnv *env, jobject obj, jfieldID fid)
+{
+    jstring js = (jstring)(*env)->GetObjectField(env, obj, fid);
+    if (!js) return NULL;
+
+    const char *utf = (*env)->GetStringUTFChars(env, js, NULL);
+    if (!utf) {
+        (*env)->DeleteLocalRef(env, js);
+        return NULL;
+    }
+
+    char *dup = strdup(utf);
+
+    (*env)->ReleaseStringUTFChars(env, js, utf);
+    (*env)->DeleteLocalRef(env, js);
+    return dup;
+}
+
+static void usbtk_usbg_gadget_attrs_jni_release(JNIEnv *env)
+{
+    if (g_jni.gadget_attrs.cls) {
+        (*env)->DeleteGlobalRef(env, g_jni.gadget_attrs.cls);
+        g_jni.gadget_attrs.cls = NULL;
+    }
+}
 
 static int usbtk_usbg_gadget_attrs_jni_init(JNIEnv *env)
 {
@@ -69,25 +106,58 @@ static int usbtk_usbg_gadget_attrs_jni_init(JNIEnv *env)
     return 0;
 
     fail:
-    if (g_jni.gadget_attrs.cls) {
-        (*env)->DeleteGlobalRef(env, g_jni.gadget_attrs.cls);
-        g_jni.gadget_attrs.cls = NULL;
-    }
+    usbtk_usbg_gadget_attrs_jni_release(env);
     return -1;
 }
 
-static void usbtk_usbg_gadget_attrs_jni_release(JNIEnv *env)
+static void usbtk_usbg_gadget_strs_jni_release(JNIEnv *env)
 {
-    if (g_jni.gadget_attrs.cls) {
-        (*env)->DeleteGlobalRef(env, g_jni.gadget_attrs.cls);
-        g_jni.gadget_attrs.cls = NULL;
+    if (g_jni.gadget_strs.cls) {
+        (*env)->DeleteGlobalRef(env, g_jni.gadget_strs.cls);
+        g_jni.gadget_strs.cls = NULL;
     }
 }
 
+static int usbtk_usbg_gadget_strs_jni_init(JNIEnv *env)
+{
+    if (g_jni.gadget_strs.cls) return 0;
+
+    jclass local = (*env)->FindClass(env, KOTLIN_USBG_GADGET_STRS_CLASS);
+    if (!local) return -1;
+
+    g_jni.gadget_strs.cls = (jclass)(*env)->NewGlobalRef(env, local);
+    (*env)->DeleteLocalRef(env, local);
+    if (!g_jni.gadget_strs.cls) return -1;
+
+    g_jni.gadget_strs.ctor = (*env)->GetMethodID(
+            env, g_jni.gadget_strs.cls, "<init>",
+            KOTLIN_USBG_GADGET_STRS_CTOR_SIG);
+    if (!g_jni.gadget_strs.ctor) goto fail;
+
+    g_jni.gadget_strs.f_manufacturer = (*env)->GetFieldID(
+            env, g_jni.gadget_strs.cls, "manufacturer", "Ljava/lang/String;");
+    g_jni.gadget_strs.f_product = (*env)->GetFieldID(
+            env, g_jni.gadget_strs.cls, "product",      "Ljava/lang/String;");
+    g_jni.gadget_strs.f_serial = (*env)->GetFieldID(
+            env, g_jni.gadget_strs.cls, "serial",       "Ljava/lang/String;");
+
+    if (!g_jni.gadget_strs.f_manufacturer
+        || !g_jni.gadget_strs.f_product
+        || !g_jni.gadget_strs.f_serial) {
+        goto fail;
+    }
+    return 0;
+
+    fail:
+    usbtk_usbg_gadget_strs_jni_release(env);
+    return -1;
+}
+
 int usbtk_dto_init(JNIEnv *env) {
-    int ret = usbtk_usbg_gadget_attrs_jni_init(env);
-    if (ret != 0) {
-        return ret;
+    if (usbtk_usbg_gadget_attrs_jni_init(env)
+        || usbtk_usbg_gadget_strs_jni_init(env)) {
+        usbtk_dto_release(env);
+        return -1;
     }
 
     return 0;
@@ -95,6 +165,7 @@ int usbtk_dto_init(JNIEnv *env) {
 
 void usbtk_dto_release(JNIEnv *env) {
     usbtk_usbg_gadget_attrs_jni_release(env);
+    usbtk_usbg_gadget_strs_jni_release(env);
 }
 
 jobject usbtk_usbg_gadget_attrs_to_kotlin(JNIEnv *env,
@@ -127,6 +198,41 @@ int usbtk_usbg_gadget_attrs_from_kotlin(JNIEnv *env,
     dst->idVendor        = (uint16_t)(*env)->GetShortField(env, obj, g_jni.gadget_attrs.f_idVendor);
     dst->idProduct       = (uint16_t)(*env)->GetShortField(env, obj, g_jni.gadget_attrs.f_idProduct);
     dst->bcdDevice       = (uint16_t)(*env)->GetShortField(env, obj, g_jni.gadget_attrs.f_bcdDevice);
+
+    return 0;
+}
+
+jobject usbtk_usbg_gadget_strs_to_kotlin(JNIEnv *env,
+                                         const struct usbg_gadget_strs *src)
+{
+    if (!g_jni.gadget_strs.cls || !src) return NULL;
+
+    jstring j_manufacturer = src->manufacturer
+                             ? (*env)->NewStringUTF(env, src->manufacturer) : NULL;
+    jstring j_product = src->product
+                        ? (*env)->NewStringUTF(env, src->product) : NULL;
+    jstring j_serial = src->serial
+                       ? (*env)->NewStringUTF(env, src->serial) : NULL;
+
+    jobject obj = (*env)->NewObject(env, g_jni.gadget_strs.cls, g_jni.gadget_strs.ctor,
+                                    j_manufacturer, j_product, j_serial);
+
+    if (j_manufacturer) (*env)->DeleteLocalRef(env, j_manufacturer);
+    if (j_product)      (*env)->DeleteLocalRef(env, j_product);
+    if (j_serial)       (*env)->DeleteLocalRef(env, j_serial);
+
+    return obj;
+}
+
+int usbtk_usbg_gadget_strs_from_kotlin(JNIEnv *env,
+                                       jobject obj,
+                                       struct usbg_gadget_strs *dst)
+{
+    if (!g_jni.gadget_strs.cls || !obj || !dst) return -1;
+
+    dst->manufacturer = usbtk_jstring_dup(env, obj, g_jni.gadget_strs.f_manufacturer);
+    dst->product      = usbtk_jstring_dup(env, obj, g_jni.gadget_strs.f_product);
+    dst->serial       = usbtk_jstring_dup(env, obj, g_jni.gadget_strs.f_serial);
 
     return 0;
 }
