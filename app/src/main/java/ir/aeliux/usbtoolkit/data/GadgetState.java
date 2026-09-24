@@ -1,8 +1,9 @@
 package ir.aeliux.usbtoolkit.data;
 
-import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
+
+import androidx.core.os.ParcelCompat;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -73,12 +74,7 @@ public class GadgetState implements Parcelable {
         ClassLoader cl = LunState.class.getClassLoader();
         for (int i = 0; i < size; i++) {
             String key = in.readString();
-            LunState value;
-            if (Build.VERSION.SDK_INT >= 33) {
-                value = in.readParcelable(cl, LunState.class);
-            } else {
-                value = in.readParcelable(cl);
-            }
+            LunState value = ParcelCompat.readParcelable(in, cl, LunState.class);
             map.put(key, value);
         }
         luns = Collections.unmodifiableMap(map);
