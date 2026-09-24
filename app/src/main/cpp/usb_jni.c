@@ -8,7 +8,7 @@
 #include "log.h"
 
 JNIEXPORT jint JNICALL
-Java_ir_aeliux_usbtoolkit_Native_usbCreateGadget(JNIEnv *env, jclass cls,
+Java_ir_aeliux_usbtoolkit_Native_usbtkUsbCreateGadget(JNIEnv *env, jclass cls,
                                                 jstring j_gadgetName,
                                                 jobject j_gadgetAttrs,
                                                 jobject j_gadgetStrs,
