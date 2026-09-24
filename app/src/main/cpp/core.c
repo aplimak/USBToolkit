@@ -3,6 +3,7 @@
 //
 
 #include <jni.h>
+#include "error.h"
 #include "log.h"
 #include "dto.h"
 
@@ -13,18 +14,6 @@ static JavaVM *g_vm = NULL;
 /* Returned to the VM. Android supports up to 1.6; this is the standard
  * value for a modern NDK library. */
 #define USBTK_JNI_VERSION JNI_VERSION_1_6
-
-/* Throw a RuntimeException with a descriptive message. Returns without
- * doing anything if it can't find the class (shouldn't happen — it's a
- * bootstrap class). */
-static void usbtk_throw(JNIEnv *env, const char *msg)
-{
-    jclass cls = (*env)->FindClass(env, "java/lang/RuntimeException");
-    if (cls) {
-        (*env)->ThrowNew(env, cls, msg);
-        (*env)->DeleteLocalRef(env, cls);
-    }
-}
 
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved)
 {
@@ -43,7 +32,10 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved)
         /* usbtk_dto_init already logs the specific failure. Roll back
          * anything it may have partially set, then bail. */
         usbtk_dto_release(env);
-        usbtk_throw(env, "usbtoolkit: native init failed (dto)");
+        if (!(*env)->ExceptionCheck(env)) {
+            usbtk_throw(env, "java/lang/IllegalStateException",
+                        "usbtoolkit: native init failed (dto)");
+        }
         return JNI_ERR;   /* still return ERR even with a pending exception */
     }
 

@@ -21,17 +21,24 @@ public class Native {
                                       UsbgConfigAttrs configAttrs,
                                       String          configStrs) {
         Log.d(TAG, "Calling native method usbtkUsbCreateGadget");
-        int ret = usbtkUsbCreateGadget(
+        usbtkUsbCreateGadget(
                 gadgetName,
                 gadgetAtts,
                 gadgetStrs,
                 configAttrs,
                 configStrs
         );
+    }
 
-        if (ret != 0) {
+    public static void usbSetConfigfsPath(String configfsPath) {
+        Log.d(TAG, "Calling native method usbtkUsbSetConfigfsPath");
+        usbtkUsbSetConfigfsPath(configfsPath);
+    }
+
+    private static void usbThrow(int returnCode) {
+        if (returnCode != 0) {
             // it's bad, but we can't just skip it, so throw a general exception
-            throw new RuntimeException("Native method returned with code " + ret);
+            throw new RuntimeException("Native method returned with code " + returnCode);
         }
     }
 
@@ -39,9 +46,11 @@ public class Native {
     public static native MagicResult magicAnalyzeFile(String path);
     public static native void magicRelease();
 
-    private static native int usbtkUsbCreateGadget(String          gadgetName,
+    private static native void usbtkUsbCreateGadget(String          gadgetName,
                                               UsbgGadgetAttrs gadgetAtts,
                                               UsbgGadgetStrs  gadgetStrs,
                                               UsbgConfigAttrs configAttrs,
                                               String          configStrs);
+
+    private static native void usbtkUsbSetConfigfsPath(String configfsPath);
 }
