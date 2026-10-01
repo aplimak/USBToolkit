@@ -8,49 +8,26 @@ import ir.aeliux.usbtoolkit.dto.UsbgGadgetAttrs;
 import ir.aeliux.usbtoolkit.dto.UsbgGadgetStrs;
 
 public class Native {
-    private static final String TAG = "Native";
-    private Native() {}
-
     static {
         System.loadLibrary("usbtoolkit");
     }
 
-    public static void usbCreateGadget(String         gadgetName,
-                                      UsbgGadgetAttrs gadgetAtts,
-                                      UsbgGadgetStrs  gadgetStrs,
-                                      UsbgConfigAttrs configAttrs,
-                                      String          configStrs) {
-        Log.d(TAG, "Calling native method usbtkUsbCreateGadget");
-        usbtkUsbCreateGadget(
-                gadgetName,
-                gadgetAtts,
-                gadgetStrs,
-                configAttrs,
-                configStrs
-        );
-    }
+    private Native() {}
 
-    public static void usbSetConfigfsPath(String configfsPath) {
-        Log.d(TAG, "Calling native method usbtkUsbSetConfigfsPath");
-        usbtkUsbSetConfigfsPath(configfsPath);
-    }
+    static native long usbtkUsbCreateGadget(long ptrwConfigfs,
+                                            String gadgetName,
+                                            UsbgGadgetAttrs gadgetAtts,
+                                            UsbgGadgetStrs gadgetStrs,
+                                            UsbgConfigAttrs configAttrs,
+                                            String configStrs);
 
-    private static void usbThrow(int returnCode) {
-        if (returnCode != 0) {
-            // it's bad, but we can't just skip it, so throw a general exception
-            throw new RuntimeException("Native method returned with code " + returnCode);
-        }
-    }
+    static native long usbtkUsbInit(String configfsPath);
+
+    static native void usbtkUsbClose(long handle);
 
     public static native void magicInit(String dbPath);
+
     public static native MagicResult magicAnalyzeFile(String path);
+
     public static native void magicRelease();
-
-    private static native void usbtkUsbCreateGadget(String          gadgetName,
-                                              UsbgGadgetAttrs gadgetAtts,
-                                              UsbgGadgetStrs  gadgetStrs,
-                                              UsbgConfigAttrs configAttrs,
-                                              String          configStrs);
-
-    private static native void usbtkUsbSetConfigfsPath(String configfsPath);
 }

@@ -220,7 +220,8 @@ add_library(${CMAKE_PROJECT_NAME} SHARED
         core.c
         magic_jni.c
         dto.c
-        usb_jni.c)
+        usb_jni.c
+        ptrw.c)
 
 if(USBTK_STRICT)
     target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE
