@@ -28,6 +28,15 @@ public class Gadget extends PointerWrapper {
         return new Gadget(ptr, configfs);
     }
 
+    public static Gadget open(Configfs configfs,
+                              String gadgetName) throws IllegalArgumentException
+    {
+        long ptr = Native.usbtkUsbOpenGadget(configfs.requireHandle(),
+                                             gadgetName);
+
+        return new Gadget(ptr, configfs);
+    }
+
     @Override
     protected void closeHandle(long ptr) {
         // Nothing to do.

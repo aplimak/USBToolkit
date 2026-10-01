@@ -32,4 +32,10 @@ public class Configfs extends PointerWrapper {
                              configAttrs,
                              configStrs);
     }
+
+    public Gadget OpenGadget(String gadgetName)
+    {
+        return Gadget.open(this,
+                           gadgetName);
+    }
 }

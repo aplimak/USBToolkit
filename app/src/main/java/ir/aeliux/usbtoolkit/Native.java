@@ -19,6 +19,9 @@ public class Native {
                                             UsbgConfigAttrs configAttrs,
                                             String configStrs);
 
+    static native long usbtkUsbOpenGadget(long ptrwConfigfs,
+                                          String gadgetName);
+
     static native long usbtkUsbInit(String configfsPath);
 
     static native void usbtkUsbClose(long handle);
