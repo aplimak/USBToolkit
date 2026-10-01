@@ -1,7 +1,5 @@
 package ir.aeliux.usbtoolkit;
 
-import android.util.Log;
-
 import ir.aeliux.usbtoolkit.data.MagicResult;
 import ir.aeliux.usbtoolkit.dto.UsbgConfigAttrs;
 import ir.aeliux.usbtoolkit.dto.UsbgGadgetAttrs;
