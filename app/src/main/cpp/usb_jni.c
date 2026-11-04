@@ -130,7 +130,7 @@ Java_ir_aeliux_usbtoolkit_Native_usbtkUsbOpenGadget(JNIEnv *env, jclass cls,
     if (!gadget_name) return 0;
     LOGV("Gadget name is ok");
 
-    usbg_gadget *g = NULL:
+    usbg_gadget *g = NULL;
 
     {
         g = usbg_get_gadget(s, gadget_name);
