@@ -25,3 +25,9 @@ dependencyResolutionManagement {
 
 rootProject.name = "USBToolkit"
 include ':app'
+include ':app:rootservice'
+include ':lib:core'
+include ':lib:ui'
+include ':app:shared'
+include ':app:usb'
+include ':lib:magic'

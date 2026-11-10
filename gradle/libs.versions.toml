@@ -27,3 +27,4 @@ recyclerview = { module = "androidx.recyclerview:recyclerview", version.ref = "r
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize" }
+android-library = { id = "com.android.library", version.ref = "agp" }
