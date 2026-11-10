@@ -47,7 +47,8 @@ public class Gadget extends PointerWrapper {
 
     public <A extends UsbgFunctionAttrsBase, F extends Function<A, F>>
     F createFunction(A attrs) {
-        long ptr = Native.usbtkUsbCreateFunction(requireHandle(), attrs.getType().ordinal(), attrs);
+        //long ptr = Native.usbtkUsbCreateFunction(requireHandle(), attrs.getType().ordinal(), attrs);
+        long ptr = 0;
         @SuppressWarnings("unchecked")
         F result = (F) wrapFunction(attrs.getType(), ptr);
         return result;
