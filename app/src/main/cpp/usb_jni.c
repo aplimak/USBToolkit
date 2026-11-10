@@ -148,3 +148,18 @@ Java_ir_aeliux_usbtoolkit_Native_usbtkUsbOpenGadget(JNIEnv *env, jclass cls,
 
     return 0;
 }
+
+JNIEXPORT void JNICALL
+Java_ir_aeliux_usbtoolkit_Native_usbtkUsbDeleteGadget(JNIEnv *env, jclass cls,
+                                                      jlong j_ptrwGadget)
+{
+    usbtk_ptrw_t *ptrw = usbtk_ptrw_resolve(env, j_ptrwGadget);
+    if (!ptrw) return;
+    usbg_gadget *g = ptrw->ptr;
+
+    int rc = usbg_rm_gadget(g, USBG_RM_RECURSE);
+    if (rc != 0) {
+        usbtk_throw_usbg(env, "delete gadget", rc);
+        return;
+    }
+}

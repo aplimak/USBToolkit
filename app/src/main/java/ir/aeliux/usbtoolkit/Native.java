@@ -22,6 +22,8 @@ public class Native {
     static native long usbtkUsbOpenGadget(long ptrwConfigfs,
                                           String gadgetName);
 
+    static native long usbtkUsbDeleteGadget(long ptrwGadget);
+
     static native long usbtkUsbInit(String configfsPath);
 
     static native void usbtkUsbClose(long handle);

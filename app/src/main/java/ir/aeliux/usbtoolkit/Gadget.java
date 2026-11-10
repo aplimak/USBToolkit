@@ -37,9 +37,14 @@ public class Gadget extends PointerWrapper {
         return new Gadget(ptr, configfs);
     }
 
+    public void delete() {
+        Native.usbtkUsbDeleteGadget(requireHandle());
+        close();
+    }
+
     @Override
     protected void closeHandle(long ptr) {
-        // Nothing to do.
+        // Nothing to do. gadgets are part of usbg_state memory so it is closed by Configfs close call.
     }
 
     @NonNull
