@@ -2,9 +2,12 @@ package ir.aeliux.usbtoolkit;
 
 import androidx.annotation.NonNull;
 
+import ir.aeliux.usbtoolkit.data.UsbFunctions;
 import ir.aeliux.usbtoolkit.dto.UsbgConfigAttrs;
+import ir.aeliux.usbtoolkit.dto.UsbgFunctionAttrsBase;
 import ir.aeliux.usbtoolkit.dto.UsbgGadgetAttrs;
 import ir.aeliux.usbtoolkit.dto.UsbgGadgetStrs;
+import kotlin.NotImplementedError;
 
 public class Gadget extends PointerWrapper {
     private Gadget(long ptr, @NonNull Configfs parent) {
@@ -40,6 +43,24 @@ public class Gadget extends PointerWrapper {
     public void delete() {
         Native.usbtkUsbDeleteGadget(requireHandle());
         close();
+    }
+
+    public <A extends UsbgFunctionAttrsBase, F extends Function<A, F>>
+    F createFunction(A attrs) {
+        long ptr = Native.usbtkUsbCreateFunction(requireHandle(), attrs.getType().ordinal(), attrs);
+        @SuppressWarnings("unchecked")
+        F result = (F) wrapFunction(attrs.getType(), ptr);
+        return result;
+    }
+
+    Function<?, ?> wrapFunction(UsbFunctions type, long ptr) {
+        return switch (type) {
+            case USBG_F_SERIAL, USBG_F_RNDIS, USBG_F_PHONET, USBG_F_FFS, USBG_F_EEM, USBG_F_NCM,
+                 USBG_F_ACM, USBG_F_OBEX, USBG_F_ECM, USBG_F_SUBSET, USBG_F_MIDI, USBG_F_LOOPBACK,
+                 USBG_F_HID, USBG_F_UAC2, USBG_F_UVC, USBG_F_PRINTER, USBG_F_9PFS ->
+                    throw new NotImplementedError("Function type: " + type + " is not supported");
+            case USBG_F_MASS_STORAGE -> new MassStorageFunction(ptr, this);
+        };
     }
 
     @Override
