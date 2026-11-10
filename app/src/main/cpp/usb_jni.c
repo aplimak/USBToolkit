@@ -51,9 +51,18 @@ Java_ir_aeliux_usbtoolkit_Native_usbtkUsbClose(JNIEnv *env, jclass cls,
     usbtk_ptrw_t *ptrw = usbtk_ptrw_resolve(env, handle);
     if (!ptrw) return;
 
-    LOGD("usbg_cleanup (handle %p)", (void *) ptrw);
+    LOGD("usbg_cleanup (handle %p)", (void *) ptrw->ptr);
     usbg_cleanup(ptrw->ptr);
-    free(ptrw);
+}
+
+JNIEXPORT void JNICALL
+Java_ir_aeliux_usbtoolkit_Native_usbtkPtrwClose(JNIEnv *env, jclass cls,
+                                                jlong handle)
+{
+    usbtk_ptrw_t *ptrw = usbtk_ptrw_resolve(env, handle);
+    if (!ptrw) return;
+
+    usbtk_ptrw_free(ptrw);
 }
 
 JNIEXPORT jlong JNICALL

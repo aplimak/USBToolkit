@@ -26,6 +26,8 @@ public class Native {
 
     static native void usbtkUsbClose(long handle);
 
+    static native void usbtkPtrwClose(long handle);
+
     public static native void magicInit(String dbPath);
 
     public static native MagicResult magicAnalyzeFile(String path);

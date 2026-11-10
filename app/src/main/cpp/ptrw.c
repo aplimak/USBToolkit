@@ -9,7 +9,7 @@ usbtk_ptrw_t *usbtk_ptrw_resolve(JNIEnv *env, jlong ptr)
 {
     usbtk_ptrw_t *ptrw = (usbtk_ptrw_t *) (intptr_t) ptr;
 
-    if (!ptrw) {
+    if (!ptrw || ptrw->closed) {
         USBTK_THROW_ISE(env, "PointerWrapper is already closed");
         return NULL;
     }
@@ -32,4 +32,11 @@ long usbtk_ptrw_wrap(JNIEnv *env, void *ptr)
     ptrw->owner = pthread_self();
 
     return (long) (intptr_t) ptrw;
+}
+
+void usbtk_ptrw_free(usbtk_ptrw_t *ptrw)
+{
+    if (!ptrw) return;
+
+    free(ptrw);
 }
