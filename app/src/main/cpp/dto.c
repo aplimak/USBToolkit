@@ -698,8 +698,8 @@ void usbtk_usbg_f_mass_storage_attrs_free(struct usbg_f_ms_attrs *ptr)
 {
     if (!ptr || ptr->nluns == 0) return;
     for (int i = 0; i < ptr->nluns; i++) {
-        free(ptr->luns[i]->file);
-        free(ptr->luns[i]->inquiry_string);
+        free((void *) (uintptr_t) ptr->luns[i]->file);
+        free((void *) (uintptr_t) ptr->luns[i]->inquiry_string);
         free(ptr->luns[i]);
     }
     free(ptr->luns);
