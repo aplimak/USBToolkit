@@ -8,6 +8,7 @@
 #include <limits.h>
 #include <string.h>
 #include <pthread.h>
+#include <usbg/function/ms.h>
 #include <usbg/usbg.h>
 #include "dto.h"
 #include "log.h"
@@ -162,4 +163,55 @@ Java_ir_aeliux_usbtoolkit_Native_usbtkUsbDeleteGadget(JNIEnv *env, jclass cls,
         usbtk_throw_usbg(env, "delete gadget", rc);
         return;
     }
+}
+
+JNIEXPORT jlong JNICALL
+Java_ir_aeliux_usbtoolkit_Native_usbtkUsbCreateFunction(JNIEnv *env,
+                                                        jclass cls,
+                                                        jlong j_ptrwGadget,
+                                                        jint j_functionType,
+                                                        jstring j_functionInstance,
+                                                        jobject j_functionAttrs)
+{
+    usbtk_ptrw_t *ptrw = usbtk_ptrw_resolve(env, j_ptrwGadget);
+    if (!ptrw) return 0;
+    usbg_gadget *g = ptrw->ptr;
+
+    const char *instance = (*env)->GetStringUTFChars(env, j_functionInstance, NULL);
+    void *attrs = NULL;
+    usbg_function *f = NULL;
+
+    switch (j_functionType) {
+        case USBG_F_MASS_STORAGE:
+            attrs = malloc(sizeof(struct usbg_f_ms_attrs));
+            usbtk_usbg_f_mass_storage_attrs_from_kotlin(env, j_functionAttrs, attrs);
+            break;
+        default:
+            USBTK_THROW_IAE(env,
+                            "usbtkUsbCreateFunction: Function type %d is currently not supported",
+                            j_functionType);
+            goto clean;
+    }
+
+    int rc = usbg_create_function(g, j_functionType, instance, attrs, &f);
+    if (rc != 0) {
+        usbtk_throw_usbg(env, "create function", rc);
+        goto clean;
+    }
+
+    clean:
+    switch (j_functionType) {
+        case USBG_F_MASS_STORAGE:
+            usbtk_usbg_f_mass_storage_attrs_free(attrs);
+            break;
+        default:
+            break;
+    }
+
+    free(attrs);
+    if (instance) (*env)->ReleaseStringUTFChars(env, j_functionInstance, instance);
+    if (f) {
+        return usbtk_ptrw_wrap(env, f);
+    }
+    return 0;
 }

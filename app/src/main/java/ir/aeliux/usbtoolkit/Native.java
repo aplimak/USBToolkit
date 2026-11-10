@@ -24,6 +24,11 @@ public class Native {
 
     static native void usbtkUsbDeleteGadget(long ptrwGadget);
 
+    static native long usbtkUsbCreateFunction(long ptrwGadget,
+                                              int functionType,
+                                              String functionInstance,
+                                              Object functionAttrs);
+
     static native long usbtkUsbInit(String configfsPath);
 
     static native void usbtkUsbClose(long handle);
