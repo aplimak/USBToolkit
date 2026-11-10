@@ -80,6 +80,7 @@ android {
 }
 
 dependencies {
+    api project(':app:rootservice')
     implementation project(':lib:core')
     implementation project(':app:shared')
     implementation libs.kotlin.parcelize.runtime

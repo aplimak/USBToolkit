@@ -1,6 +1,6 @@
-package ir.aeliux.usbtoolkit;
+package ir.aeliux.usbtoolkit.usb;
 
-import ir.aeliux.usbtoolkit.dto.UsbgFunctionAttrsBase;
+import ir.aeliux.usbtoolkit.shared.dto.UsbgFunctionAttrsBase;
 
 public abstract class Function<A extends UsbgFunctionAttrsBase, F extends Function<A, F>>
         extends PointerWrapper

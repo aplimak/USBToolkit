@@ -1,4 +1,4 @@
-package ir.aeliux.usbtoolkit.dto
+package ir.aeliux.usbtoolkit.shared.dto
 
 import kotlinx.parcelize.Parcelize
 import android.os.Parcelable

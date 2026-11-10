@@ -1,12 +1,12 @@
-package ir.aeliux.usbtoolkit;
+package ir.aeliux.usbtoolkit.usb;
 
 import androidx.annotation.NonNull;
 
-import ir.aeliux.usbtoolkit.data.UsbFunctions;
-import ir.aeliux.usbtoolkit.dto.UsbgConfigAttrs;
-import ir.aeliux.usbtoolkit.dto.UsbgFunctionAttrsBase;
-import ir.aeliux.usbtoolkit.dto.UsbgGadgetAttrs;
-import ir.aeliux.usbtoolkit.dto.UsbgGadgetStrs;
+import ir.aeliux.usbtoolkit.shared.UsbFunctions;
+import ir.aeliux.usbtoolkit.shared.dto.UsbgConfigAttrs;
+import ir.aeliux.usbtoolkit.shared.dto.UsbgFunctionAttrsBase;
+import ir.aeliux.usbtoolkit.shared.dto.UsbgGadgetAttrs;
+import ir.aeliux.usbtoolkit.shared.dto.UsbgGadgetStrs;
 import kotlin.NotImplementedError;
 
 public class Gadget extends PointerWrapper {

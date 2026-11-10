@@ -17,10 +17,15 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-
+    buildFeatures {
+        buildConfig = true
+    }
 }
 
 dependencies {
+    implementation(project(":app:shared"))
+    implementation(project(":app:usb"))
+    implementation(project(":lib:core"))
     implementation(libs.appcompat)
     implementation(libs.libsu.core)
     implementation(libs.libsu.service)

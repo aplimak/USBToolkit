@@ -1,9 +1,9 @@
-package ir.aeliux.usbtoolkit;
+package ir.aeliux.usbtoolkit.usb;
 
 import ir.aeliux.usbtoolkit.data.MagicResult;
-import ir.aeliux.usbtoolkit.dto.UsbgConfigAttrs;
-import ir.aeliux.usbtoolkit.dto.UsbgGadgetAttrs;
-import ir.aeliux.usbtoolkit.dto.UsbgGadgetStrs;
+import ir.aeliux.usbtoolkit.shared.dto.UsbgConfigAttrs;
+import ir.aeliux.usbtoolkit.shared.dto.UsbgGadgetAttrs;
+import ir.aeliux.usbtoolkit.shared.dto.UsbgGadgetStrs;
 
 public class Native {
     static {

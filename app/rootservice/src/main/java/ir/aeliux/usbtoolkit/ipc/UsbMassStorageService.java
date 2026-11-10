@@ -17,13 +17,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import ir.aeliux.usbtoolkit.Native;
+import ir.aeliux.usbtoolkit.usb.Native;
 import ir.aeliux.usbtoolkit.callback.IGadgetStateListCallback;
 import ir.aeliux.usbtoolkit.callback.IMagicResultCallback;
 import ir.aeliux.usbtoolkit.data.GadgetState;
 import ir.aeliux.usbtoolkit.data.MagicResult;
-import ir.aeliux.usbtoolkit.util.UsbMassStorageManager;
-import ir.aeliux.usbtoolkit.util.UsbMassStorageManager.UsbGadgetException;
+import ir.aeliux.usbtoolkit.rootservice.UsbMassStorageManager;
+import ir.aeliux.usbtoolkit.rootservice.UsbMassStorageManager.UsbGadgetException;
 import ir.aeliux.usbtoolkit.callback.IBooleanCallback;
 import ir.aeliux.usbtoolkit.callback.IGadgetStateCallback;
 import ir.aeliux.usbtoolkit.callback.IStringListCallback;
@@ -55,7 +55,9 @@ public class UsbMassStorageService extends RootService {
             safeCall(() -> {
                 try {
                     Path configfs = UsbMassStorageManager.getConfigfsMountPoint();
-                    UsbMassStorageManager.cleanupGadget(configfs, UsbMassStorageManager.GADGET_NAME, getCallback(callback));
+                    UsbMassStorageManager.cleanupGadget(configfs,
+                                                        UsbMassStorageManager.GADGET_NAME,
+                                                        getCallback(callback));
                     Log.d(TAG, "firing onEnd with result: " + true);
                     callback.onEnd(true);
                 } catch (UsbGadgetException e) {
@@ -163,7 +165,9 @@ public class UsbMassStorageService extends RootService {
                         try {
                             result.add(UsbMassStorageManager.getGadgetState(configfs, gadget));
                         } catch (UsbGadgetException e) {
-                            Log.w(TAG, "Error happened in binder.getGadgetState while getting state of gadget: " + gadget, e);
+                            Log.w(TAG,
+                                  "Error happened in binder.getGadgetState while getting state of gadget: " + gadget,
+                                  e);
                         }
                     }
 
@@ -179,13 +183,16 @@ public class UsbMassStorageService extends RootService {
         }
 
         @Override
-        public void analyzeFiles(List<String> paths, IMagicResultCallback callback) throws RemoteException {
+        public void analyzeFiles(List<String> paths,
+                                 IMagicResultCallback callback) throws RemoteException
+        {
             Log.d(TAG, "binder.analyzeFiles");
             String mgc = new File(getFilesDir(), "magic.mgc").getAbsolutePath();
             Native.magicInit(mgc);
 
             Map<String, MagicResult> result = paths.stream()
-                            .collect(Collectors.toMap(key -> key, Native::magicAnalyzeFile));
+                                                   .collect(Collectors.toMap(key -> key,
+                                                                             Native::magicAnalyzeFile));
 
 
             Native.magicRelease();
@@ -218,16 +225,13 @@ public class UsbMassStorageService extends RootService {
                         Log.e(TAG, "Error happened in step: " + stepName, error);
                         Log.d(TAG, "firing onStepFailed with step: " + stepName);
                         var cause = error.getCause();
-                        callback.onStepFailed(stepName, error + (cause != null ? "\n Caused by: " + cause : ""));
+                        callback.onStepFailed(stepName,
+                                              error + (cause != null ? "\n Caused by: " + cause : ""));
                     });
                 }
             };
         }
     };
-
-    private interface RemoteAction {
-        void run() throws RemoteException;
-    }
 
     private static void safeCall(RemoteAction action) {
         try {
@@ -244,13 +248,17 @@ public class UsbMassStorageService extends RootService {
     }
 
     @Override
+    public boolean onUnbind(@NonNull Intent intent) {
+        Log.d(TAG, "onUnbind");
+        return super.onUnbind(intent);
+    }
+
+    @Override
     public void onRebind(@NonNull Intent intent) {
         Log.d(TAG, "onRebind");
     }
 
-    @Override
-    public boolean onUnbind(@NonNull Intent intent) {
-        Log.d(TAG, "onUnbind");
-        return super.onUnbind(intent);
+    private interface RemoteAction {
+        void run() throws RemoteException;
     }
 }

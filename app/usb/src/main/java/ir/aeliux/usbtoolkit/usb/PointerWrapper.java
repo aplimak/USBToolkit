@@ -1,4 +1,4 @@
-package ir.aeliux.usbtoolkit;
+package ir.aeliux.usbtoolkit.usb;
 
 import androidx.annotation.Nullable;
 

@@ -11,18 +11,18 @@
 #include <usbg/usbg.h>
 #include <usbg/function/ms.h>
 
-#define KOTLIN_USBG_GADGET_ATTRS_CLASS "ir/aeliux/usbtoolkit/dto/UsbgGadgetAttrs"
+#define KOTLIN_USBG_GADGET_ATTRS_CLASS "ir/aeliux/usbtoolkit/shared/dto/UsbgGadgetAttrs"
 #define KOTLIN_USBG_GADGET_ATTRS_CTOR_SIG "(SBBBBSSS)V"
 
-#define KOTLIN_USBG_GADGET_STRS_CLASS "ir/aeliux/usbtoolkit/dto/UsbgGadgetStrs"
+#define KOTLIN_USBG_GADGET_STRS_CLASS "ir/aeliux/usbtoolkit/shared/dto/UsbgGadgetStrs"
 #define KOTLIN_USBG_GADGET_STRS_CTOR_SIG "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V"
 
-#define KOTLIN_USBG_CONFIG_ATTRS_CLASS "ir/aeliux/usbtoolkit/dto/UsbgConfigAttrs"
+#define KOTLIN_USBG_CONFIG_ATTRS_CLASS "ir/aeliux/usbtoolkit/shared/dto/UsbgConfigAttrs"
 #define KOTLIN_USBG_CONFIG_ATTRS_CTOR_SIG "(BB)V"
 
-#define KOTLIN_USBG_F_MASS_STORAGE_LUN_CLASS "ir/aeliux/usbtoolkit/dto/function/UsbgMassStorageLun"
+#define KOTLIN_USBG_F_MASS_STORAGE_LUN_CLASS "ir/aeliux/usbtoolkit/shared/dto/function/UsbgMassStorageLun"
 #define KOTLIN_USBG_F_MASS_STORAGE_LUN_CTOR_SIG "(IZZZZLjava/lang/String;Ljava/lang/String;)V"
-#define KOTLIN_USBG_F_MASS_STORAGE_ATTRS_CLASS "ir/aeliux/usbtoolkit/dto/function/UsbgMassStorageAttrs"
+#define KOTLIN_USBG_F_MASS_STORAGE_ATTRS_CLASS "ir/aeliux/usbtoolkit/shared/dto/function/UsbgMassStorageAttrs"
 #define KOTLIN_USBG_F_MASS_STORAGE_ATTRS_CTOR_SIG "(ZLjava/util/List;)V"
 
 static struct

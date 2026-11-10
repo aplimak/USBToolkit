@@ -1,4 +1,4 @@
-package ir.aeliux.usbtoolkit.util;
+package ir.aeliux.usbtoolkit.rootservice;
 
 import android.annotation.SuppressLint;
 import android.util.Log;
@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import ir.aeliux.core.DataConversion;
-import ir.aeliux.usbtoolkit.BuildConfig;
+import ir.aeliux.usbtoolkit.rootservice.BuildConfig;
 import ir.aeliux.usbtoolkit.data.GadgetState;
 import ir.aeliux.usbtoolkit.data.LunState;
 import ir.aeliux.usbtoolkit.data.MassStorageConfig;

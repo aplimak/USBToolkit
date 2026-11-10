@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.android.library)
+    alias(libs.plugins.kotlin.parcelize)
 }
 
 android {
@@ -26,7 +27,9 @@ dependencies {
     implementation(project(":lib:core"))
     implementation(libs.appcompat)
     implementation(libs.material)
+    implementation(libs.kotlin.parcelize.runtime)
     testImplementation(libs.junit)
     androidTestImplementation(libs.espresso.core)
     androidTestImplementation(libs.ext.junit)
+    add("kotlinCompilerPluginClasspath", "org.jetbrains.kotlin:kotlin-parcelize-compiler:2.2.10")
 }
