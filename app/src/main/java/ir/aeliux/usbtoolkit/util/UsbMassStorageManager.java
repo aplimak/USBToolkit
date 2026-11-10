@@ -17,6 +17,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import ir.aeliux.core.DataConversion;
 import ir.aeliux.usbtoolkit.BuildConfig;
 import ir.aeliux.usbtoolkit.data.GadgetState;
 import ir.aeliux.usbtoolkit.data.LunState;
@@ -39,14 +40,13 @@ import ir.aeliux.usbtoolkit.data.MassStorageConfig;
  */
 @SuppressLint("MissingPermission")
 public final class UsbMassStorageManager {
+    public static final String GADGET_NAME = "mass_storage_gadget";   // fixed name for state detection
     private static final String TAG = "UsbMassStorageManager";
-
     // ------------------------------------------------------------------------
     // Constants
     // ------------------------------------------------------------------------
     private static final String CONFIGFS_TYPE = "configfs";
     private static final String GADGETS_BASE = "usb_gadget";
-    public static final String GADGET_NAME = "mass_storage_gadget";   // fixed name for state detection
     private static final String FUNCTION_NAME = "mass_storage.0";
     private static final String CONFIG_NAME = "c.1";
 
@@ -96,55 +96,6 @@ public final class UsbMassStorageManager {
     // ------------------------------------------------------------------------
 
     /**
-     * Callback for receiving step‑by‑step progress during setup/teardown.
-     */
-    public interface ProgressCallback {
-        /**
-         * Called before starting a step.
-         * @param stepName a short description of the step (e.g., "Create gadget directory").
-         */
-        void onStepStart(String stepName);
-
-        /**
-         * Called after a step completed successfully.
-         * @param stepName the name of the step that finished.
-         */
-        void onStepComplete(String stepName);
-
-        /**
-         * Called if a step fails.
-         * @param stepName the name of the step that failed.
-         * @param error    the exception that caused the failure.
-         */
-        void onStepFailed(String stepName, UsbGadgetException error);
-    }
-
-    // ------------------------------------------------------------------------
-    // Public Query Methods (USB Related)
-    // ------------------------------------------------------------------------
-
-    /**
-     * Returns the mount point of configfs (usually {@code /config}).
-     *
-     * @return the configfs mount point as a {@link Path}.
-     * @throws UsbGadgetException if configfs is not mounted or cannot be read.
-     */
-    public static Path getConfigfsMountPoint() throws UsbGadgetException {
-        try (Stream<String> lines = Files.lines(new File("/proc/mounts").toPath())) {
-            Optional<String> configfsLine = lines
-                    .filter(line -> line.split("\\s+")[2].equals(CONFIGFS_TYPE))
-                    .findFirst();
-            if (configfsLine.isPresent()) {
-                String[] parts = configfsLine.get().split("\\s+");
-                return new File(parts[1]).toPath();  // mount point is the second field
-            }
-        } catch (IOException e) {
-            throw new UsbGadgetException("Failed to read /proc/mounts", e);
-        }
-        throw new UsbGadgetException("configfs is not mounted");
-    }
-
-    /**
      * Lists available USB Device Controllers (UDC), excluding the 'dummy' controller.
      *
      * @return a sorted list of UDC names.
@@ -165,6 +116,10 @@ public final class UsbMassStorageManager {
             throw new UsbGadgetException("Failed to list UDC devices", e);
         }
     }
+
+    // ------------------------------------------------------------------------
+    // Public Query Methods (USB Related)
+    // ------------------------------------------------------------------------
 
     /**
      * Lists existing USB Gadgets.
@@ -188,6 +143,41 @@ public final class UsbMassStorageManager {
     }
 
     /**
+     * Convenience method to detect if our own gadget (with the fixed name) is present.
+     *
+     * @return the {@link GadgetState} of the gadget, or null if it does not exist.
+     * @throws UsbGadgetException if an error occurs while reading the state.
+     */
+    public static GadgetState detectExistingGadget() throws UsbGadgetException {
+        Path configfs = getConfigfsMountPoint();
+        if (gadgetExists(configfs, GADGET_NAME)) {
+            return getGadgetState(configfs, GADGET_NAME);
+        }
+        return null;
+    }
+
+    /**
+     * Returns the mount point of configfs (usually {@code /config}).
+     *
+     * @return the configfs mount point as a {@link Path}.
+     * @throws UsbGadgetException if configfs is not mounted or cannot be read.
+     */
+    public static Path getConfigfsMountPoint() throws UsbGadgetException {
+        try (Stream<String> lines = Files.lines(new File("/proc/mounts").toPath())) {
+            Optional<String> configfsLine = lines
+                    .filter(line -> line.split("\\s+")[2].equals(CONFIGFS_TYPE))
+                    .findFirst();
+            if (configfsLine.isPresent()) {
+                String[] parts = configfsLine.get().split("\\s+");
+                return new File(parts[1]).toPath();  // mount point is the second field
+            }
+        } catch (IOException e) {
+            throw new UsbGadgetException("Failed to read /proc/mounts", e);
+        }
+        throw new UsbGadgetException("configfs is not mounted");
+    }
+
+    /**
      * Checks whether a gadget with the given name exists in configfs.
      *
      * @param configfs   the configfs mount point.
@@ -199,24 +189,6 @@ public final class UsbMassStorageManager {
     }
 
     /**
-     * Checks if a gadget is currently bound to a UDC.
-     *
-     * @param gadgetPath the path to the gadget directory.
-     * @return true if the UDC file contains a non‑empty controller name.
-     * @throws UsbGadgetException if the UDC file cannot be read.
-     */
-    public static boolean isGadgetBound(Path gadgetPath) throws UsbGadgetException {
-        Path udcFile = gadgetPath.resolve("UDC");
-        if (!Files.exists(udcFile)) return false;
-        try {
-            String content = readString(udcFile.toFile()).trim();
-            return !content.isEmpty();
-        } catch (IOException e) {
-            throw new UsbGadgetException("Failed to read UDC file: " + udcFile, e);
-        }
-    }
-
-    /**
      * Obtains a detailed snapshot of a gadget's current state.
      *
      * @param configfs   the configfs mount point.
@@ -224,7 +196,9 @@ public final class UsbMassStorageManager {
      * @return a {@link GadgetState} object containing all relevant information.
      * @throws UsbGadgetException if the gadget does not exist or cannot be parsed.
      */
-    public static GadgetState getGadgetState(Path configfs, String gadgetName) throws UsbGadgetException {
+    public static GadgetState getGadgetState(Path configfs,
+                                             String gadgetName) throws UsbGadgetException
+    {
         Path gadgetPath = configfs.resolve(GADGETS_BASE).resolve(gadgetName);
         if (!Files.exists(gadgetPath)) {
             throw new UsbGadgetException("Gadget does not exist: " + gadgetPath);
@@ -252,7 +226,8 @@ public final class UsbMassStorageManager {
         if (Files.exists(configBase)) {
             try (DirectoryStream<Path> stream = Files.newDirectoryStream(configBase, "*.*")) {
                 for (Path configPath : stream) {
-                    bmAttributesValue = Optional.of(readConfigfsInt(configPath.resolve("bmAttributes"), 16));
+                    bmAttributesValue = Optional.of(readConfigfsInt(configPath.resolve(
+                            "bmAttributes"), 16));
                 }
             } catch (IOException | NumberFormatException e) {
                 throw new UsbGadgetException("Failed to parse config information", e);
@@ -283,27 +258,93 @@ public final class UsbMassStorageManager {
             }
         }
 
-        return new GadgetState(name, gadgetPath, bound, boundUdc, vendorId, productId,
-                manufacturer, product, serial, luns, bcdUsb, bcdDevice, bmAttributes);
+        return new GadgetState(name,
+                               gadgetPath,
+                               bound,
+                               boundUdc,
+                               vendorId,
+                               productId,
+                               manufacturer,
+                               product,
+                               serial,
+                               luns,
+                               bcdUsb,
+                               bcdDevice,
+                               bmAttributes);
     }
 
     /**
-     * Convenience method to detect if our own gadget (with the fixed name) is present.
+     * Checks if a gadget is currently bound to a UDC.
      *
-     * @return the {@link GadgetState} of the gadget, or null if it does not exist.
-     * @throws UsbGadgetException if an error occurs while reading the state.
+     * @param gadgetPath the path to the gadget directory.
+     * @return true if the UDC file contains a non‑empty controller name.
+     * @throws UsbGadgetException if the UDC file cannot be read.
      */
-    public static GadgetState detectExistingGadget() throws UsbGadgetException {
-        Path configfs = getConfigfsMountPoint();
-        if (gadgetExists(configfs, GADGET_NAME)) {
-            return getGadgetState(configfs, GADGET_NAME);
+    public static boolean isGadgetBound(Path gadgetPath) throws UsbGadgetException {
+        Path udcFile = gadgetPath.resolve("UDC");
+        if (!Files.exists(udcFile)) return false;
+        try {
+            String content = readString(udcFile.toFile()).trim();
+            return !content.isEmpty();
+        } catch (IOException e) {
+            throw new UsbGadgetException("Failed to read UDC file: " + udcFile, e);
         }
-        return null;
+    }
+
+    /**
+     * Reads a string from a configfs file and trims whitespace.
+     */
+    private static String readConfigfsString(Path path) throws UsbGadgetException {
+        try {
+            if (!Files.exists(path)) {
+                throw new UsbGadgetException("File not found: " + path);
+            }
+            return readString(path.toFile()).trim();
+        } catch (IOException e) {
+            throw new UsbGadgetException("Failed to read " + path, e);
+        }
     }
 
     // ------------------------------------------------------------------------
     // Cleanup / Teardown
     // ------------------------------------------------------------------------
+
+    /**
+     * Reads an integer from a configfs file using the given radix.
+     */
+    private static int readConfigfsInt(Path path, int radix) throws UsbGadgetException {
+        String str = readConfigfsString(path);
+        try {
+            return DataConversion.stringToInt(str, radix);
+        } catch (NumberFormatException e) {
+            throw new UsbGadgetException("Invalid integer at " + path + ": " + str, e);
+        }
+    }
+
+    /**
+     * Parses a boolean from a configfs string: "1", "y", "yes" are true; "0", "n", "no" are false.
+     */
+    private static boolean parseBoolean(String value) {
+        return value.equalsIgnoreCase("1") || value.equalsIgnoreCase("y") || value.equalsIgnoreCase(
+                "yes");
+    }
+
+    // ------------------------------------------------------------------------
+    // Setup
+    // ------------------------------------------------------------------------
+
+    public static String readString(File file) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        char[] buf = new char[8192];
+        try (Reader reader = new InputStreamReader(
+                new FileInputStream(file), StandardCharsets.UTF_8)) {
+            int n;
+            while ((n = reader.read(buf)) != -1) {
+                sb.append(buf, 0, n);
+            }
+        }
+        return sb.toString();
+    }
 
     /**
      * Removes a gadget completely from configfs.
@@ -333,7 +374,8 @@ public final class UsbMassStorageManager {
      * @throws UsbGadgetException if any step fails.
      */
     public static void cleanupGadget(Path configfs, String gadgetName,
-                                     ProgressCallback callback) throws UsbGadgetException {
+                                     ProgressCallback callback) throws UsbGadgetException
+    {
         Path gadgetPath = configfs.resolve(GADGETS_BASE).resolve(gadgetName);
         if (!Files.exists(gadgetPath)) {
             return;
@@ -409,8 +451,79 @@ public final class UsbMassStorageManager {
     }
 
     // ------------------------------------------------------------------------
-    // Setup
+    // USB Reset (optional)
     // ------------------------------------------------------------------------
+
+    /**
+     * Executes a step while notifying the progress callback.
+     * If the step throws an exception, it is wrapped in a {@link UsbGadgetException}
+     * and the callback is informed about the failure.
+     */
+    private static void step(ProgressCallback callback, String stepName,
+                             StepAction action) throws UsbGadgetException
+    {
+        if (callback != null) callback.onStepStart(stepName);
+        try {
+            action.run();
+            if (callback != null) callback.onStepComplete(stepName);
+        } catch (UsbGadgetException e) {
+            if (callback != null) callback.onStepFailed(stepName, e);
+            throw e;
+        } catch (Exception e) {
+            UsbGadgetException wrapped = new UsbGadgetException("Error during step: " + stepName,
+                                                                e);
+            if (callback != null) callback.onStepFailed(stepName, wrapped);
+            throw wrapped;
+        }
+    }
+
+    // ------------------------------------------------------------------------
+    // Private Helper Methods
+    // ------------------------------------------------------------------------
+
+    /**
+     * Writes a string to a configfs file without a trailing newline.
+     */
+    private static void writeConfigfsString(Path path, String value) throws UsbGadgetException {
+        try {
+            Files.write(path, value.getBytes(StandardCharsets.UTF_8));
+        } catch (IOException e) {
+            throw new UsbGadgetException("Failed to write '" + value + "' to " + path, e);
+        }
+    }
+
+    /**
+     * Removes all immediate child <em>directories</em> and <em>symlinks</em> of
+     * {@code dir}, but never touches regular files.
+     * <p>
+     * This is required for configfs: attribute files inside a configfs directory
+     * (e.g. {@code configuration}, {@code MaxPower}, {@code ro}, {@code file})
+     * cannot be unlinked individually — the kernel returns {@code EPERM}.
+     * The only valid removal operation is {@code rmdir} on the containing
+     * directory, after which the kernel discards the attributes.
+     *
+     * @param dir the directory whose children should be removed.
+     * @throws IOException if any {@code rmdir}/unlink fails.
+     */
+    private static void rmdirChildren(Path dir) throws IOException {
+        try (DirectoryStream<Path> entries = Files.newDirectoryStream(dir)) {
+            for (Path entry : entries) {
+                if (Files.isSymbolicLink(entry)) {
+                    Files.delete(entry);                              // unlink symlink
+                } else if (Files.isDirectory(entry, LinkOption.NOFOLLOW_LINKS)) {
+                    Files.delete(entry);                              // rmdir (must already be empty)
+                }
+                // Regular files (configfs attributes) are intentionally left alone.
+            }
+        }
+    }
+
+    /**
+     * Convenience overload without callback.
+     */
+    public static GadgetState setupMassStorage(MassStorageConfig config) throws UsbGadgetException {
+        return setupMassStorage(config, null);
+    }
 
     /**
      * Sets up a new mass storage gadget from scratch.
@@ -432,11 +545,14 @@ public final class UsbMassStorageManager {
      *                            to clean up partial state.
      */
     public static GadgetState setupMassStorage(MassStorageConfig config,
-                                               ProgressCallback callback) throws UsbGadgetException {
+                                               ProgressCallback callback) throws UsbGadgetException
+    {
         Path configfs = getConfigfsMountPoint();
 
         // Step 0: Clean existing instance (if any)
-        step(callback, "Clean previous gadget", () -> cleanupGadget(configfs, GADGET_NAME, callback));
+        step(callback,
+             "Clean previous gadget",
+             () -> cleanupGadget(configfs, GADGET_NAME, callback));
 
         Path gadgetPath = configfs.resolve(GADGETS_BASE).resolve(GADGET_NAME);
 
@@ -472,7 +588,8 @@ public final class UsbMassStorageManager {
                 try {
                     resolvedImage = image.toRealPath();
                     if (!Files.isRegularFile(resolvedImage)) {
-                        throw new UsbGadgetException("Image file does not exist or is not a regular file: " + resolvedImage);
+                        throw new UsbGadgetException(
+                                "Image file does not exist or is not a regular file: " + resolvedImage);
                     }
                 } catch (IOException e) {
                     throw new UsbGadgetException("Failed to resolve image path: " + image, e);
@@ -501,11 +618,11 @@ public final class UsbMassStorageManager {
             writeConfigfsInt(configDir.resolve("bmAttributes"), BM_ATTRIBUTES, 16);
 
             // Create symlink: configs/c.1/mass_storage.0 -> ../../functions/mass_storage.0
-            Path linkPath   = configDir.resolve(FUNCTION_NAME);
+            Path linkPath = configDir.resolve(FUNCTION_NAME);
             Path targetPath = gadgetPath.resolve("functions")
-                    .resolve(FUNCTION_NAME)
-                    .toAbsolutePath()
-                    .normalize();
+                                        .resolve(FUNCTION_NAME)
+                                        .toAbsolutePath()
+                                        .normalize();
             Files.createSymbolicLink(linkPath, targetPath);
         });
 
@@ -518,14 +635,14 @@ public final class UsbMassStorageManager {
 
             try (var gadgets = Files.list(gadgetPath.getParent())) {
                 var gadgetsUdc = gadgets.map(g -> g.resolve("UDC"))
-                        .filter(path -> {
-                            try {
-                                return readConfigfsString(path).equals(selectedUdc);
-                            } catch (UsbGadgetException e) {
-                                return false;
-                            }
-                        })
-                        .collect(Collectors.toList());
+                                        .filter(path -> {
+                                            try {
+                                                return readConfigfsString(path).equals(selectedUdc);
+                                            } catch (UsbGadgetException e) {
+                                                return false;
+                                            }
+                                        })
+                                        .collect(Collectors.toList());
 
                 for (Path gUdc : gadgetsUdc) {
                     existingUdcs.append(String.format(" && echo > '%s'", gUdc));
@@ -533,7 +650,10 @@ public final class UsbMassStorageManager {
             }
 
             // Android likes to mess with us, so we do it faster than android could ever react
-            String shellCmd = String.format("%s && echo %s >%s", existingUdcs, selectedUdc, gadgetUdc);
+            String shellCmd = String.format("%s && echo %s >%s",
+                                            existingUdcs,
+                                            selectedUdc,
+                                            gadgetUdc);
             Log.d(TAG, "Executing: sh -c " + shellCmd);
             Process process = new ProcessBuilder("sh", "-c", shellCmd).start();
             process.waitFor();
@@ -550,6 +670,34 @@ public final class UsbMassStorageManager {
         return getGadgetState(configfs, GADGET_NAME);
     }
 
+    /**
+     * Writes an integer to a configfs file in the given radix (e.g., 16 for hex).
+     */
+    private static void writeConfigfsInt(Path path,
+                                         int value,
+                                         int radix) throws UsbGadgetException
+    {
+        writeConfigfsString(path, DataConversion.intToString(value, radix));
+    }
+
+    /**
+     * Retrieves the device serial number, falling back to a default if unavailable.
+     */
+    private static String getSerialNumber() {
+        try {
+            return getSystemProperty("ro.boot.serialno");
+        } catch (Exception e) {
+            return "0123456789ABCDEF";
+        }
+    }
+
+    /**
+     * Writes a boolean as "1" or "0" to a configfs file.
+     */
+    private static void writeConfigfsBoolean(Path path, boolean value) throws UsbGadgetException {
+        writeConfigfsString(path, value ? "1" : "0");
+    }
+
     static String readStream(InputStream in) throws IOException {
         BufferedReader r = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
         StringBuilder sb = new StringBuilder();
@@ -559,16 +707,18 @@ public final class UsbMassStorageManager {
         return sb.toString();
     }
 
-    /**
-     * Convenience overload without callback.
-     */
-    public static GadgetState setupMassStorage(MassStorageConfig config) throws UsbGadgetException {
-        return setupMassStorage(config, null);
+    private static String getSystemProperty(String key) {
+        String value = null;
+        try {
+            Class<?> systemPropertiesClass = Class.forName("android.os.SystemProperties");
+            Method getMethod = systemPropertiesClass.getMethod("get", String.class);
+            value = (String) getMethod.invoke(null, key);
+        } catch (Exception e) {
+            // Handle exceptions (e.g., class not found, method not found)
+            e.printStackTrace();
+        }
+        return value;
     }
-
-    // ------------------------------------------------------------------------
-    // USB Reset (optional)
-    // ------------------------------------------------------------------------
 
     /**
      * Resets the USB gadget stack by invoking the Android {@code svc} command.
@@ -590,126 +740,31 @@ public final class UsbMassStorageManager {
         }
     }
 
-    // ------------------------------------------------------------------------
-    // Private Helper Methods
-    // ------------------------------------------------------------------------
-
     /**
-     * Reads a string from a configfs file and trims whitespace.
+     * Callback for receiving step‑by‑step progress during setup/teardown.
      */
-    private static String readConfigfsString(Path path) throws UsbGadgetException {
-        try {
-            if (!Files.exists(path)) {
-                throw new UsbGadgetException("File not found: " + path);
-            }
-            return readString(path.toFile()).trim();
-        } catch (IOException e) {
-            throw new UsbGadgetException("Failed to read " + path, e);
-        }
-    }
+    public interface ProgressCallback {
+        /**
+         * Called before starting a step.
+         *
+         * @param stepName a short description of the step (e.g., "Create gadget directory").
+         */
+        void onStepStart(String stepName);
 
-    public static String readString(File file) throws IOException {
-        StringBuilder sb = new StringBuilder();
-        char[] buf = new char[8192];
-        try (Reader reader = new InputStreamReader(
-                new FileInputStream(file), StandardCharsets.UTF_8)) {
-            int n;
-            while ((n = reader.read(buf)) != -1) {
-                sb.append(buf, 0, n);
-            }
-        }
-        return sb.toString();
-    }
+        /**
+         * Called after a step completed successfully.
+         *
+         * @param stepName the name of the step that finished.
+         */
+        void onStepComplete(String stepName);
 
-    /**
-     * Reads an integer from a configfs file using the given radix.
-     */
-    private static int readConfigfsInt(Path path, int radix) throws UsbGadgetException {
-        String str = readConfigfsString(path);
-        try {
-            return DataConversion.stringToInt(str, radix);
-        } catch (NumberFormatException e) {
-            throw new UsbGadgetException("Invalid integer at " + path + ": " + str, e);
-        }
-    }
-
-    /**
-     * Writes a string to a configfs file without a trailing newline.
-     */
-    private static void writeConfigfsString(Path path, String value) throws UsbGadgetException {
-        try {
-            Files.write(path, value.getBytes(StandardCharsets.UTF_8));
-        } catch (IOException e) {
-            throw new UsbGadgetException("Failed to write '" + value + "' to " + path, e);
-        }
-    }
-
-    /**
-     * Writes an integer to a configfs file in the given radix (e.g., 16 for hex).
-     */
-    private static void writeConfigfsInt(Path path, int value, int radix) throws UsbGadgetException {
-        writeConfigfsString(path,DataConversion.intToString(value, radix));
-    }
-
-    /**
-     * Writes a boolean as "1" or "0" to a configfs file.
-     */
-    private static void writeConfigfsBoolean(Path path, boolean value) throws UsbGadgetException {
-        writeConfigfsString(path, value ? "1" : "0");
-    }
-
-    /**
-     * Parses a boolean from a configfs string: "1", "y", "yes" are true; "0", "n", "no" are false.
-     */
-    private static boolean parseBoolean(String value) {
-        return value.equalsIgnoreCase("1") || value.equalsIgnoreCase("y") || value.equalsIgnoreCase("yes");
-    }
-
-    /**
-     * Removes all immediate child <em>directories</em> and <em>symlinks</em> of
-     * {@code dir}, but never touches regular files.
-     * <p>
-     * This is required for configfs: attribute files inside a configfs directory
-     * (e.g. {@code configuration}, {@code MaxPower}, {@code ro}, {@code file})
-     * cannot be unlinked individually — the kernel returns {@code EPERM}.
-     * The only valid removal operation is {@code rmdir} on the containing
-     * directory, after which the kernel discards the attributes.
-     *
-     * @param dir the directory whose children should be removed.
-     * @throws IOException if any {@code rmdir}/unlink fails.
-     */
-    private static void rmdirChildren(Path dir) throws IOException {
-        try (DirectoryStream<Path> entries = Files.newDirectoryStream(dir)) {
-            for (Path entry : entries) {
-                if (Files.isSymbolicLink(entry)) {
-                    Files.delete(entry);                              // unlink symlink
-                } else if (Files.isDirectory(entry, LinkOption.NOFOLLOW_LINKS)) {
-                    Files.delete(entry);                              // rmdir (must already be empty)
-                }
-                // Regular files (configfs attributes) are intentionally left alone.
-            }
-        }
-    }
-
-    /**
-     * Executes a step while notifying the progress callback.
-     * If the step throws an exception, it is wrapped in a {@link UsbGadgetException}
-     * and the callback is informed about the failure.
-     */
-    private static void step(ProgressCallback callback, String stepName,
-                             StepAction action) throws UsbGadgetException {
-        if (callback != null) callback.onStepStart(stepName);
-        try {
-            action.run();
-            if (callback != null) callback.onStepComplete(stepName);
-        } catch (UsbGadgetException e) {
-            if (callback != null) callback.onStepFailed(stepName, e);
-            throw e;
-        } catch (Exception e) {
-            UsbGadgetException wrapped = new UsbGadgetException("Error during step: " + stepName, e);
-            if (callback != null) callback.onStepFailed(stepName, wrapped);
-            throw wrapped;
-        }
+        /**
+         * Called if a step fails.
+         *
+         * @param stepName the name of the step that failed.
+         * @param error    the exception that caused the failure.
+         */
+        void onStepFailed(String stepName, UsbGadgetException error);
     }
 
     /**
@@ -718,30 +773,6 @@ public final class UsbMassStorageManager {
     @FunctionalInterface
     private interface StepAction {
         void run() throws Exception;
-    }
-
-    /**
-     * Retrieves the device serial number, falling back to a default if unavailable.
-     */
-    private static String getSerialNumber() {
-        try {
-            return getSystemProperty("ro.boot.serialno");
-        } catch (Exception e) {
-            return "0123456789ABCDEF";
-        }
-    }
-
-    private static String getSystemProperty(String key) {
-        String value = null;
-        try {
-            Class<?> systemPropertiesClass = Class.forName("android.os.SystemProperties");
-            Method getMethod = systemPropertiesClass.getMethod("get", String.class);
-            value = (String) getMethod.invoke(null, key);
-        } catch (Exception e) {
-            // Handle exceptions (e.g., class not found, method not found)
-            e.printStackTrace();
-        }
-        return value;
     }
 
     /**

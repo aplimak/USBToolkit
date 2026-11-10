@@ -23,6 +23,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":lib:core"))
     implementation(libs.appcompat)
     implementation(libs.material)
     testImplementation(libs.junit)

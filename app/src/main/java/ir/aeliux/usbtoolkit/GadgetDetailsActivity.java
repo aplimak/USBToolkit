@@ -11,13 +11,13 @@ import androidx.core.content.IntentCompat;
 
 import ir.aeliux.usbtoolkit.data.GadgetState;
 import ir.aeliux.usbtoolkit.databinding.ActivityGadgetDetailsBinding;
-import ir.aeliux.usbtoolkit.util.DataConversion;
+import ir.aeliux.core.DataConversion;
 import ir.aeliux.usbtoolkit.util.Views;
 import ir.aeliux.usbtoolkit.widget.MaterialContainer;
 
 public class GadgetDetailsActivity extends BaseActivity {
-    private final String TAG = "GadgetDetailsActivity";
     private static final String EXTRA_GADGET = "gadget";
+    private final String TAG = "GadgetDetailsActivity";
     private ActivityGadgetDetailsBinding binding;
 
     private GadgetState gadget;
