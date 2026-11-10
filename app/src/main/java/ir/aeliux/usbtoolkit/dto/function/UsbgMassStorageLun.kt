@@ -5,6 +5,7 @@ import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class UsbgMassStorageLun(
+    val id: Int,
     val cdrom: Boolean,
     val ro: Boolean,
     val nofua: Boolean,
