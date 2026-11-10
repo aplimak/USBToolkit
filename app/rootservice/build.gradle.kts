@@ -26,6 +26,7 @@ dependencies {
     implementation(project(":app:shared"))
     implementation(project(":app:usb"))
     implementation(project(":lib:core"))
+    implementation(project(":lib:magic"))
     implementation(libs.appcompat)
     implementation(libs.libsu.core)
     implementation(libs.libsu.service)

@@ -11,7 +11,7 @@
 #include <magic.h>
 #include "log.h"
 
-#define MAGIC_RESULT_CLASS "ir/aeliux/usbtoolkit/data/MagicResult"
+#define MAGIC_RESULT_CLASS "ir/aeliux/magic/MagicResult"
 
 /* One cookie per output mode — libmagic bakes the mode bits into the
  * cookie at magic_open() time, so a single cookie cannot produce both
@@ -35,7 +35,7 @@ static magic_t open_and_load(const char *db_path, int mode)
 
 /* public static native void magicInit(String dbPath) */
 JNIEXPORT void JNICALL
-Java_ir_aeliux_usbtoolkit_Native_magicInit(
+Java_ir_aeliux_magic_Native_magicInit(
         JNIEnv *env, jclass cls, jstring j_dbPath)
 {
     if (j_dbPath == NULL) {
@@ -89,7 +89,7 @@ static jobject build_result(JNIEnv *env,
     }
 
     jstring jm = mime ? (*env)->NewStringUTF(env, mime) : NULL;
-    jstring jr = err  ? (*env)->NewStringUTF(env, err)  : NULL;
+    jstring jr = err ? (*env)->NewStringUTF(env, err) : NULL;
 
     jobject obj = (*env)->NewObject(env, cls, ctor, jm, jr);
 
@@ -102,7 +102,7 @@ static jobject build_result(JNIEnv *env,
 
 /* public static native MagicResult magicAnalyzeFile(String path) */
 JNIEXPORT jobject JNICALL
-Java_ir_aeliux_usbtoolkit_Native_magicAnalyzeFile(
+Java_ir_aeliux_magic_Native_magicAnalyzeFile(
         JNIEnv *env, jclass cls, jstring j_path)
 {
     if (j_path == NULL) {
@@ -143,11 +143,14 @@ Java_ir_aeliux_usbtoolkit_Native_magicAnalyzeFile(
 
 /* public static native void magicRelease() */
 JNIEXPORT void JNICALL
-Java_ir_aeliux_usbtoolkit_Native_magicRelease(JNIEnv *env, jclass cls)
+Java_ir_aeliux_magic_Native_magicRelease(JNIEnv *env, jclass cls)
 {
     pthread_mutex_lock(&g_lock);
 
-    if (g_cookie_mime) { magic_close(g_cookie_mime); g_cookie_mime = NULL; }
+    if (g_cookie_mime) {
+        magic_close(g_cookie_mime);
+        g_cookie_mime = NULL;
+    }
 
     pthread_mutex_unlock(&g_lock);
     LOGI("magicRelease: libmagic released");

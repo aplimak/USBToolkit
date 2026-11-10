@@ -21,7 +21,7 @@ import ir.aeliux.usbtoolkit.usb.Native;
 import ir.aeliux.usbtoolkit.callback.IGadgetStateListCallback;
 import ir.aeliux.usbtoolkit.callback.IMagicResultCallback;
 import ir.aeliux.usbtoolkit.data.GadgetState;
-import ir.aeliux.usbtoolkit.data.MagicResult;
+import ir.aeliux.magic.MagicResult;
 import ir.aeliux.usbtoolkit.rootservice.UsbMassStorageManager;
 import ir.aeliux.usbtoolkit.rootservice.UsbMassStorageManager.UsbGadgetException;
 import ir.aeliux.usbtoolkit.callback.IBooleanCallback;
@@ -188,14 +188,14 @@ public class UsbMassStorageService extends RootService {
         {
             Log.d(TAG, "binder.analyzeFiles");
             String mgc = new File(getFilesDir(), "magic.mgc").getAbsolutePath();
-            Native.magicInit(mgc);
+            ir.aeliux.magic.Native.magicInit(mgc);
 
             Map<String, MagicResult> result = paths.stream()
                                                    .collect(Collectors.toMap(key -> key,
-                                                                             Native::magicAnalyzeFile));
+                                                                             ir.aeliux.magic.Native::magicAnalyzeFile));
 
 
-            Native.magicRelease();
+            ir.aeliux.magic.Native.magicRelease();
             Log.d(TAG, "firing onResult with result: " + result);
             callback.onResult(result);
         }

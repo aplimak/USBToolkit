@@ -1,4 +1,4 @@
-/examples/*
+/examples/Makefile.am
 !/examples/*.*
 /examples/.deps/
 /examples/.libs/

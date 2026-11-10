@@ -1,4 +1,4 @@
-package ir.aeliux.usbtoolkit.data;
+package ir.aeliux.magic;
 
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -8,21 +8,6 @@ import androidx.annotation.NonNull;
 import java.util.Objects;
 
 public final class MagicResult implements Parcelable {
-    public final String mimeType;
-    public final String error;      // null on success
-
-    public MagicResult(String mimeType, String error) {
-        this.mimeType    = mimeType;
-        this.error       = error;
-    }
-
-    protected MagicResult(Parcel in) {
-        this.mimeType    = in.readString();
-        this.error       = in.readString();
-    }
-
-    public boolean isOk() { return error == null; }
-
     public static final Creator<MagicResult> CREATOR = new Creator<MagicResult>() {
         @Override
         public MagicResult createFromParcel(Parcel source) {
@@ -34,6 +19,20 @@ public final class MagicResult implements Parcelable {
             return new MagicResult[size];
         }
     };
+    public final String mimeType;
+    public final String error;      // null on success
+
+    public MagicResult(String mimeType, String error) {
+        this.mimeType = mimeType;
+        this.error = error;
+    }
+
+    protected MagicResult(Parcel in) {
+        this.mimeType = in.readString();
+        this.error = in.readString();
+    }
+
+    public boolean isOk() {return error == null;}
 
     @Override
     public int describeContents() {

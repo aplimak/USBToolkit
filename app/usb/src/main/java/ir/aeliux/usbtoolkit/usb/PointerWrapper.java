@@ -72,7 +72,7 @@ public abstract class PointerWrapper implements AutoCloseable {
         if (p != 0) {
             ptr = 0;
             closeHandle(p);
-            Native.usbtkPtrwClose(p);
+            Native.ptrwClose(p);
         }
 
         parent = null;

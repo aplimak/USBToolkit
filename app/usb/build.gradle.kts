@@ -8,14 +8,15 @@ android {
         version = release(37)
     }
 
+    ndkVersion = "30.0.16248370"
+
     defaultConfig {
         minSdk = 27
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        externalNativeBuild {
-            cmake {
-                cppFlags("")
-            }
+
+        ndk {
+            abiFilters.addAll(listOf("arm64-v8a", "x86_64"))
         }
     }
 

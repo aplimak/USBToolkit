@@ -25,6 +25,7 @@ android {
 
 dependencies {
     implementation(project(":lib:core"))
+    implementation(project(":lib:magic"))
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.kotlin.parcelize.runtime)

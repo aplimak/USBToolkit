@@ -10,13 +10,13 @@ public class Configfs extends PointerWrapper {
     }
 
     public static Configfs open(String configfsPath) {
-        long p = Native.usbtkUsbInit(configfsPath);
+        long p = Native.init(configfsPath);
         return new Configfs(p);
     }
 
     @Override
     protected void closeHandle(long ptr) {
-        Native.usbtkUsbClose(ptr);
+        Native.close(ptr);
     }
 
     public Gadget createGadget(String gadgetName,

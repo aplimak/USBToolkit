@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.1)
 
-execute_process(COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/scripts/version.sh -s print
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+execute_process(COMMAND scripts/version.sh -s print
+    WORKING_DIRECTORY .
     OUTPUT_VARIABLE TINYALSA_VERSION)
 
 project("TinyALSA" VERSION ${TINYALSA_VERSION} LANGUAGES C)

@@ -6,7 +6,6 @@ import android.content.SharedPreferences;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
-import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import java.util.ArrayList;
@@ -14,9 +13,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import ir.aeliux.usbtoolkit.BuildConfig;
 import ir.aeliux.usbtoolkit.data.GadgetState;
-import ir.aeliux.usbtoolkit.data.MagicResult;
+import ir.aeliux.magic.MagicResult;
 
 public class MassStorageViewModel extends AndroidViewModel {
     private final SharedPreferences sharedPreferences;

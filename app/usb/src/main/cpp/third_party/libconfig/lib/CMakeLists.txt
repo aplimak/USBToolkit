@@ -203,12 +203,12 @@ install(FILES
 
 if (UNIX)
     configure_file(
-        ${CMAKE_CURRENT_SOURCE_DIR}/libconfig.pc.cmake.in
+            libconfig.pc.cmake.in
         ${CMAKE_CURRENT_BINARY_DIR}/libconfig.pc @ONLY
         )
     if(BUILD_CXX)
       configure_file(
-          ${CMAKE_CURRENT_SOURCE_DIR}/libconfig++.pc.cmake.in
+              libconfig++.pc.cmake.in
           ${CMAKE_CURRENT_BINARY_DIR}/libconfig++.pc @ONLY
           )
     endif()

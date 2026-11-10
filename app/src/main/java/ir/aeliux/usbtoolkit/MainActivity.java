@@ -4,9 +4,7 @@ import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Debug;
 import android.os.Environment;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -15,13 +13,13 @@ import android.view.View;
 import android.widget.LinearLayout;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleEventObserver;
-import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -30,7 +28,6 @@ import com.topjohnwu.superuser.ipc.RootService;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -43,12 +40,11 @@ import ir.aeliux.usbtoolkit.callback.IStringListCallback;
 import ir.aeliux.usbtoolkit.callback.IUsbMassStorageCallback;
 import ir.aeliux.usbtoolkit.callback.IBooleanCallback;
 import ir.aeliux.usbtoolkit.data.GadgetState;
-import ir.aeliux.usbtoolkit.data.MagicResult;
+import ir.aeliux.magic.MagicResult;
 import ir.aeliux.usbtoolkit.data.MassStorageConfig;
 import ir.aeliux.usbtoolkit.databinding.ActivityMainBinding;
 import ir.aeliux.usbtoolkit.ipc.IUsbMassStorageService;
 import ir.aeliux.usbtoolkit.ipc.UsbMassStorageService;
-import ir.aeliux.usbtoolkit.util.Jobs;
 import ir.aeliux.usbtoolkit.util.LoadingDialog;
 import ir.aeliux.usbtoolkit.util.Message;
 import ir.aeliux.usbtoolkit.util.Views;
@@ -59,10 +55,6 @@ public class MainActivity extends BaseActivity {
     private final String TAG = "MainActivity";
     private final int DIALOG_INIT = 1;
     private final int DIALOG_MASS_STORAGE = 2;
-
-    private IUsbMassStorageService rootService;
-    private boolean isBound = false;
-
     private final ServiceConnection serviceConnection = new ServiceConnection() {
         private final LifecycleEventObserver refreshLifecycleCallback = (LifecycleEventObserver) (lifecycleOwner, event) -> {
             if (this.refreshCalled) return;
@@ -72,6 +64,7 @@ public class MainActivity extends BaseActivity {
             }
         };
         private boolean refreshCalled = false;
+
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             Log.i(TAG, "UsbMassStorageService connected");
@@ -95,24 +88,29 @@ public class MainActivity extends BaseActivity {
             refresh();
         }
     };
-
-    private boolean isRunning = false;
-
-    private ActivityMainBinding binding;
-    private MassStorageViewModel model;
     private final ActivityResultLauncher<Intent> addMountFilesLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
-                    result -> {
-                        if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
-                            ArrayList<String> paths = result.getData()
-                                    .getStringArrayListExtra(FilePickerActivity.EXTRA_SELECTED_PATHS);
-                            if (paths == null || paths.isEmpty()) return;
+                                      this::onMountFilesResult);
+    private IUsbMassStorageService rootService;
+    private boolean isBound = false;
+    private boolean isRunning = false;
+    private ActivityMainBinding binding;
+    private MassStorageViewModel model;
 
-                            model.setFilePaths(Stream.concat(Objects.requireNonNull(model.getFilePaths().getValue()).stream(), paths.stream())
-                                                    .distinct()
-                                                    .collect(Collectors.toList()));
-                        }
-                    });
+    private void onMountFilesResult(ActivityResult result) {
+        if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+            ArrayList<String> paths = result.getData()
+                                            .getStringArrayListExtra(
+                                                    FilePickerActivity.EXTRA_SELECTED_PATHS);
+            if (paths == null || paths.isEmpty()) return;
+
+            model.setFilePaths(Stream.concat(Objects.requireNonNull(
+                                                     model.getFilePaths().getValue()).stream(),
+                                             paths.stream())
+                                     .distinct()
+                                     .collect(Collectors.toList()));
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -153,7 +151,8 @@ public class MainActivity extends BaseActivity {
 
         binding.btnAddFile.setOnClickListener(v -> {
             Intent intent = new Intent(this, FilePickerActivity.class);
-            intent.putExtra(FilePickerActivity.EXTRA_START_PATH, Environment.getExternalStorageDirectory().getAbsolutePath());
+            intent.putExtra(FilePickerActivity.EXTRA_START_PATH,
+                            Environment.getExternalStorageDirectory().getAbsolutePath());
             intent.putExtra(FilePickerActivity.EXTRA_ALLOW_MULTIPLE, true);
 
             addMountFilesLauncher.launch(intent);
@@ -212,9 +211,10 @@ public class MainActivity extends BaseActivity {
                 item.setClickable(true);
                 item.setFocusable(true);
                 item.setOnClickListener((v) -> {
-                    model.setFilePaths(Objects.requireNonNull(model.getFilePaths().getValue()).stream()
-                            .filter(p -> !path.equals(p))
-                            .collect(Collectors.toList()));
+                    model.setFilePaths(Objects.requireNonNull(model.getFilePaths().getValue())
+                                              .stream()
+                                              .filter(p -> !path.equals(p))
+                                              .collect(Collectors.toList()));
                 });
                 container.addView(item);
             }
@@ -265,7 +265,9 @@ public class MainActivity extends BaseActivity {
                             MaterialItem item = (MaterialItem) container.getChildAt(i);
                             String path = item.getTitle().toString();
                             MagicResult fileMagicResult;
-                            if ((fileMagicResult = result.get(path)) == null || !fileMagicResult.isOk()) continue;
+                            if ((fileMagicResult = result.get(path)) == null || !fileMagicResult.isOk()) {
+                                continue;
+                            }
                             magicResults.put(path, fileMagicResult);
                             item.setSubtitle(fileMagicResult.mimeType);
                         }
@@ -276,7 +278,8 @@ public class MainActivity extends BaseActivity {
     }
 
     private void refresh() {
-        if (binding == null || !getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.STARTED)) return;
+        if (binding == null || !getLifecycle().getCurrentState()
+                                              .isAtLeast(Lifecycle.State.STARTED)) {return;}
 
         if (isBound) {
             try {
@@ -370,11 +373,14 @@ public class MainActivity extends BaseActivity {
 
         files.forEach(builder::addImage);
 
-        MassStorageConfig config = builder.setReadOnly(Objects.requireNonNull(model.getReadonly().getValue()))
-                .setCdrom(Objects.requireNonNull(model.getCdrom().getValue()))
-                .setRemovable(Objects.requireNonNull(model.getRemovable().getValue()))
-                .setUdc(Objects.requireNonNull(model.getUdc().getValue()))
-                .build();
+        MassStorageConfig config = builder.setReadOnly(Objects.requireNonNull(model.getReadonly()
+                                                                                   .getValue()))
+                                          .setCdrom(Objects.requireNonNull(model.getCdrom()
+                                                                                .getValue()))
+                                          .setRemovable(Objects.requireNonNull(model.getRemovable()
+                                                                                    .getValue()))
+                                          .setUdc(Objects.requireNonNull(model.getUdc().getValue()))
+                                          .build();
 
         LoadingDialog.show(this, DIALOG_MASS_STORAGE, getString(R.string.processing));
 

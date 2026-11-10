@@ -1,37 +1,202 @@
-# For more information about using CMake with Android Studio, read the
-# documentation: https://d.android.com/studio/projects/add-native-code.html.
-# For more examples on how to use CMake, see https://github.com/android/ndk-samples.
-
-# Sets the minimum CMake version required for this project.
 cmake_minimum_required(VERSION 3.22.1)
-
-# Declares the project name. The project name can be accessed via ${ PROJECT_NAME},
-# Since this is the top level CMakeLists.txt, the project name is also accessible
-# with ${CMAKE_PROJECT_NAME} (both CMake variables are in-sync within the top level
-# build script scope).
 project("magic")
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# Creates and names a library, sets it as either STATIC
-# or SHARED, and provides the relative paths to its source code.
-# You can define multiple libraries, and CMake builds them for you.
-# Gradle automatically packages shared libraries with your APK.
-#
-# In this top level CMakeLists.txt, ${CMAKE_PROJECT_NAME} is used to define
-# the target library name; in the sub-module's CMakeLists.txt, ${PROJECT_NAME}
-# is preferred for the same purpose.
-#
-# In order to load a library into your app from Java/Kotlin, you must call
-# System.loadLibrary() and pass the name of the library defined here;
-# for GameActivity/NativeActivity derived applications, the same library name must be
-# used in the AndroidManifest.xml file.
+option(USBTK_STRICT     "Enable aggressive warnings and -Werror on the main target" ON)
+
+set(ANDROID_CMAKE_ARGS
+        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}
+        -DANDROID_ABI=${ANDROID_ABI}
+        -DANDROID_PLATFORM=${ANDROID_PLATFORM}
+        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+        -DANDROID_STL=${ANDROID_STL}
+)
+
+include(ExternalProject)
+
+# Map Android ABI to the clang target triplet
+if(ANDROID_ABI STREQUAL "arm64-v8a")
+    set(TRIPLET "aarch64-linux-android")
+elseif(ANDROID_ABI STREQUAL "armeabi-v7a")
+    set(TRIPLET "armv7a-linux-androideabi")
+elseif(ANDROID_ABI STREQUAL "x86_64")
+    set(TRIPLET "x86_64-linux-android")
+elseif(ANDROID_ABI STREQUAL "x86")
+    set(TRIPLET "i686-linux-android")
+endif()
+
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set(UTK_LIB_CFLAGS  "-O0 -g3 -fno-omit-frame-pointer -fno-lto")
+    set(UTK_LIB_LDFLAGS "")
+else()
+    set(UTK_LIB_CFLAGS  "-O3 -flto -ffunction-sections -fdata-sections -fvisibility=hidden -DNDEBUG")
+    set(UTK_LIB_LDFLAGS "-Wl,--gc-sections -Wl,-s")
+endif()
+
+# Most cmake libraries respect it
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "")
+
+# Build libmagic
+
+set(MAGIC_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third_party/file")
+set(MAGIC_PREFIX     "${CMAKE_CURRENT_BINARY_DIR}/deps/libmagic")
+set(MAGIC_BUILD_DIR  "${CMAKE_CURRENT_BINARY_DIR}/build/libmagic")
+
+ExternalProject_Add(libmagic_build
+        SOURCE_DIR "${MAGIC_SOURCE_DIR}"
+        BINARY_DIR "${MAGIC_BUILD_DIR}"
+        PREFIX     "${MAGIC_PREFIX}"
+
+        CONFIGURE_COMMAND
+        ${CMAKE_COMMAND} -E env
+        "CC=${CMAKE_C_COMPILER} --target=${CMAKE_C_COMPILER_TARGET} --sysroot=${CMAKE_SYSROOT}"
+        "CXX=${CMAKE_CXX_COMPILER} --target=${CMAKE_C_COMPILER_TARGET} --sysroot=${CMAKE_SYSROOT}"
+        "AR=${CMAKE_AR}"
+        "RANLIB=${CMAKE_RANLIB}"
+        "STRIP=${CMAKE_STRIP}"
+        "PKG_CONFIG_PATH="
+        "CFLAGS=${UTK_LIB_CFLAGS}"
+        "LDFLAGS=${UTK_LIB_LDFLAGS}"
+        <SOURCE_DIR>/configure
+        --host=${TRIPLET}
+        "--prefix=${MAGIC_PREFIX}"
+        "--with-sysroot=${CMAKE_SYSROOT}"
+        --enable-static
+        --disable-shared
+        --enable-zlib
+        --enable-landlock
+        --with-pic
+
+        BUILD_COMMAND   make -j8 SUBDIRS=src
+        INSTALL_COMMAND make SUBDIRS=src install
+
+        BUILD_BYPRODUCTS "${MAGIC_PREFIX}/lib/libmagic.a"
+
+        LOG_CONFIGURE 1
+        LOG_BUILD 1
+        LOG_INSTALL 1
+)
+
+file(MAKE_DIRECTORY "${MAGIC_PREFIX}/include")
+file(MAKE_DIRECTORY "${MAGIC_PREFIX}/lib")
+add_library(magiclib STATIC IMPORTED GLOBAL)
+add_dependencies(magiclib libmagic_build)
+set_target_properties(magiclib PROPERTIES
+        IMPORTED_LOCATION "${MAGIC_PREFIX}/lib/libmagic.a"
+        INTERFACE_INCLUDE_DIRECTORIES "${MAGIC_PREFIX}/include"
+)
+
+# Compile magic files
+
+set(MAGIC_MGDIR   "${MAGIC_SOURCE_DIR}/magic/Magdir")
+set(MAGIC_MGC_OUT "${CMAKE_CURRENT_SOURCE_DIR}/../assets/magic.mgc")
+
+# The host's `file` binary — required. Install it if missing.
+find_program(HOST_FILE_EXECUTABLE file)
+if(NOT HOST_FILE_EXECUTABLE)
+    message(FATAL_ERROR
+            "Host `file` binary not found. Install it: "
+            "`apt install file` / `brew install file` / `pacman -S file`")
+endif()
+
+if(NOT EXISTS "${MAGIC_MGC_OUT}" OR
+        "${MAGIC_MGDIR}" IS_NEWER_THAN "${MAGIC_MGC_OUT}")
+
+    message(STATUS "Compiling magic.mgc from ${MAGIC_MGDIR}")
+
+    # Work in the build tree so we never touch the vendored source
+    set(_mgc_work "${CMAKE_CURRENT_BINARY_DIR}/mgc")
+
+    execute_process(
+            COMMAND ${CMAKE_COMMAND} -E make_directory "${_mgc_work}"
+            RESULT_VARIABLE _rc)
+    if(NOT _rc EQUAL 0)
+        message(FATAL_ERROR "mkdir ${_mgc_work} failed")
+    endif()
+
+    execute_process(
+            COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${MAGIC_MGDIR}" "${_mgc_work}/Magdir"
+            RESULT_VARIABLE _rc)
+    if(NOT _rc EQUAL 0)
+        message(FATAL_ERROR "copy Magdir failed")
+    endif()
+
+    # `file -C -m <dir>` writes <dir>.mgc next to it
+    execute_process(
+            COMMAND "${HOST_FILE_EXECUTABLE}" -C -m "${_mgc_work}/Magdir"
+            WORKING_DIRECTORY "${_mgc_work}"
+            RESULT_VARIABLE _rc
+            OUTPUT_VARIABLE _out
+            ERROR_VARIABLE  _err)
+    if(NOT _rc EQUAL 0)
+        message(FATAL_ERROR "file -C failed: ${_err}")
+    endif()
+
+    execute_process(
+            COMMAND ${CMAKE_COMMAND} -E copy
+            "${_mgc_work}/Magdir.mgc" "${MAGIC_MGC_OUT}"
+            RESULT_VARIABLE _rc)
+    if(NOT _rc EQUAL 0)
+        message(FATAL_ERROR "copy Magdir.mgc to assets failed")
+    endif()
+
+    message(STATUS "Wrote ${MAGIC_MGC_OUT}")
+endif()
+
+# Main Library
+
 add_library(${CMAKE_PROJECT_NAME} SHARED
-        # List C/C++ source files with relative paths to this CMakeLists.txt.
-        magic.cpp)
+        magic_jni.c
+)
 
-# Specifies libraries CMake should link to your target library. You
-# can link libraries from various origins, such as libraries defined in this
-# build script, prebuilt third-party libraries, or Android system libraries.
+if(USBTK_STRICT)
+    target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE
+            -Wall
+            -Wextra
+            -Wpedantic
+            -Wshadow
+            -Wpointer-arith
+            -Wcast-qual
+            -Wcast-align
+            -Wstrict-prototypes
+            -Wmissing-prototypes
+            -Wmissing-declarations
+            -Wold-style-definition
+            -Wredundant-decls
+            -Wformat=2
+            -Wformat-security
+            -Wnull-dereference
+            -Wdouble-promotion
+            -Wfloat-equal
+            -Wwrite-strings
+            -Wvla
+            -Wswitch-enum
+            -Wundef
+            -Winit-self
+            -Wuninitialized
+            -Wno-unused-parameter   # JNI env/cls often unused; or use (void)env;
+            -Werror)
+endif()
+
+target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE
+        $<$<NOT:$<CONFIG:Debug>>:-O3;-flto;-ffunction-sections;-fdata-sections>
+        $<$<CONFIG:Debug>:-O0;-g3;-fno-omit-frame-pointer;-fno-lto>
+        "--warning-suppression-mappings=${CMAKE_CURRENT_SOURCE_DIR}/suppression_mappings.txt"
+)
+target_link_options(${CMAKE_PROJECT_NAME} PRIVATE
+        $<$<NOT:$<CONFIG:Debug>>:-Wl,--gc-sections;-Wl,-s>
+        -Wl,--exclude-libs,ALL
+        -Wl,--as-needed
+)
+set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES
+        C_VISIBILITY_PRESET hidden
+        VISIBILITY_INLINES_HIDDEN ON
+        POSITION_INDEPENDENT_CODE ON
+)
+
 target_link_libraries(${CMAKE_PROJECT_NAME}
-        # List libraries link to the target library
+        magiclib
         android
-        log)
+        log
+        z)

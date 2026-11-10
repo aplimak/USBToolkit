@@ -16,8 +16,8 @@
 #include "ptrw.h"
 
 JNIEXPORT jlong JNICALL
-Java_ir_aeliux_usbtoolkit_Native_usbtkUsbInit(JNIEnv *env, jclass cls,
-                                              jstring j_configfsPath)
+Java_ir_aeliux_usbtoolkit_usb_Native_init(JNIEnv *env, jclass cls,
+                                          jstring j_configfsPath)
 {
     if (usbtk_throw_if_null(env, j_configfsPath, "configfsPath") != 0) {
         return 0;
@@ -46,8 +46,8 @@ Java_ir_aeliux_usbtoolkit_Native_usbtkUsbInit(JNIEnv *env, jclass cls,
 }
 
 JNIEXPORT void JNICALL
-Java_ir_aeliux_usbtoolkit_Native_usbtkUsbClose(JNIEnv *env, jclass cls,
-                                               jlong handle)
+Java_ir_aeliux_usbtoolkit_usb_Native_close(JNIEnv *env, jclass cls,
+                                           jlong handle)
 {
     usbtk_ptrw_t *ptrw = usbtk_ptrw_resolve(env, handle);
     if (!ptrw) return;
@@ -57,13 +57,13 @@ Java_ir_aeliux_usbtoolkit_Native_usbtkUsbClose(JNIEnv *env, jclass cls,
 }
 
 JNIEXPORT jlong JNICALL
-Java_ir_aeliux_usbtoolkit_Native_usbtkUsbCreateGadget(JNIEnv *env, jclass cls,
-                                                      jlong j_ptrwConfigfs,
-                                                      jstring j_gadgetName,
-                                                      jobject j_gadgetAttrs,
-                                                      jobject j_gadgetStrs,
-                                                      jobject j_configAttrs,
-                                                      jstring j_configStr)
+Java_ir_aeliux_usbtoolkit_usb_Native_createGadget(JNIEnv *env, jclass cls,
+                                                  jlong j_ptrwConfigfs,
+                                                  jstring j_gadgetName,
+                                                  jobject j_gadgetAttrs,
+                                                  jobject j_gadgetStrs,
+                                                  jobject j_configAttrs,
+                                                  jstring j_configStr)
 {
     usbtk_ptrw_t *st = usbtk_ptrw_resolve(env, j_ptrwConfigfs);
     if (!st) return 0;
@@ -117,9 +117,9 @@ Java_ir_aeliux_usbtoolkit_Native_usbtkUsbCreateGadget(JNIEnv *env, jclass cls,
 }
 
 JNIEXPORT jlong JNICALL
-Java_ir_aeliux_usbtoolkit_Native_usbtkUsbOpenGadget(JNIEnv *env, jclass cls,
-                                                    jlong j_ptrwConfigfs,
-                                                    jstring j_gadgetName)
+Java_ir_aeliux_usbtoolkit_usb_Native_openGadget(JNIEnv *env, jclass cls,
+                                                jlong j_ptrwConfigfs,
+                                                jstring j_gadgetName)
 {
     usbtk_ptrw_t *st = usbtk_ptrw_resolve(env, j_ptrwConfigfs);
     if (!st) return 0;
@@ -151,8 +151,8 @@ Java_ir_aeliux_usbtoolkit_Native_usbtkUsbOpenGadget(JNIEnv *env, jclass cls,
 }
 
 JNIEXPORT void JNICALL
-Java_ir_aeliux_usbtoolkit_Native_usbtkUsbDeleteGadget(JNIEnv *env, jclass cls,
-                                                      jlong j_ptrwGadget)
+Java_ir_aeliux_usbtoolkit_usb_Native_deleteGadget(JNIEnv *env, jclass cls,
+                                                  jlong j_ptrwGadget)
 {
     usbtk_ptrw_t *ptrw = usbtk_ptrw_resolve(env, j_ptrwGadget);
     if (!ptrw) return;
@@ -166,12 +166,12 @@ Java_ir_aeliux_usbtoolkit_Native_usbtkUsbDeleteGadget(JNIEnv *env, jclass cls,
 }
 
 JNIEXPORT jlong JNICALL
-Java_ir_aeliux_usbtoolkit_Native_usbtkUsbCreateFunction(JNIEnv *env,
-                                                        jclass cls,
-                                                        jlong j_ptrwGadget,
-                                                        jint j_functionType,
-                                                        jstring j_functionInstance,
-                                                        jobject j_functionAttrs)
+Java_ir_aeliux_usbtoolkit_usb_Native_createFunction(JNIEnv *env,
+                                                    jclass cls,
+                                                    jlong j_ptrwGadget,
+                                                    jint j_functionType,
+                                                    jstring j_functionInstance,
+                                                    jobject j_functionAttrs)
 {
     usbtk_ptrw_t *ptrw = usbtk_ptrw_resolve(env, j_ptrwGadget);
     if (!ptrw) return 0;

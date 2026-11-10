@@ -1,0 +1,3 @@
+# Suppress -Wmissing-prototypes in JNI entry point files
+[missing-prototypes]
+src:*_jni.c

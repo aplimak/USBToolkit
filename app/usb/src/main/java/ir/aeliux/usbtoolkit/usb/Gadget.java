@@ -21,12 +21,12 @@ public class Gadget extends PointerWrapper {
                                 UsbgConfigAttrs configAttrs,
                                 String configStrs)
     {
-        long ptr = Native.usbtkUsbCreateGadget(configfs.requireHandle(),
-                                               gadgetName,
-                                               gadgetAtts,
-                                               gadgetStrs,
-                                               configAttrs,
-                                               configStrs);
+        long ptr = Native.createGadget(configfs.requireHandle(),
+                                       gadgetName,
+                                       gadgetAtts,
+                                       gadgetStrs,
+                                       configAttrs,
+                                       configStrs);
 
         return new Gadget(ptr, configfs);
     }
@@ -34,23 +34,23 @@ public class Gadget extends PointerWrapper {
     public static Gadget open(Configfs configfs,
                               String gadgetName) throws IllegalArgumentException
     {
-        long ptr = Native.usbtkUsbOpenGadget(configfs.requireHandle(),
-                                             gadgetName);
+        long ptr = Native.openGadget(configfs.requireHandle(),
+                                     gadgetName);
 
         return new Gadget(ptr, configfs);
     }
 
     public void delete() {
-        Native.usbtkUsbDeleteGadget(requireHandle());
+        Native.deleteGadget(requireHandle());
         close();
     }
 
     public <A extends UsbgFunctionAttrsBase, F extends Function<A, F>>
     F createFunction(String instance, A attrs) {
-        long ptr = Native.usbtkUsbCreateFunction(requireHandle(),
-                                                 attrs.getType().ordinal(),
-                                                 instance,
-                                                 attrs);
+        long ptr = Native.createFunction(requireHandle(),
+                                         attrs.getType().ordinal(),
+                                         instance,
+                                         attrs);
         @SuppressWarnings("unchecked")
         F result = (F) wrapFunction(attrs.getType(), ptr);
         return result;
