@@ -1,5 +1,7 @@
 package ir.aeliux.usbtoolkit.usb;
 
+import java.io.IOException;
+
 import ir.aeliux.usbtoolkit.usb.dto.UsbgConfigAttrs;
 import ir.aeliux.usbtoolkit.usb.dto.UsbgGadgetAttrs;
 import ir.aeliux.usbtoolkit.usb.dto.UsbgGadgetStrs;
@@ -28,7 +30,7 @@ public class Native {
                                       String functionInstance,
                                       Object functionAttrs);
 
-    static native long init(String configfsPath);
+    static native long init(String configfsPath) throws IOException;
 
     static native void close(long handle);
 

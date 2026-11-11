@@ -11,6 +11,7 @@ import androidx.annotation.Nullable;
 import com.topjohnwu.superuser.ipc.RootService;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +29,7 @@ import ir.aeliux.usbtoolkit.callback.IGadgetStateCallback;
 import ir.aeliux.usbtoolkit.callback.IStringListCallback;
 import ir.aeliux.usbtoolkit.callback.IUsbMassStorageCallback;
 import ir.aeliux.usbtoolkit.data.MassStorageConfig;
+import ir.aeliux.usbtoolkit.usb.Configfs;
 
 public class UsbMassStorageService extends RootService {
     private final String TAG = "UsbMassStorageService";
@@ -88,11 +90,10 @@ public class UsbMassStorageService extends RootService {
         public void supportsConfigfs(IBooleanCallback callback) {
             Log.d(TAG, "binder.supportsConfigfs");
             safeCall(() -> {
-                try {
-                    UsbMassStorageManager.getConfigfsMountPoint();
+                try (var c = Configfs.open("/config")) {
                     Log.d(TAG, "firing onResult with result: " + true);
                     callback.onResult(true);
-                } catch (UsbGadgetException e) {
+                } catch (IOException e) {
                     Log.e(TAG, "Error happened in binder.supportsConfigfs: ", e);
                     Log.d(TAG, "firing onResult with result: " + false);
                     callback.onResult(false);

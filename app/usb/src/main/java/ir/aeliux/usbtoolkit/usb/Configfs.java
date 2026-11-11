@@ -1,5 +1,7 @@
 package ir.aeliux.usbtoolkit.usb;
 
+import java.io.IOException;
+
 import ir.aeliux.usbtoolkit.usb.dto.UsbgConfigAttrs;
 import ir.aeliux.usbtoolkit.usb.dto.UsbgGadgetAttrs;
 import ir.aeliux.usbtoolkit.usb.dto.UsbgGadgetStrs;
@@ -9,7 +11,7 @@ public class Configfs extends PointerWrapper {
         super(ptr, null);
     }
 
-    public static Configfs open(String configfsPath) {
+    public static Configfs open(String configfsPath) throws IOException {
         long p = Native.init(configfsPath);
         return new Configfs(p);
     }
