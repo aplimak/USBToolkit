@@ -99,8 +99,6 @@ add_library(${CMAKE_PROJECT_NAME} SHARED
         core.c
         dto.c
         usb_jni.c
-        ptrw.c
-        ptrw_jni.c
 )
 
 axsn_apply_warnings(${CMAKE_PROJECT_NAME})
@@ -114,3 +112,6 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
         android
         log
         z)
+
+find_package(ptrw REQUIRED CONFIG)
+target_link_libraries(${CMAKE_PROJECT_NAME} ptrw::ptrw)

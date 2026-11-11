@@ -7,8 +7,8 @@
 #include <jni.h>
 
 JNIEXPORT void JNICALL
-Java_ir_aeliux_usbtoolkit_usb_Native_ptrwClose(JNIEnv *env, jclass cls,
-                                               jlong handle)
+Java_ir_aeliux_ptrw_Native_close(JNIEnv *env, jclass cls,
+                                 jlong handle)
 {
     usbtk_ptrw_t *ptrw = usbtk_ptrw_resolve(env, handle);
     if (!ptrw) return;

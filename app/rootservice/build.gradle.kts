@@ -27,6 +27,7 @@ dependencies {
     implementation(project(":app:usb"))
     implementation(project(":lib:core"))
     implementation(project(":lib:magic"))
+    implementation(project(":lib:ptrw"))
     implementation(libs.appcompat)
     implementation(libs.libsu.core)
     implementation(libs.libsu.service)

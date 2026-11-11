@@ -5,9 +5,15 @@
 #ifndef USBTOOLKIT_PTRW_H
 #define USBTOOLKIT_PTRW_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <pthread.h>
 #include <jni.h>
 #include <stdbool.h>
+
+#define PTRW_API __attribute__((visibility("default")))
 
 typedef struct
 {
@@ -22,7 +28,7 @@ typedef struct
  * @param ptr Pointer to the wrapped usbtk_ptrw_t.
  * @return The resolved usbtk_ptrw_t if it is valid and called from the owner thread, otherwise NULL.
  */
-usbtk_ptrw_t *usbtk_ptrw_resolve(JNIEnv *env, long ptr);
+PTRW_API usbtk_ptrw_t *usbtk_ptrw_resolve(JNIEnv *env, long ptr);
 
 /**
  * Wraps a pointer in a usbtk_ptrw_t linked to the current thread and returns the pointer to it.
@@ -31,13 +37,17 @@ usbtk_ptrw_t *usbtk_ptrw_resolve(JNIEnv *env, long ptr);
  * @return The pointer to the wrapped strcut, or 0 if it failed.
  * @note Do Not use jni calls if the function returns 0, as it already queued a exception, only do cleanups.
  */
-long usbtk_ptrw_wrap(JNIEnv *env, void *ptr);
+PTRW_API long usbtk_ptrw_wrap(JNIEnv *env, void *ptr);
 
 /**
  * Frees the memory used by the wrapper.
  * @param ptrw The pointer to the wrapper to be freed.
  * @note This won't free the pointer itself.
  */
-void usbtk_ptrw_free(usbtk_ptrw_t *ptrw);
+PTRW_API void usbtk_ptrw_free(usbtk_ptrw_t *ptrw);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif //USBTOOLKIT_PTRW_H

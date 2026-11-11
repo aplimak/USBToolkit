@@ -2,6 +2,7 @@ package ir.aeliux.usbtoolkit.usb;
 
 import java.io.IOException;
 
+import ir.aeliux.ptrw.PointerWrapper;
 import ir.aeliux.usbtoolkit.usb.dto.UsbgConfigAttrs;
 import ir.aeliux.usbtoolkit.usb.dto.UsbgGadgetAttrs;
 import ir.aeliux.usbtoolkit.usb.dto.UsbgGadgetStrs;

@@ -33,6 +33,4 @@ class Native {
     static native long init(String configfsPath) throws IOException;
 
     static native void close(long handle);
-
-    static native void ptrwClose(long handle);
 }

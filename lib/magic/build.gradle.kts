@@ -18,6 +18,11 @@ android {
         ndk {
             abiFilters.addAll(listOf("arm64-v8a", "x86_64"))
         }
+        externalNativeBuild {
+            cmake {
+                arguments += "-DANDROID_STL=c++_shared"
+            }
+        }
     }
 
     externalNativeBuild {
@@ -30,9 +35,13 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+    buildFeatures {
+        prefab = true
+    }
 }
 
 dependencies {
+    implementation(project(":lib:ptrw"))
     implementation(libs.appcompat)
     implementation(libs.material)
     testImplementation(libs.junit)

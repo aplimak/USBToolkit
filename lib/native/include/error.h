@@ -39,8 +39,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <usbg/usbg.h>   /* for usbtk_throw_usbg(); harmless if unused */
-
 #include "log.h"
 
 /* --- Exception class names ------------------------------------------ */
@@ -152,13 +150,6 @@ usbtk_throw_errno(JNIEnv *env, const char *what)
     }
 
     USBTK_THROW_IOE(env, "%s failed: %s", what, buf);
-}
-
-/* Throw IOException for a failed libusbgx call. */
-static inline void
-usbtk_throw_usbg(JNIEnv *env, const char *what, int rc)
-{
-    USBTK_THROW_IOE(env, "%s failed: error %s: %s (%d)", what, usbg_error_name(rc), usbg_strerror(rc), rc);
 }
 
 /* Convenience: run an expression returning an int, and on nonzero rc

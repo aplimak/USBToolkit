@@ -2,6 +2,7 @@
 // Created by aeliux on 10/1/26.
 //
 
+#include <stdlib.h>
 #include "ptrw.h"
 #include "error.h"
 

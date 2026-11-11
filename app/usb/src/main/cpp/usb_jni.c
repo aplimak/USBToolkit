@@ -15,6 +15,18 @@
 #include "error.h"
 #include "ptrw.h"
 
+/* Throw IOException for a failed libusbgx call. */
+static inline void
+usbtk_throw_usbg(JNIEnv *env, const char *what, int rc)
+{
+    USBTK_THROW_IOE(env,
+                    "%s failed: error %s: %s (%d)",
+                    what,
+                    usbg_error_name(rc),
+                    usbg_strerror(rc),
+                    rc);
+}
+
 JNIEXPORT jlong JNICALL
 Java_ir_aeliux_usbtoolkit_usb_Native_init(JNIEnv *env, jclass cls,
                                           jstring j_configfsPath)

@@ -1,4 +1,4 @@
-package ir.aeliux.usbtoolkit.usb;
+package ir.aeliux.ptrw;
 
 import androidx.annotation.Nullable;
 
@@ -35,7 +35,7 @@ public abstract class PointerWrapper implements AutoCloseable {
      * @return The pointer.
      * @throws IllegalStateException if the wrapper is closed.
      */
-    protected long requireHandle() throws IllegalStateException {
+    public long requireHandle() throws IllegalStateException {
         long p = ptr;
         throwOnClosed(p);
         return p;
@@ -72,7 +72,7 @@ public abstract class PointerWrapper implements AutoCloseable {
         if (p != 0) {
             ptr = 0;
             closeHandle(p);
-            Native.ptrwClose(p);
+            Native.close(p);
         }
 
         parent = null;

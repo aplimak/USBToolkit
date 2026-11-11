@@ -2,6 +2,7 @@ package ir.aeliux.usbtoolkit.usb;
 
 import androidx.annotation.NonNull;
 
+import ir.aeliux.ptrw.PointerWrapper;
 import ir.aeliux.usbtoolkit.usb.dto.UsbgConfigAttrs;
 import ir.aeliux.usbtoolkit.usb.dto.UsbgFunctionAttrsBase;
 import ir.aeliux.usbtoolkit.usb.dto.UsbgGadgetAttrs;

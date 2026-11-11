@@ -146,3 +146,6 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
         android
         log
         z)
+
+find_package(ptrw REQUIRED CONFIG)
+target_link_libraries(${CMAKE_PROJECT_NAME} ptrw::ptrw)

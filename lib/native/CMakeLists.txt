@@ -1,3 +1,5 @@
+set(ANDROID_STL none)
+
 add_library(axsn_common INTERFACE)
 
 target_include_directories(axsn_common INTERFACE
