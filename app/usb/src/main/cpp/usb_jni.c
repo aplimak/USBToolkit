@@ -2,6 +2,10 @@
 // Created by aeliux on 9/23/26.
 //
 
+#define LOG_TAG "libusb:"__FILE_NAME__
+
+#include "dto.h"
+
 #include <jni.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,28 +14,27 @@
 #include <pthread.h>
 #include <usbg/function/ms.h>
 #include <usbg/usbg.h>
-#include "dto.h"
-#include "log.h"
-#include "error.h"
-#include "ptrw.h"
+#include <axsn/log.h>
+#include <axsn/error.h>
+#include <ptrw.h>
 
 /* Throw IOException for a failed libusbgx call. */
 static inline void
 usbtk_throw_usbg(JNIEnv *env, const char *what, int rc)
 {
-    USBTK_THROW_IOE(env,
-                    "%s failed: error %s: %s (%d)",
-                    what,
-                    usbg_error_name(rc),
-                    usbg_strerror(rc),
-                    rc);
+    AXSN_THROW_IOE(env,
+                   "%s failed: error %s: %s (%d)",
+                   what,
+                   usbg_error_name(rc),
+                   usbg_strerror(rc),
+                   rc);
 }
 
 JNIEXPORT jlong JNICALL
 Java_ir_aeliux_usbtoolkit_usb_Native_init(JNIEnv *env, jclass cls,
                                           jstring j_configfsPath)
 {
-    if (usbtk_throw_if_null(env, j_configfsPath, "configfsPath") != 0) {
+    if (axsn_throw_if_null(env, j_configfsPath, "configfsPath") != 0) {
         return 0;
     }
 
@@ -89,7 +92,7 @@ Java_ir_aeliux_usbtoolkit_usb_Native_createGadget(JNIEnv *env, jclass cls,
     struct usbg_config_strs c_strs = {0};
 
     LOGI("Creating Gadget");
-    if (usbtk_throw_if_null(env, j_gadgetName, "gadgetName") != 0) return 0;
+    if (axsn_throw_if_null(env, j_gadgetName, "gadgetName") != 0) return 0;
     const char *gadget_name = (*env)->GetStringUTFChars(env, j_gadgetName, NULL);
     if (!gadget_name) return 0;
     LOGV("Gadget name is ok");
@@ -135,7 +138,7 @@ Java_ir_aeliux_usbtoolkit_usb_Native_openGadget(JNIEnv *env, jclass cls,
     usbg_state *s = ptrw_unwrap(env, j_ptrwConfigfs);
     if (s == NULL) return 0;
 
-    if (usbtk_throw_if_null(env, j_gadgetName, "gadgetName") != 0) return 0;
+    if (axsn_throw_if_null(env, j_gadgetName, "gadgetName") != 0) return 0;
     const char *gadget_name = (*env)->GetStringUTFChars(env, j_gadgetName, NULL);
     if (!gadget_name) return 0;
     LOGV("Gadget name is ok");
@@ -145,7 +148,7 @@ Java_ir_aeliux_usbtoolkit_usb_Native_openGadget(JNIEnv *env, jclass cls,
     {
         g = usbg_get_gadget(s, gadget_name);
         if (g == NULL) {
-            usbtk_throw(env, USBTK_JC_IAE, "gadget not found: %s", gadget_name);
+            axsn_throw(env, AXSN_JC_IAE, "gadget not found: %s", gadget_name);
             goto cleanup;
         }
     }
@@ -195,9 +198,9 @@ Java_ir_aeliux_usbtoolkit_usb_Native_createFunction(JNIEnv *env,
             usbtk_usbg_f_mass_storage_attrs_from_kotlin(env, j_functionAttrs, attrs);
             break;
         default:
-            USBTK_THROW_IAE(env,
-                            "usbtkUsbCreateFunction: Function type %d is currently not supported",
-                            j_functionType);
+            AXSN_THROW_IAE(env,
+                           "usbtkUsbCreateFunction: Function type %d is currently not supported",
+                           j_functionType);
             goto clean;
     }
 

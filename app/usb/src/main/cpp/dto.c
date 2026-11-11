@@ -2,9 +2,11 @@
 // Created by aeliux on 9/22/26.
 //
 
+#define LOG_TAG "libusb:"__FILE_NAME__
+
 #include "dto.h"
 
-#include "error.h"
+#include <axsn/error.h>
 #include <jni.h>
 #include <stdlib.h>
 #include <string.h>
@@ -602,8 +604,8 @@ jobject usbtk_usbg_f_mass_storage_attrs_to_kotlin(JNIEnv *env,
     jobject j_luns = (*env)->NewObject(env, g_jni.java_list.cls, g_jni.java_list.ctor);
     if (j_luns == NULL) {
         if (!(*env)->ExceptionCheck(env)) {
-            USBTK_THROW_RTE(env,
-                            "usbtk_usbg_f_mass_storage_attrs_to_kotlin: Failed to create list");
+            AXSN_THROW_RTE(env,
+                           "usbtk_usbg_f_mass_storage_attrs_to_kotlin: Failed to create list");
         }
         goto done;
     }
@@ -639,7 +641,7 @@ int usbtk_usbg_f_mass_storage_attrs_from_kotlin(JNIEnv *env,
     jobject luns = (*env)->GetObjectField(env, obj, g_jni.f_mass_storage_attrs.f_luns);
     if (luns == NULL) {
         if (!(*env)->ExceptionCheck(env)) {
-            USBTK_THROW_NPE(env, "UsbgMassStorageAttrs.luns");
+            AXSN_THROW_NPE(env, "UsbgMassStorageAttrs.luns");
         }
         goto fail;
     }
@@ -654,25 +656,25 @@ int usbtk_usbg_f_mass_storage_attrs_from_kotlin(JNIEnv *env,
 
     dst->luns = calloc(n + 1, sizeof(struct usbg_f_ms_lun_attrs *));
     if (!dst->luns) {
-        USBTK_THROW_OOM(env, "usbtk_usbg_f_mass_storage_attrs_from_kotlin: %s", "dst->luns");
+        AXSN_THROW_OOM(env, "usbtk_usbg_f_mass_storage_attrs_from_kotlin: %s", "dst->luns");
         goto fail;
     }
     for (jint i = 0; i < n; i++) {
         jobject lun = (*env)->CallObjectMethod(env, luns, g_jni.java_list.m_get, i);
         if (lun == NULL) {
             if (!(*env)->ExceptionCheck(env)) {
-                USBTK_THROW_RTE(env,
-                                "usbtk_usbg_f_mass_storage_attrs_from_kotlin: Failed to get the element index %d from luns list",
-                                i);
+                AXSN_THROW_RTE(env,
+                               "usbtk_usbg_f_mass_storage_attrs_from_kotlin: Failed to get the element index %d from luns list",
+                               i);
             }
             goto fail;
         }
         dst->luns[i] = calloc(1, sizeof(*dst->luns[i]));
         if (usbtk_usbg_f_mass_storage_lun_from_kotlin(env, lun, dst->luns[i]) == -1) {
             if (!(*env)->ExceptionCheck(env)) {
-                USBTK_THROW_RTE(env,
-                                "usbtk_usbg_f_mass_storage_attrs_from_kotlin: Failed to read the element index %d from luns list",
-                                i);
+                AXSN_THROW_RTE(env,
+                               "usbtk_usbg_f_mass_storage_attrs_from_kotlin: Failed to read the element index %d from luns list",
+                               i);
             }
             goto fail;
         }
@@ -687,7 +689,7 @@ int usbtk_usbg_f_mass_storage_attrs_from_kotlin(JNIEnv *env,
     dst->nluns = 0;
     usbtk_usbg_f_mass_storage_attrs_free(dst);
     if (!(*env)->ExceptionCheck(env)) {
-        USBTK_THROW_RTE(env, "usbtk_usbg_f_mass_storage_attrs_from_kotlin");
+        AXSN_THROW_RTE(env, "usbtk_usbg_f_mass_storage_attrs_from_kotlin");
     }
     done:
     if (luns) (*env)->DeleteLocalRef(env, luns);

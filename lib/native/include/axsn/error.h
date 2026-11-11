@@ -2,15 +2,19 @@
 // Created by aeliux on 9/24/26.
 //
 
-#ifndef USBTOOLKIT_ERROR_H
-#define USBTOOLKIT_ERROR_H
+#ifndef AXSN_ERROR_H
+#define AXSN_ERROR_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*
- * error.h -- JNI error reporting for libusbtoolkit.
+ * error.h -- JNI error reporting.
  *
  * Contract:
  *   - Every failure that crosses the JNI boundary is a Java exception.
- *   - usbtk_throw() is a no-op when an exception is already pending, so it
+ *   - axsn_throw() is a no-op when an exception is already pending, so it
  *     never clobbers a JNI-originated error (NoSuchFieldError, OOM, ...).
  *   - Every throw is mirrored to logcat at ERROR level, so the trail exists
  *     even if the exception is later swallowed.
@@ -43,15 +47,15 @@
 
 /* --- Exception class names ------------------------------------------ */
 
-#define USBTK_JC_IAE "java/lang/IllegalArgumentException"
-#define USBTK_JC_ISE "java/lang/IllegalStateException"
-#define USBTK_JC_NPE "java/lang/NullPointerException"
-#define USBTK_JC_IOE "java/io/IOException"
-#define USBTK_JC_OOM "java/lang/OutOfMemoryError"
-#define USBTK_JC_RTE "java/lang/RuntimeException"
+#define AXSN_JC_IAE "java/lang/IllegalArgumentException"
+#define AXSN_JC_ISE "java/lang/IllegalStateException"
+#define AXSN_JC_NPE "java/lang/NullPointerException"
+#define AXSN_JC_IOE "java/io/IOException"
+#define AXSN_JC_OOM "java/lang/OutOfMemoryError"
+#define AXSN_JC_RTE "java/lang/RuntimeException"
 
-#ifndef USBTK_ERR_MSG_MAX
-#define USBTK_ERR_MSG_MAX 512
+#ifndef AXSN_ERR_MSG_MAX
+#define AXSN_ERR_MSG_MAX 512
 #endif
 
 /* --- Core ----------------------------------------------------------- */
@@ -67,9 +71,9 @@
  *   - Message is mirrored to logcat at ERROR, regardless of outcome.
  */
 __attribute__((format(printf, 3, 4))) static inline void
-usbtk_throw(JNIEnv *env, const char *cls, const char *fmt, ...)
+axsn_throw(JNIEnv *env, const char *cls, const char *fmt, ...)
 {
-    char msg[USBTK_ERR_MSG_MAX];
+    char msg[AXSN_ERR_MSG_MAX];
     va_list ap;
     va_start(ap, fmt);
     vsnprintf(msg, sizeof msg, fmt, ap);
@@ -92,42 +96,41 @@ usbtk_throw(JNIEnv *env, const char *cls, const char *fmt, ...)
 
 /* --- Per-class convenience macros ----------------------------------- */
 
-#define USBTK_THROW(env, cls, ...)  usbtk_throw((env), (cls), __VA_ARGS__)
+#define AXSN_THROW(env, cls, ...)  axsn_throw((env), (cls), __VA_ARGS__)
 
-#define USBTK_THROW_IAE(env, ...)   USBTK_THROW((env), USBTK_JC_IAE, __VA_ARGS__)
-#define USBTK_THROW_ISE(env, ...)   USBTK_THROW((env), USBTK_JC_ISE, __VA_ARGS__)
-#define USBTK_THROW_NPE(env, ...)   USBTK_THROW((env), USBTK_JC_NPE, __VA_ARGS__)
-#define USBTK_THROW_IOE(env, ...)   USBTK_THROW((env), USBTK_JC_IOE, __VA_ARGS__)
-#define USBTK_THROW_OOM(env, ...)   USBTK_THROW((env), USBTK_JC_OOM, __VA_ARGS__)
-#define USBTK_THROW_RTE(env, ...)   USBTK_THROW((env), USBTK_JC_RTE, __VA_ARGS__)
-
+#define AXSN_THROW_IAE(env, ...)   AXSN_THROW((env), AXSN_JC_IAE, __VA_ARGS__)
+#define AXSN_THROW_ISE(env, ...)   AXSN_THROW((env), AXSN_JC_ISE, __VA_ARGS__)
+#define AXSN_THROW_NPE(env, ...)   AXSN_THROW((env), AXSN_JC_NPE, __VA_ARGS__)
+#define AXSN_THROW_IOE(env, ...)   AXSN_THROW((env), AXSN_JC_IOE, __VA_ARGS__)
+#define AXSN_THROW_OOM(env, ...)   AXSN_THROW((env), AXSN_JC_OOM, __VA_ARGS__)
+#define AXSN_THROW_RTE(env, ...)   AXSN_THROW((env), AXSN_JC_RTE, __VA_ARGS__)
 /* --- Pending-exception helpers -------------------------------------- */
 
 /* True if the JVM has an exception pending. */
-#define USBTK_EXC_PENDING(env) ((*env)->ExceptionCheck(env))
+#define AXSN_EXC_PENDING(env) ((*env)->ExceptionCheck(env))
 
 /* `goto label` if an exception is pending. For the entry-point cleanup
  * pattern. Label must be inside the same function. */
-#define USBTK_BAIL_IF_EXC_PENDING(env, label) \
-    do { if (USBTK_EXC_PENDING(env)) goto label; } while (0)
+#define AXSN_BAIL_IF_EXC_PENDING(env, label) \
+    do { if (AXSN_EXC_PENDING(env)) goto label; } while (0)
 
 /* Pure-C guard: if `p` is NULL, throw IAE and return -1, else 0.
  * Use at the top of DTO helpers for pointer preconditions. */
 static inline int
-usbtk_throw_if_null(JNIEnv *env, const void *p, const char *what)
+axsn_throw_if_null(JNIEnv *env, const void *p, const char *what)
 {
     if (p) return 0;
-    USBTK_THROW_IAE(env, "%s is NULL", what);
+    AXSN_THROW_IAE(env, "%s is NULL", what);
     return -1;
 }
 
 /* DTO/lifecycle guard: if !cond, throw ISE and return -1, else 0.
- * Example: usbtk_require(env, g_jni.gadget_attrs.cls != NULL, "dto not initialized"); */
+ * Example: axsn_require(env, g_jni.gadget_attrs.cls != NULL, "dto not initialized"); */
 static inline int
-usbtk_require(JNIEnv *env, int cond, const char *what)
+axsn_require(JNIEnv *env, int cond, const char *what)
 {
     if (cond) return 0;
-    USBTK_THROW_ISE(env, "%s", what);
+    AXSN_THROW_ISE(env, "%s", what);
     return -1;
 }
 
@@ -137,7 +140,7 @@ usbtk_require(JNIEnv *env, int cond, const char *what)
  * Call immediately after the failing call, before any other libc call
  * that could clobber errno. */
 static inline void
-usbtk_throw_errno(JNIEnv *env, const char *what)
+axsn_throw_errno(JNIEnv *env, const char *what)
 {
     int e = errno;
     char buf[128];
@@ -149,19 +152,23 @@ usbtk_throw_errno(JNIEnv *env, const char *what)
         snprintf(buf, sizeof buf, "errno %d", e);
     }
 
-    USBTK_THROW_IOE(env, "%s failed: %s", what, buf);
+    AXSN_THROW_IOE(env, "%s failed: %s", what, buf);
 }
 
 /* Convenience: run an expression returning an int, and on nonzero rc
  * throw ISE and goto `label`. Doesn't check for pending exceptions; pair
- * with USBTK_BAIL_IF_PENDING where JNI was involved. */
-#define USBTK_CHECK_RC(env, rc_expr, label, what)                \
+ * with AXSN_BAIL_IF_PENDING where JNI was involved. */
+#define AXSN_CHECK_RC(env, rc_expr, label, what)                \
     do {                                                         \
         int _rc_ = (rc_expr);                                    \
         if (_rc_ != 0) {                                         \
-            USBTK_THROW_ISE(env, "%s failed (rc %d)", (what), _rc_); \
+            AXSN_THROW_ISE(env, "%s failed (rc %d)", (what), _rc_); \
             goto label;                                          \
         }                                                        \
     } while (0)
 
-#endif //USBTOOLKIT_ERROR_H
+#ifdef __cplusplus
+}
+#endif
+
+#endif //AXSN_ERROR_H

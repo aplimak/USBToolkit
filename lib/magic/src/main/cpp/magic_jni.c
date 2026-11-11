@@ -2,14 +2,14 @@
 // Created by aeliux on 9/19/26.
 //
 
-#define LOG_TAG "libusbtk.magic"
+#define LOG_TAG "libmagic:"__FILE_NAME__
 
 #include <jni.h>
 #include <string.h>
 #include <stdlib.h>
 #include <pthread.h>
 #include <magic.h>
-#include "log.h"
+#include <axsn/log.h>
 
 #define MAGIC_RESULT_CLASS "ir/aeliux/magic/MagicResult"
 

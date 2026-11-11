@@ -2,10 +2,12 @@
 // Created by aeliux on 9/23/26.
 //
 
-#include <jni.h>
-#include "error.h"
-#include "log.h"
+#define LOG_TAG "libusb:"__FILE_NAME__
+
 #include "dto.h"
+#include <jni.h>
+#include <axsn/log.h>
+#include <axsn/error.h>
 
 /* Cached VM for future use (attaching threads, calling back into Java,
  * etc.). NULL after JNI_OnUnload. */
@@ -17,11 +19,11 @@ static JavaVM *g_vm = NULL;
 
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved)
 {
-    (void)reserved;
+    (void) reserved;
     g_vm = vm;
 
     JNIEnv *env = NULL;
-    if ((*vm)->GetEnv(vm, (void **)&env, USBTK_JNI_VERSION) != JNI_OK) {
+    if ((*vm)->GetEnv(vm, (void **) &env, USBTK_JNI_VERSION) != JNI_OK) {
         /* No JNIEnv → no way to throw. Return JNI_ERR; the VM will
          * surface UnsatisfiedLinkError. */
         LOGE("JNI_OnLoad: GetEnv failed");
@@ -33,8 +35,8 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved)
          * anything it may have partially set, then bail. */
         usbtk_dto_release(env);
         if (!(*env)->ExceptionCheck(env)) {
-            usbtk_throw(env, "java/lang/IllegalStateException",
-                        "usbtoolkit: native init failed (dto)");
+            axsn_throw(env, "java/lang/IllegalStateException",
+                       "usbtoolkit: native init failed (dto)");
         }
         return JNI_ERR;   /* still return ERR even with a pending exception */
     }
@@ -45,10 +47,10 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved)
 
 JNIEXPORT void JNICALL JNI_OnUnload(JavaVM *vm, void *reserved)
 {
-    (void)reserved;
+    (void) reserved;
 
     JNIEnv *env = NULL;
-    if ((*vm)->GetEnv(vm, (void **)&env, USBTK_JNI_VERSION) != JNI_OK) {
+    if ((*vm)->GetEnv(vm, (void **) &env, USBTK_JNI_VERSION) != JNI_OK) {
         /* Thread torn down / VM going away — best effort only. */
         LOGE("JNI_OnUnload: GetEnv failed, skipping cleanup");
         return;

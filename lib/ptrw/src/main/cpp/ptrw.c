@@ -2,9 +2,11 @@
 // Created by aeliux on 10/1/26.
 //
 
+#define LOG_TAG "libptrw:"__FILE_NAME__
+
 #include "ptrw.h"
 #include "internal.h"
-#include "error.h"
+#include <axsn/error.h>
 #include <stdlib.h>
 
 struct ptrw
@@ -19,12 +21,12 @@ ptrw_t *ptrw_resolve(JNIEnv *env, long ptr)
     ptrw_t *ptrw = (ptrw_t *) (intptr_t) ptr;
 
     if (!ptrw || ptrw->closed) {
-        USBTK_THROW_ISE(env, "PointerWrapper is already closed");
+        AXSN_THROW_ISE(env, "PointerWrapper is already closed");
         return NULL;
     }
     if (!pthread_equal(ptrw->owner, pthread_self())) {
-        USBTK_THROW_ISE(env,
-                        "PointerWrapper used from a non-owner thread");
+        AXSN_THROW_ISE(env,
+                       "PointerWrapper used from a non-owner thread");
         return NULL;
     }
     return ptrw;
@@ -34,7 +36,7 @@ long ptrw_wrap(JNIEnv *env, void *ptr)
 {
     ptrw_t *ptrw = malloc(sizeof(ptrw_t));
     if (!ptrw) {
-        USBTK_THROW_OOM(env, "allocating ptrw_t");
+        AXSN_THROW_OOM(env, "allocating ptrw_t");
         return 0;
     }
     ptrw->ptr = ptr;

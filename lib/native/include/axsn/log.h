@@ -2,15 +2,19 @@
 // Created by aeliux on 9/23/26.
 //
 
-#ifndef USBTOOLKIT_LOG_H
-#define USBTOOLKIT_LOG_H
+#ifndef AXSN_LOG_H
+#define AXSN_LOG_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <android/log.h>
 
 /* Each .c can #define LOG_TAG before including this header.
    If it doesn't, the library-wide tag is used. */
 #ifndef LOG_TAG
-#define LOG_TAG "libusbtk"
+#define LOG_TAG "libaxsn"
 #endif
 
 #define LOG(prio, ...) \
@@ -30,4 +34,8 @@
 #  define LOGV(...) ((void)0)
 #endif
 
-#endif //USBTOOLKIT_LOG_H
+#ifdef __cplusplus
+}
+#endif
+
+#endif //AXSN_LOG_H
