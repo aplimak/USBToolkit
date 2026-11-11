@@ -1,4 +1,4 @@
-package ir.aeliux.usbtoolkit.data;
+package ir.aeliux.usbtoolkit.shared.dto;
 
 import java.io.File;
 import java.util.Objects;
@@ -18,51 +18,6 @@ import java.util.List;
  */
 public class MassStorageConfig implements Parcelable {
 
-    public final List<Path> imagePaths;
-    public final boolean cdrom;
-    public final boolean readOnly;
-    public final boolean removable;
-    public final String udc;
-
-    private MassStorageConfig(Builder builder) {
-        this.imagePaths = List.copyOf(builder.imagePaths);
-        this.cdrom       = builder.cdrom;
-        this.readOnly    = builder.readOnly;
-        this.removable   = builder.removable;
-        this.udc         = builder.udc;
-    }
-
-    protected MassStorageConfig(Parcel in) {
-        int n = in.readInt();
-        List<Path> paths = new ArrayList<>(n);
-        for (int i = 0; i < n; i++) {
-            String s = in.readString();
-            paths.add(s == null ? null : Paths.get(s));
-        }
-        this.imagePaths = Collections.unmodifiableList(paths);
-        this.cdrom     = in.readByte() != 0;
-        this.readOnly  = in.readByte() != 0;
-        this.removable = in.readByte() != 0;
-        this.udc       = in.readString();
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeInt(imagePaths.size());
-        for (Path p : imagePaths) {
-            dest.writeString(p == null ? null : p.toString());
-        }
-        dest.writeByte((byte) (cdrom     ? 1 : 0));
-        dest.writeByte((byte) (readOnly  ? 1 : 0));
-        dest.writeByte((byte) (removable ? 1 : 0));
-        dest.writeString(udc);
-    }
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
     public static final Creator<MassStorageConfig> CREATOR = new Creator<>() {
         @Override
         public MassStorageConfig createFromParcel(Parcel in) {
@@ -74,6 +29,50 @@ public class MassStorageConfig implements Parcelable {
             return new MassStorageConfig[size];
         }
     };
+    public final List<Path> imagePaths;
+    public final boolean cdrom;
+    public final boolean readOnly;
+    public final boolean removable;
+    public final String udc;
+
+    private MassStorageConfig(Builder builder) {
+        this.imagePaths = List.copyOf(builder.imagePaths);
+        this.cdrom = builder.cdrom;
+        this.readOnly = builder.readOnly;
+        this.removable = builder.removable;
+        this.udc = builder.udc;
+    }
+
+    protected MassStorageConfig(Parcel in) {
+        int n = in.readInt();
+        List<Path> paths = new ArrayList<>(n);
+        for (int i = 0; i < n; i++) {
+            String s = in.readString();
+            paths.add(s == null ? null : Paths.get(s));
+        }
+        this.imagePaths = Collections.unmodifiableList(paths);
+        this.cdrom = in.readByte() != 0;
+        this.readOnly = in.readByte() != 0;
+        this.removable = in.readByte() != 0;
+        this.udc = in.readString();
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeInt(imagePaths.size());
+        for (Path p : imagePaths) {
+            dest.writeString(p == null ? null : p.toString());
+        }
+        dest.writeByte((byte) (cdrom ? 1 : 0));
+        dest.writeByte((byte) (readOnly ? 1 : 0));
+        dest.writeByte((byte) (removable ? 1 : 0));
+        dest.writeString(udc);
+    }
 
     public static class Builder {
         private final List<Path> imagePaths = new ArrayList<>();

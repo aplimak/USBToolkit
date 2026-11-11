@@ -9,7 +9,7 @@ import android.view.View;
 import androidx.activity.EdgeToEdge;
 import androidx.core.content.IntentCompat;
 
-import ir.aeliux.usbtoolkit.data.GadgetState;
+import ir.aeliux.usbtoolkit.shared.dto.GadgetState;
 import ir.aeliux.usbtoolkit.databinding.ActivityGadgetDetailsBinding;
 import ir.aeliux.core.DataConversion;
 import ir.aeliux.core.Views;

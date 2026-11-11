@@ -1,5 +1,5 @@
 // IRootFileExistCallback.aidl
-package ir.aeliux.usbtoolkit.callback;
+package ir.aeliux.usbtoolkit.shared.callback;
 
 oneway interface IRootFileExistCallback {
     void OnResult(boolean exists);

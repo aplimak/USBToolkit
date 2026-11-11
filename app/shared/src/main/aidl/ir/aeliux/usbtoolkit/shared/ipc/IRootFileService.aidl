@@ -1,9 +1,9 @@
 // IRootFileService.aidl
-package ir.aeliux.usbtoolkit.ipc;
+package ir.aeliux.usbtoolkit.shared.ipc;
 
-import ir.aeliux.usbtoolkit.callback.IRootFileCallback;
-import ir.aeliux.usbtoolkit.callback.IRootFileExistCallback;
-import ir.aeliux.usbtoolkit.data.FileEntry;
+import ir.aeliux.usbtoolkit.shared.callback.IRootFileCallback;
+import ir.aeliux.usbtoolkit.shared.callback.IRootFileExistCallback;
+import ir.aeliux.usbtoolkit.shared.dto.FileEntry;
 
 oneway interface IRootFileService {
     // List the contents of a directory

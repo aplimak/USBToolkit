@@ -1,5 +1,5 @@
 // IUsbMassStorageCallback.aidl
-package ir.aeliux.usbtoolkit.callback;
+package ir.aeliux.usbtoolkit.shared.callback;
 
 oneway interface IUsbMassStorageCallback {
     void onStepStart(String stepName);

@@ -18,17 +18,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import ir.aeliux.usbtoolkit.ipc.IUsbMassStorageService;
-import ir.aeliux.usbtoolkit.callback.IGadgetStateListCallback;
-import ir.aeliux.usbtoolkit.callback.IMagicResultCallback;
-import ir.aeliux.usbtoolkit.data.GadgetState;
+import ir.aeliux.usbtoolkit.shared.ipc.IUsbMassStorageService;
+import ir.aeliux.usbtoolkit.shared.callback.IGadgetStateListCallback;
+import ir.aeliux.usbtoolkit.shared.callback.IMagicResultCallback;
+import ir.aeliux.usbtoolkit.shared.dto.GadgetState;
 import ir.aeliux.magic.MagicResult;
 import ir.aeliux.usbtoolkit.rootservice.UsbMassStorageManager.UsbGadgetException;
-import ir.aeliux.usbtoolkit.callback.IBooleanCallback;
-import ir.aeliux.usbtoolkit.callback.IGadgetStateCallback;
-import ir.aeliux.usbtoolkit.callback.IStringListCallback;
-import ir.aeliux.usbtoolkit.callback.IUsbMassStorageCallback;
-import ir.aeliux.usbtoolkit.data.MassStorageConfig;
+import ir.aeliux.usbtoolkit.shared.callback.IBooleanCallback;
+import ir.aeliux.usbtoolkit.shared.callback.IGadgetStateCallback;
+import ir.aeliux.usbtoolkit.shared.callback.IStringListCallback;
+import ir.aeliux.usbtoolkit.shared.callback.IUsbMassStorageCallback;
+import ir.aeliux.usbtoolkit.shared.dto.MassStorageConfig;
 import ir.aeliux.usbtoolkit.usb.Configfs;
 
 public class UsbMassStorageService extends RootService {
@@ -48,6 +48,38 @@ public class UsbMassStorageService extends RootService {
                     callback.onEnd(false);
                 }
             });
+        }
+
+        @NonNull
+        private UsbMassStorageManager.ProgressCallback getCallback(IUsbMassStorageCallback callback) {
+            return new UsbMassStorageManager.ProgressCallback() {
+                @Override
+                public void onStepStart(String stepName) {
+                    safeCall(() -> {
+                        Log.d(TAG, "firing onStepStart with step: " + stepName);
+                        callback.onStepStart(stepName);
+                    });
+                }
+
+                @Override
+                public void onStepComplete(String stepName) {
+                    safeCall(() -> {
+                        Log.d(TAG, "firing onStepComplete with step: " + stepName);
+                        callback.onStepComplete(stepName);
+                    });
+                }
+
+                @Override
+                public void onStepFailed(String stepName, UsbGadgetException error) {
+                    safeCall(() -> {
+                        Log.e(TAG, "Error happened in step: " + stepName, error);
+                        Log.d(TAG, "firing onStepFailed with step: " + stepName);
+                        var cause = error.getCause();
+                        callback.onStepFailed(stepName,
+                                              error + (cause != null ? "\n Caused by: " + cause : ""));
+                    });
+                }
+            };
         }
 
         @Override
@@ -198,38 +230,6 @@ public class UsbMassStorageService extends RootService {
             ir.aeliux.magic.Native.magicRelease();
             Log.d(TAG, "firing onResult with result: " + result);
             callback.onResult(result);
-        }
-
-        @NonNull
-        private UsbMassStorageManager.ProgressCallback getCallback(IUsbMassStorageCallback callback) {
-            return new UsbMassStorageManager.ProgressCallback() {
-                @Override
-                public void onStepStart(String stepName) {
-                    safeCall(() -> {
-                        Log.d(TAG, "firing onStepStart with step: " + stepName);
-                        callback.onStepStart(stepName);
-                    });
-                }
-
-                @Override
-                public void onStepComplete(String stepName) {
-                    safeCall(() -> {
-                        Log.d(TAG, "firing onStepComplete with step: " + stepName);
-                        callback.onStepComplete(stepName);
-                    });
-                }
-
-                @Override
-                public void onStepFailed(String stepName, UsbGadgetException error) {
-                    safeCall(() -> {
-                        Log.e(TAG, "Error happened in step: " + stepName, error);
-                        Log.d(TAG, "firing onStepFailed with step: " + stepName);
-                        var cause = error.getCause();
-                        callback.onStepFailed(stepName,
-                                              error + (cause != null ? "\n Caused by: " + cause : ""));
-                    });
-                }
-            };
         }
     };
 

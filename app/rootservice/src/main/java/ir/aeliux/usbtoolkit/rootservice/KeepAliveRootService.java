@@ -9,7 +9,7 @@ import androidx.annotation.Nullable;
 
 import com.topjohnwu.superuser.ipc.RootService;
 
-import ir.aeliux.usbtoolkit.ipc.IKeepAliveRootService;
+import ir.aeliux.usbtoolkit.shared.ipc.IKeepAliveRootService;
 
 public class KeepAliveRootService extends RootService {
     private final String TAG = "KeepAliveRootService";
@@ -25,13 +25,13 @@ public class KeepAliveRootService extends RootService {
     }
 
     @Override
-    public void onRebind(@NonNull Intent intent) {
-        Log.d(TAG, "onRebind");
-    }
-
-    @Override
     public boolean onUnbind(@NonNull Intent intent) {
         Log.d(TAG, "onUnbind");
         return super.onUnbind(intent);
+    }
+
+    @Override
+    public void onRebind(@NonNull Intent intent) {
+        Log.d(TAG, "onRebind");
     }
 }

@@ -7,8 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import ir.aeliux.usbtoolkit.data.GadgetState;
-
 public class FilePickerViewModel extends ViewModel {
     private final MutableLiveData<String> currentDirectory = new MutableLiveData<>("");
     private final MutableLiveData<List<String>> filePaths = new MutableLiveData<>(new ArrayList<>());
@@ -18,7 +16,9 @@ public class FilePickerViewModel extends ViewModel {
     }
 
     public void setCurrentDirectory(String value) {
-        if (currentDirectory.getValue() != null && value.equals(currentDirectory.getValue())) return;
+        if (currentDirectory.getValue() != null && value.equals(currentDirectory.getValue())) {
+            return;
+        }
         currentDirectory.setValue(value);
     }
 

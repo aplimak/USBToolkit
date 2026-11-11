@@ -1,4 +1,4 @@
-package ir.aeliux.usbtoolkit.data;
+package ir.aeliux.usbtoolkit.shared.dto;
 
 import android.os.Parcel;
 import android.os.Parcelable;

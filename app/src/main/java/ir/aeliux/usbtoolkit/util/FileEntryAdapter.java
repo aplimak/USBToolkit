@@ -21,40 +21,39 @@ import java.util.Locale;
 import java.util.Set;
 
 import ir.aeliux.usbtoolkit.R;
-import ir.aeliux.usbtoolkit.data.FileEntry;
+import ir.aeliux.usbtoolkit.shared.dto.FileEntry;
 
 public final class FileEntryAdapter extends ListAdapter<FileEntry, FileEntryAdapter.ViewHolder> {
 
-    public interface OnDirectoryClick { void onClick(FileEntry entry); }
-    public interface OnFileSelect { void onSelect(FileEntry entry, boolean checked); }
-    public interface OnFileClick { void onClick(FileEntry entry); }
+    private static final DiffUtil.ItemCallback<FileEntry> DIFF_CALLBACK =
+            new DiffUtil.ItemCallback<>() {
+                @Override
+                public boolean areItemsTheSame(@NonNull FileEntry oldItem,
+                                               @NonNull FileEntry newItem)
+                {
+                    return oldItem.getAbsolutePath().equals(newItem.getAbsolutePath());
+                }
 
+                @Override
+                public boolean areContentsTheSame(@NonNull FileEntry oldItem,
+                                                  @NonNull FileEntry newItem)
+                {
+                    return oldItem.equals(newItem);
+                }
+            };
     private final OnDirectoryClick onDirectoryClick;
     private final OnFileSelect onFileSelect;
     private final OnFileClick onFileClick;
     private final boolean allowMultiple;
     private final Set<String> allowedExtensions;
-
     private final Set<String> selectedSet = new HashSet<>();
-
-    private static final DiffUtil.ItemCallback<FileEntry> DIFF_CALLBACK =
-            new DiffUtil.ItemCallback<>() {
-                @Override
-                public boolean areItemsTheSame(@NonNull FileEntry oldItem, @NonNull FileEntry newItem) {
-                    return oldItem.getAbsolutePath().equals(newItem.getAbsolutePath());
-                }
-
-                @Override
-                public boolean areContentsTheSame(@NonNull FileEntry oldItem, @NonNull FileEntry newItem) {
-                    return oldItem.equals(newItem);
-                }
-            };
 
     public FileEntryAdapter(OnDirectoryClick onDirectoryClick,
                             OnFileSelect onFileSelect,
                             OnFileClick onFileClick,
                             boolean allowMultiple,
-                            Set<String> allowedExtensions) {
+                            Set<String> allowedExtensions)
+    {
         super(DIFF_CALLBACK);
         this.onDirectoryClick = onDirectoryClick;
         this.onFileSelect = onFileSelect;
@@ -63,26 +62,11 @@ public final class FileEntryAdapter extends ListAdapter<FileEntry, FileEntryAdap
         this.allowedExtensions = allowedExtensions;
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
-        final ImageView ivIcon;
-        final TextView tvName;
-        final TextView tvDetails;
-        final MaterialCheckBox cbSelect;
-
-        ViewHolder(@NonNull View itemView) {
-            super(itemView);
-            ivIcon = itemView.findViewById(R.id.ivIcon);
-            tvName = itemView.findViewById(R.id.tvName);
-            tvDetails = itemView.findViewById(R.id.tvDetails);
-            cbSelect = itemView.findViewById(R.id.cbSelect);
-        }
-    }
-
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_file_entry, parent, false);
+                                  .inflate(R.layout.item_file_entry, parent, false);
         return new ViewHolder(view);
     }
 
@@ -140,9 +124,22 @@ public final class FileEntryAdapter extends ListAdapter<FileEntry, FileEntryAdap
                 (buttonView, isChecked) -> onFileSelect.onSelect(entry, isChecked));
     }
 
+    private static String formatSize(long bytes) {
+        if (bytes < 1024) return bytes + " B";
+        double kb = bytes / 1024.0;
+        if (kb < 1024) return String.format(Locale.US, "%.1f KB", kb);
+        double mb = kb / 1024.0;
+        if (mb < 1024) return String.format(Locale.US, "%.1f MB", mb);
+        return String.format(Locale.US, "%.2f GB", mb / 1024.0);
+    }
+
+    private static String formatDate(long timestamp) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.US);
+        return sdf.format(new Date(timestamp));
+    }
+
     public void setSelected(String path, boolean selected) {
-        if (selected) selectedSet.add(path);
-        else selectedSet.remove(path);
+        if (selected) {selectedSet.add(path);} else selectedSet.remove(path);
         notifyDataSetChanged();
     }
 
@@ -157,17 +154,30 @@ public final class FileEntryAdapter extends ListAdapter<FileEntry, FileEntryAdap
         notifyDataSetChanged();
     }
 
-    private static String formatSize(long bytes) {
-        if (bytes < 1024) return bytes + " B";
-        double kb = bytes / 1024.0;
-        if (kb < 1024) return String.format(Locale.US, "%.1f KB", kb);
-        double mb = kb / 1024.0;
-        if (mb < 1024) return String.format(Locale.US, "%.1f MB", mb);
-        return String.format(Locale.US, "%.2f GB", mb / 1024.0);
+    public interface OnDirectoryClick {
+        void onClick(FileEntry entry);
     }
 
-    private static String formatDate(long timestamp) {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.US);
-        return sdf.format(new Date(timestamp));
+    public interface OnFileSelect {
+        void onSelect(FileEntry entry, boolean checked);
+    }
+
+    public interface OnFileClick {
+        void onClick(FileEntry entry);
+    }
+
+    public static class ViewHolder extends RecyclerView.ViewHolder {
+        final ImageView ivIcon;
+        final TextView tvName;
+        final TextView tvDetails;
+        final MaterialCheckBox cbSelect;
+
+        ViewHolder(@NonNull View itemView) {
+            super(itemView);
+            ivIcon = itemView.findViewById(R.id.ivIcon);
+            tvName = itemView.findViewById(R.id.tvName);
+            tvDetails = itemView.findViewById(R.id.tvDetails);
+            cbSelect = itemView.findViewById(R.id.cbSelect);
+        }
     }
 }

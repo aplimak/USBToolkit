@@ -28,10 +28,10 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 
-import ir.aeliux.usbtoolkit.callback.IRootFileCallback;
-import ir.aeliux.usbtoolkit.data.FileEntry;
+import ir.aeliux.usbtoolkit.shared.callback.IRootFileCallback;
+import ir.aeliux.usbtoolkit.shared.dto.FileEntry;
 import ir.aeliux.usbtoolkit.databinding.ActivityFilePickerBinding;
-import ir.aeliux.usbtoolkit.ipc.IRootFileService;
+import ir.aeliux.usbtoolkit.shared.ipc.IRootFileService;
 import ir.aeliux.usbtoolkit.util.FileEntryAdapter;
 import ir.aeliux.ui.Message;
 import ir.aeliux.usbtoolkit.viewmodel.FilePickerViewModel;

@@ -1,5 +1,5 @@
 // IRootFileCallback.aidl
-package ir.aeliux.usbtoolkit.callback;
+package ir.aeliux.usbtoolkit.shared.callback;
 
 import ir.aeliux.magic.MagicResult;
 

@@ -1,15 +1,15 @@
 // IUsbMassStorageService.aidl
-package ir.aeliux.usbtoolkit.ipc;
+package ir.aeliux.usbtoolkit.shared.ipc;
 
-import ir.aeliux.usbtoolkit.callback.IUsbMassStorageCallback;
-import ir.aeliux.usbtoolkit.callback.IBooleanCallback;
-import ir.aeliux.usbtoolkit.callback.IStringListCallback;
-import ir.aeliux.usbtoolkit.callback.IGadgetStateCallback;
-import ir.aeliux.usbtoolkit.callback.IGadgetStateListCallback;
-import ir.aeliux.usbtoolkit.callback.IMagicResultCallback;
-import ir.aeliux.usbtoolkit.data.LunState;
-import ir.aeliux.usbtoolkit.data.GadgetState;
-import ir.aeliux.usbtoolkit.data.MassStorageConfig;
+import ir.aeliux.usbtoolkit.shared.callback.IUsbMassStorageCallback;
+import ir.aeliux.usbtoolkit.shared.callback.IBooleanCallback;
+import ir.aeliux.usbtoolkit.shared.callback.IStringListCallback;
+import ir.aeliux.usbtoolkit.shared.callback.IGadgetStateCallback;
+import ir.aeliux.usbtoolkit.shared.callback.IGadgetStateListCallback;
+import ir.aeliux.usbtoolkit.shared.callback.IMagicResultCallback;
+import ir.aeliux.usbtoolkit.shared.dto.LunState;
+import ir.aeliux.usbtoolkit.shared.dto.GadgetState;
+import ir.aeliux.usbtoolkit.shared.dto.MassStorageConfig;
 
 oneway interface IUsbMassStorageService {
     void start(in MassStorageConfig config, IUsbMassStorageCallback callback);

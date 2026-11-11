@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import ir.aeliux.usbtoolkit.data.GadgetState;
+import ir.aeliux.usbtoolkit.shared.dto.GadgetState;
 import ir.aeliux.magic.MagicResult;
 
 public class MassStorageViewModel extends AndroidViewModel {

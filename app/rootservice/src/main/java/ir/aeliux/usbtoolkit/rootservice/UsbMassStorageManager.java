@@ -18,10 +18,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import ir.aeliux.core.DataConversion;
-import ir.aeliux.usbtoolkit.rootservice.BuildConfig;
-import ir.aeliux.usbtoolkit.data.GadgetState;
-import ir.aeliux.usbtoolkit.data.LunState;
-import ir.aeliux.usbtoolkit.data.MassStorageConfig;
+import ir.aeliux.usbtoolkit.shared.dto.GadgetState;
+import ir.aeliux.usbtoolkit.shared.dto.LunState;
+import ir.aeliux.usbtoolkit.shared.dto.MassStorageConfig;
 
 /**
  * Manages a USB Mass Storage gadget on Android via configfs.

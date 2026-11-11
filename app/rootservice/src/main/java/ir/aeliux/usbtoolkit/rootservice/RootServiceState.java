@@ -1,4 +1,4 @@
-package ir.aeliux.usbtoolkit.data;
+package ir.aeliux.usbtoolkit.rootservice;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -6,7 +6,6 @@ import android.text.TextUtils;
 
 import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 
 public final class RootServiceState {
@@ -14,9 +13,8 @@ public final class RootServiceState {
     private final SharedPreferences prefs;
     private final Object exitLocksLock = new Object();
     private final Set<String> exitLocks = new HashSet<>();
-
-    private String udc;
     private final Set<String> udcList = new LinkedHashSet<>();
+    private String udc;
 
     public RootServiceState(Context ctx) {
         prefs = ctx.getSharedPreferences("root_service", Context.MODE_PRIVATE);
@@ -25,19 +23,19 @@ public final class RootServiceState {
     }
 
     public void setExitLock(String lockId) {
-        synchronized(exitLocksLock) {
+        synchronized (exitLocksLock) {
             exitLocks.add(lockId);
         }
     }
 
     public void unsetExitLock(String lockId) {
-        synchronized(exitLocksLock) {
+        synchronized (exitLocksLock) {
             exitLocks.remove(lockId);
         }
     }
 
     public boolean canExit() {
-        synchronized(exitLocksLock) {
+        synchronized (exitLocksLock) {
             return exitLocks.isEmpty();
         }
     }

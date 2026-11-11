@@ -1,4 +1,4 @@
-package ir.aeliux.usbtoolkit.data;
+package ir.aeliux.usbtoolkit.shared.dto;
 
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -9,6 +9,17 @@ import java.util.Objects;
 
 public class FileEntry implements Parcelable {
 
+    public static final Creator<FileEntry> CREATOR = new Creator<>() {
+        @Override
+        public FileEntry createFromParcel(Parcel in) {
+            return new FileEntry(in);
+        }
+
+        @Override
+        public FileEntry[] newArray(int size) {
+            return new FileEntry[size];
+        }
+    };
     private final String name;
     private final String absolutePath;
     private final boolean isDirectory;
@@ -16,7 +27,8 @@ public class FileEntry implements Parcelable {
     private final long lastModified;
 
     public FileEntry(String name, String absolutePath, boolean isDirectory,
-                     long size, long lastModified) {
+                     long size, long lastModified)
+    {
         this.name = name;
         this.absolutePath = absolutePath;
         this.isDirectory = isDirectory;
@@ -32,26 +44,18 @@ public class FileEntry implements Parcelable {
         lastModified = in.readLong();
     }
 
-    public static final Creator<FileEntry> CREATOR = new Creator<>() {
-        @Override
-        public FileEntry createFromParcel(Parcel in) {
-            return new FileEntry(in);
-        }
+    public String getName() {return name;}
 
-        @Override
-        public FileEntry[] newArray(int size) {
-            return new FileEntry[size];
-        }
-    };
+    public String getAbsolutePath() {return absolutePath;}
 
-    public String getName() { return name; }
-    public String getAbsolutePath() { return absolutePath; }
-    public boolean isDirectory() { return isDirectory; }
-    public long getSize() { return size; }
-    public long getLastModified() { return lastModified; }
+    public boolean isDirectory() {return isDirectory;}
+
+    public long getSize() {return size;}
+
+    public long getLastModified() {return lastModified;}
 
     @Override
-    public int describeContents() { return 0; }
+    public int describeContents() {return 0;}
 
     @Override
     public void writeToParcel(@NonNull Parcel dest, int flags) {
