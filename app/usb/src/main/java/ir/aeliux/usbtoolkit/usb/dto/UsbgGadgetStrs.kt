@@ -1,4 +1,4 @@
-package ir.aeliux.usbtoolkit.shared.dto
+package ir.aeliux.usbtoolkit.usb.dto
 
 data class UsbgGadgetStrs(
     var manufacturer: String?,

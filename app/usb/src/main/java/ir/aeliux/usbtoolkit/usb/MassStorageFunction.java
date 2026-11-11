@@ -1,6 +1,6 @@
 package ir.aeliux.usbtoolkit.usb;
 
-import ir.aeliux.usbtoolkit.shared.dto.function.UsbgMassStorageAttrs;
+import ir.aeliux.usbtoolkit.usb.dto.function.UsbgMassStorageAttrs;
 
 public final class MassStorageFunction
         extends Function<UsbgMassStorageAttrs, MassStorageFunction>

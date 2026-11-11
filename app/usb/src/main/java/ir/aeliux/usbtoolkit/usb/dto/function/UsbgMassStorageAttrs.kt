@@ -1,8 +1,8 @@
-package ir.aeliux.usbtoolkit.shared.dto.function
+package ir.aeliux.usbtoolkit.usb.dto.function
 
 import android.os.Parcelable
-import ir.aeliux.usbtoolkit.shared.UsbFunctions
-import ir.aeliux.usbtoolkit.shared.dto.UsbgFunctionAttrsBase
+import ir.aeliux.usbtoolkit.usb.UsbFunctions
+import ir.aeliux.usbtoolkit.usb.dto.UsbgFunctionAttrsBase
 import kotlinx.parcelize.Parcelize
 
 @Parcelize

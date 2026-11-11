@@ -1,4 +1,4 @@
-package ir.aeliux.usbtoolkit.shared
+package ir.aeliux.usbtoolkit.usb
 
 enum class UsbFunctions {
     USBG_F_SERIAL,
