@@ -1,4 +1,4 @@
-package ir.aeliux.usbtoolkit.widget;
+package ir.aeliux.ui.widget;
 
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -9,7 +9,7 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import ir.aeliux.usbtoolkit.R;
+import ir.aeliux.ui.R;
 
 public class MaterialContainer extends LinearLayout {
 
@@ -35,7 +35,7 @@ public class MaterialContainer extends LinearLayout {
 
         isInflatingInternal = true;
         LayoutInflater.from(context)
-                .inflate(R.layout.view_material_container, this, true);
+                      .inflate(R.layout.view_material_container, this, true);
         isInflatingInternal = false;
 
         headerView = findViewById(R.id.header);
@@ -51,6 +51,15 @@ public class MaterialContainer extends LinearLayout {
             if (headerText != null && !headerText.isEmpty()) {
                 setHeaderText(headerText);
             }
+        }
+    }
+
+    public void setHeaderText(CharSequence text) {
+        if (text == null || text.length() == 0) {
+            headerView.setVisibility(GONE);
+        } else {
+            headerView.setText(text);
+            headerView.setVisibility(VISIBLE);
         }
     }
 
@@ -70,16 +79,9 @@ public class MaterialContainer extends LinearLayout {
         }
     }
 
-    public void setHeaderText(CharSequence text) {
-        if (text == null || text.length() == 0) {
-            headerView.setVisibility(GONE);
-        } else {
-            headerView.setText(text);
-            headerView.setVisibility(VISIBLE);
-        }
-    }
-
-    /** Escape hatch — if a caller needs direct access. */
+    /**
+     * Escape hatch — if a caller needs direct access.
+     */
     public LinearLayout getContentContainer() {
         return contentContainer;
     }

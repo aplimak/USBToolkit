@@ -48,7 +48,7 @@ import ir.aeliux.usbtoolkit.util.LoadingDialog;
 import ir.aeliux.usbtoolkit.util.Message;
 import ir.aeliux.usbtoolkit.util.Views;
 import ir.aeliux.usbtoolkit.viewmodel.MassStorageViewModel;
-import ir.aeliux.usbtoolkit.widget.MaterialItem;
+import ir.aeliux.ui.widget.MaterialItem;
 
 public class MainActivity extends BaseActivity {
     private final String TAG = "MainActivity";

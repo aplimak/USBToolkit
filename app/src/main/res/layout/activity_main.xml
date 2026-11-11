@@ -6,79 +6,79 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity"
-    android:background="?attr/colorSurfaceContainer">
+    android:background="?attr/colorSurfaceContainer"
+    tools:context=".MainActivity">
 
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
         android:layout_width="0dp"
         android:layout_height="?attr/actionBarSize"
         android:background="?attr/colorSurfaceContainer"
-        app:title="@string/app_name"
-        app:titleCentered="false"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
         app:navigationIcon="@drawable/ic_arrow_back"
         app:navigationIconTint="?attr/colorOnSurface"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:title="@string/app_name"
+        app:titleCentered="false" />
 
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/doReboot"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/doAction"
+        android:layout_margin="@dimen/gap_xlarge"
         android:text="@string/reboot"
-        app:icon="@drawable/ic_replay"
         android:visibility="gone"
-        android:layout_margin="@dimen/gap_xlarge" />
+        app:icon="@drawable/ic_replay"
+        app:layout_constraintBottom_toTopOf="@id/doAction"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/doAction"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_margin="@dimen/gap_xlarge"
         android:text="@string/start"
-        app:icon="@drawable/ic_play_arrow"
         android:visibility="gone"
-        android:layout_margin="@dimen/gap_xlarge" />
+        app:icon="@drawable/ic_play_arrow"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/toolbar"
-        app:layout_constraintBottom_toBottomOf="parent">
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/toolbar">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginBottom="@dimen/gap_xlarge">
+            android:layout_marginBottom="@dimen/gap_xlarge"
+            android:orientation="vertical">
 
-            <ir.aeliux.usbtoolkit.widget.MaterialContainer
+            <ir.aeliux.ui.widget.MaterialContainer
                 android:id="@+id/sec_files"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:headerText="@string/files">
 
-                <ir.aeliux.usbtoolkit.widget.MaterialItem
+                <ir.aeliux.ui.widget.MaterialItem
                     android:id="@+id/btn_add_file"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:itemTitle="@string/add"
-                    app:itemIcon="@drawable/ic_add" />
-            </ir.aeliux.usbtoolkit.widget.MaterialContainer>
+                    app:itemIcon="@drawable/ic_add"
+                    app:itemTitle="@string/add" />
+            </ir.aeliux.ui.widget.MaterialContainer>
 
-            <ir.aeliux.usbtoolkit.widget.MaterialContainer
+            <ir.aeliux.ui.widget.MaterialContainer
                 android:id="@+id/sec_settings"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:headerText="@string/settings">
 
-                <ir.aeliux.usbtoolkit.widget.MaterialItem
+                <ir.aeliux.ui.widget.MaterialItem
                     android:id="@+id/sch_readonly"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -87,7 +87,7 @@
                     app:itemTitle="@string/read_only"
                     app:showSwitch="true" />
 
-                <ir.aeliux.usbtoolkit.widget.MaterialItem
+                <ir.aeliux.ui.widget.MaterialItem
                     android:id="@+id/sch_cdrom"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -96,7 +96,7 @@
                     app:itemTitle="@string/cd_rom"
                     app:showSwitch="true" />
 
-                <ir.aeliux.usbtoolkit.widget.MaterialItem
+                <ir.aeliux.ui.widget.MaterialItem
                     android:id="@+id/sch_removable"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -105,23 +105,23 @@
                     app:itemTitle="@string/removable"
                     app:showSwitch="true" />
 
-                <ir.aeliux.usbtoolkit.widget.MaterialItem
+                <ir.aeliux.ui.widget.MaterialItem
                     android:id="@+id/sel_udc"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:itemTitle="@string/udc"
+                    app:itemIcon="@drawable/ic_usb"
                     app:itemSubtitle="@string/udc_desc"
-                    app:itemIcon="@drawable/ic_usb" />
-            </ir.aeliux.usbtoolkit.widget.MaterialContainer>
+                    app:itemTitle="@string/udc" />
+            </ir.aeliux.ui.widget.MaterialContainer>
 
-            <ir.aeliux.usbtoolkit.widget.MaterialContainer
+            <ir.aeliux.ui.widget.MaterialContainer
                 android:id="@+id/sec_gadgets"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:visibility="gone"
                 app:headerText="@string/gadgets">
 
-            </ir.aeliux.usbtoolkit.widget.MaterialContainer>
+            </ir.aeliux.ui.widget.MaterialContainer>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 </androidx.constraintlayout.widget.ConstraintLayout>

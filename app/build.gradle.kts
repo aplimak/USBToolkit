@@ -73,6 +73,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":lib:ui"))
     runtimeOnly(project(":app:rootservice"))
     implementation(project(":lib:core"))
     implementation(project(":app:shared"))
