@@ -2,7 +2,10 @@ cmake_minimum_required(VERSION 3.22.1)
 project("magic")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-option(USBTK_STRICT     "Enable aggressive warnings and -Werror on the main target" ON)
+option(AXSN_STRICT     "Enable aggressive warnings and -Werror on the main target" ON)
+
+include(${CMAKE_CURRENT_SOURCE_DIR}/common/common.cmake)
+axsn_set_external_build_flags()
 
 set(ANDROID_CMAKE_ARGS
         -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}
@@ -14,27 +17,11 @@ set(ANDROID_CMAKE_ARGS
 
 include(ExternalProject)
 
-# Map Android ABI to the clang target triplet
-if(ANDROID_ABI STREQUAL "arm64-v8a")
-    set(TRIPLET "aarch64-linux-android")
-elseif(ANDROID_ABI STREQUAL "armeabi-v7a")
-    set(TRIPLET "armv7a-linux-androideabi")
-elseif(ANDROID_ABI STREQUAL "x86_64")
-    set(TRIPLET "x86_64-linux-android")
-elseif(ANDROID_ABI STREQUAL "x86")
-    set(TRIPLET "i686-linux-android")
-endif()
-
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    set(UTK_LIB_CFLAGS  "-O0 -g3 -fno-omit-frame-pointer -fno-lto")
-    set(UTK_LIB_LDFLAGS "")
-else()
-    set(UTK_LIB_CFLAGS  "-O3 -flto -ffunction-sections -fdata-sections -fvisibility=hidden -DNDEBUG")
-    set(UTK_LIB_LDFLAGS "-Wl,--gc-sections -Wl,-s")
-endif()
-
-# Most cmake libraries respect it
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "")
+
+# Shared library
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/common
+        ${CMAKE_CURRENT_BINARY_DIR}/build/axsn_common)
 
 # Build libmagic
 
@@ -55,8 +42,8 @@ ExternalProject_Add(libmagic_build
         "RANLIB=${CMAKE_RANLIB}"
         "STRIP=${CMAKE_STRIP}"
         "PKG_CONFIG_PATH="
-        "CFLAGS=${UTK_LIB_CFLAGS}"
-        "LDFLAGS=${UTK_LIB_LDFLAGS}"
+        "CFLAGS=${LIB_CFLAGS}"
+        "LDFLAGS=${LIB_LDFLAGS}"
         <SOURCE_DIR>/configure
         --host=${TRIPLET}
         "--prefix=${MAGIC_PREFIX}"
@@ -150,52 +137,11 @@ add_library(${CMAKE_PROJECT_NAME} SHARED
         magic_jni.c
 )
 
-if(USBTK_STRICT)
-    target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE
-            -Wall
-            -Wextra
-            -Wpedantic
-            -Wshadow
-            -Wpointer-arith
-            -Wcast-qual
-            -Wcast-align
-            -Wstrict-prototypes
-            -Wmissing-prototypes
-            -Wmissing-declarations
-            -Wold-style-definition
-            -Wredundant-decls
-            -Wformat=2
-            -Wformat-security
-            -Wnull-dereference
-            -Wdouble-promotion
-            -Wfloat-equal
-            -Wwrite-strings
-            -Wvla
-            -Wswitch-enum
-            -Wundef
-            -Winit-self
-            -Wuninitialized
-            -Wno-unused-parameter   # JNI env/cls often unused; or use (void)env;
-            -Werror)
-endif()
-
-target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE
-        $<$<NOT:$<CONFIG:Debug>>:-O3;-flto;-ffunction-sections;-fdata-sections>
-        $<$<CONFIG:Debug>:-O0;-g3;-fno-omit-frame-pointer;-fno-lto>
-        "--warning-suppression-mappings=${CMAKE_CURRENT_SOURCE_DIR}/suppression_mappings.txt"
-)
-target_link_options(${CMAKE_PROJECT_NAME} PRIVATE
-        $<$<NOT:$<CONFIG:Debug>>:-Wl,--gc-sections;-Wl,-s>
-        -Wl,--exclude-libs,ALL
-        -Wl,--as-needed
-)
-set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES
-        C_VISIBILITY_PRESET hidden
-        VISIBILITY_INLINES_HIDDEN ON
-        POSITION_INDEPENDENT_CODE ON
-)
+axsn_apply_warnings(${CMAKE_PROJECT_NAME})
+axsn_apply_build_flags(${CMAKE_PROJECT_NAME})
 
 target_link_libraries(${CMAKE_PROJECT_NAME}
+        axsn_common
         magiclib
         android
         log
