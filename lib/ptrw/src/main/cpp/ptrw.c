@@ -2,13 +2,21 @@
 // Created by aeliux on 10/1/26.
 //
 
-#include <stdlib.h>
 #include "ptrw.h"
+#include "internal.h"
 #include "error.h"
+#include <stdlib.h>
 
-usbtk_ptrw_t *usbtk_ptrw_resolve(JNIEnv *env, jlong ptr)
+struct ptrw
 {
-    usbtk_ptrw_t *ptrw = (usbtk_ptrw_t *) (intptr_t) ptr;
+    void *ptr;
+    pthread_t owner;
+    bool closed;
+};
+
+ptrw_t *ptrw_resolve(JNIEnv *env, long ptr)
+{
+    ptrw_t *ptrw = (ptrw_t *) (intptr_t) ptr;
 
     if (!ptrw || ptrw->closed) {
         USBTK_THROW_ISE(env, "PointerWrapper is already closed");
@@ -22,11 +30,11 @@ usbtk_ptrw_t *usbtk_ptrw_resolve(JNIEnv *env, jlong ptr)
     return ptrw;
 }
 
-long usbtk_ptrw_wrap(JNIEnv *env, void *ptr)
+long ptrw_wrap(JNIEnv *env, void *ptr)
 {
-    usbtk_ptrw_t *ptrw = malloc(sizeof(usbtk_ptrw_t));
+    ptrw_t *ptrw = malloc(sizeof(ptrw_t));
     if (!ptrw) {
-        USBTK_THROW_OOM(env, "allocating usbtk_ptrw_t");
+        USBTK_THROW_OOM(env, "allocating ptrw_t");
         return 0;
     }
     ptrw->ptr = ptr;
@@ -35,7 +43,14 @@ long usbtk_ptrw_wrap(JNIEnv *env, void *ptr)
     return (long) (intptr_t) ptrw;
 }
 
-void usbtk_ptrw_free(usbtk_ptrw_t *ptrw)
+void *ptrw_unwrap(JNIEnv *env, long ptr)
+{
+    ptrw_t *ptrw = ptrw_resolve(env, ptr);
+    if (ptrw == NULL) return NULL;
+    return ptrw->ptr;
+}
+
+void ptrw_free(ptrw_t *ptrw)
 {
     if (!ptrw) return;
 
