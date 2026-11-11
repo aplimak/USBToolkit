@@ -1,3 +1,5 @@
+import org.gradle.api.initialization.resolve.RepositoriesMode
+
 pluginManagement {
     repositories {
         google {
@@ -12,22 +14,22 @@ pluginManagement {
     }
 }
 plugins {
-    id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0'
+    id("org.gradle.toolchains.foojay-resolver-convention").version("1.0.0")
 }
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
         google()
         mavenCentral()
-        maven { url = 'https://jitpack.io' }
+        maven { url = uri("https://jitpack.io") }
     }
 }
 
 rootProject.name = "USBToolkit"
-include ':app'
-include ':app:rootservice'
-include ':lib:core'
-include ':lib:ui'
-include ':app:shared'
-include ':app:usb'
-include ':lib:magic'
+include(":app")
+include(":app:rootservice")
+include(":lib:core")
+include(":lib:ui")
+include(":app:shared")
+include(":app:usb")
+include(":lib:magic")
