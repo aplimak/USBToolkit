@@ -12,7 +12,7 @@ import androidx.core.content.IntentCompat;
 import ir.aeliux.usbtoolkit.data.GadgetState;
 import ir.aeliux.usbtoolkit.databinding.ActivityGadgetDetailsBinding;
 import ir.aeliux.core.DataConversion;
-import ir.aeliux.usbtoolkit.util.Views;
+import ir.aeliux.core.Views;
 import ir.aeliux.ui.widget.MaterialContainer;
 
 public class GadgetDetailsActivity extends BaseActivity {

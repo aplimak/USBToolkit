@@ -13,11 +13,14 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.google.android.material.appbar.MaterialToolbar;
 
-import ir.aeliux.usbtoolkit.util.Permissions;
+import ir.aeliux.core.Permissions;
 
 public class BaseActivity extends AppCompatActivity {
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions,
+                                           @NonNull int[] grantResults)
+    {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         Permissions.handle(requestCode, grantResults);
     }

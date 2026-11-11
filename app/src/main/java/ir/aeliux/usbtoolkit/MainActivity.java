@@ -44,9 +44,9 @@ import ir.aeliux.magic.MagicResult;
 import ir.aeliux.usbtoolkit.data.MassStorageConfig;
 import ir.aeliux.usbtoolkit.databinding.ActivityMainBinding;
 import ir.aeliux.usbtoolkit.ipc.IUsbMassStorageService;
-import ir.aeliux.usbtoolkit.util.LoadingDialog;
-import ir.aeliux.usbtoolkit.util.Message;
-import ir.aeliux.usbtoolkit.util.Views;
+import ir.aeliux.ui.LoadingDialog;
+import ir.aeliux.ui.Message;
+import ir.aeliux.core.Views;
 import ir.aeliux.usbtoolkit.viewmodel.MassStorageViewModel;
 import ir.aeliux.ui.widget.MaterialItem;
 

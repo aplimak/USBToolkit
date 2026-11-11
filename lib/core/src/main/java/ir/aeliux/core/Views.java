@@ -1,4 +1,4 @@
-package ir.aeliux.usbtoolkit.util;
+package ir.aeliux.core;
 
 import android.view.View;
 import android.view.ViewGroup;

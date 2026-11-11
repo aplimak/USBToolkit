@@ -11,7 +11,6 @@ import com.topjohnwu.superuser.Shell;
 import com.topjohnwu.superuser.ipc.RootService;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -19,8 +18,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 
-import ir.aeliux.usbtoolkit.util.App;
-import ir.aeliux.usbtoolkit.util.LoadingDialog;
+import ir.aeliux.core.App;
+import ir.aeliux.ui.LoadingDialog;
 
 public class MainApplication extends Application {
     private final String TAG = "MainApplication";

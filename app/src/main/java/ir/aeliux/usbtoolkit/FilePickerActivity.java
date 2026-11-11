@@ -5,7 +5,6 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
-import android.os.Debug;
 import android.os.Environment;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -34,7 +33,7 @@ import ir.aeliux.usbtoolkit.data.FileEntry;
 import ir.aeliux.usbtoolkit.databinding.ActivityFilePickerBinding;
 import ir.aeliux.usbtoolkit.ipc.IRootFileService;
 import ir.aeliux.usbtoolkit.util.FileEntryAdapter;
-import ir.aeliux.usbtoolkit.util.Message;
+import ir.aeliux.ui.Message;
 import ir.aeliux.usbtoolkit.viewmodel.FilePickerViewModel;
 
 public class FilePickerActivity extends BaseActivity {

@@ -1,4 +1,4 @@
-package ir.aeliux.usbtoolkit.util;
+package ir.aeliux.core;
 
 import android.os.Handler;
 import android.os.Looper;
@@ -15,8 +15,7 @@ public final class Jobs {
 
     public static void run(Runnable background, Runnable onDone) {
         pool.execute(() -> {
-            try { background.run(); }
-            finally { if (onDone != null) main.post(onDone); }
+            try {background.run();} finally {if (onDone != null) main.post(onDone);}
         });
     }
 }
