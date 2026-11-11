@@ -6,7 +6,7 @@ import ir.aeliux.usbtoolkit.usb.dto.UsbgConfigAttrs;
 import ir.aeliux.usbtoolkit.usb.dto.UsbgGadgetAttrs;
 import ir.aeliux.usbtoolkit.usb.dto.UsbgGadgetStrs;
 
-public class Native {
+class Native {
     static {
         System.loadLibrary("usb");
     }
