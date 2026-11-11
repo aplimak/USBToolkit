@@ -1,4 +1,4 @@
-package ir.aeliux.usbtoolkit.ipc;
+package ir.aeliux.usbtoolkit.rootservice;
 
 import android.content.Intent;
 import android.os.IBinder;
@@ -9,10 +9,13 @@ import androidx.annotation.Nullable;
 
 import com.topjohnwu.superuser.ipc.RootService;
 
+import ir.aeliux.usbtoolkit.ipc.IKeepAliveRootService;
+
 public class KeepAliveRootService extends RootService {
     private final String TAG = "KeepAliveRootService";
 
-    private final IKeepAliveRootService.Stub binder = new IKeepAliveRootService.Stub(){};
+    private final IKeepAliveRootService.Stub binder = new IKeepAliveRootService.Stub() {
+    };
 
     @Nullable
     @Override

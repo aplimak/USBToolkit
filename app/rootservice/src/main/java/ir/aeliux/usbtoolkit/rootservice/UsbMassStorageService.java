@@ -1,4 +1,4 @@
-package ir.aeliux.usbtoolkit.ipc;
+package ir.aeliux.usbtoolkit.rootservice;
 
 import android.content.Intent;
 import android.os.IBinder;
@@ -17,12 +17,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import ir.aeliux.usbtoolkit.usb.Native;
+import ir.aeliux.usbtoolkit.ipc.IUsbMassStorageService;
 import ir.aeliux.usbtoolkit.callback.IGadgetStateListCallback;
 import ir.aeliux.usbtoolkit.callback.IMagicResultCallback;
 import ir.aeliux.usbtoolkit.data.GadgetState;
 import ir.aeliux.magic.MagicResult;
-import ir.aeliux.usbtoolkit.rootservice.UsbMassStorageManager;
 import ir.aeliux.usbtoolkit.rootservice.UsbMassStorageManager.UsbGadgetException;
 import ir.aeliux.usbtoolkit.callback.IBooleanCallback;
 import ir.aeliux.usbtoolkit.callback.IGadgetStateCallback;

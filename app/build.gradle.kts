@@ -73,7 +73,7 @@ android {
 }
 
 dependencies {
-    api(project(":app:rootservice"))
+    runtimeOnly(project(":app:rootservice"))
     implementation(project(":lib:core"))
     implementation(project(":app:shared"))
     implementation(project(":lib:magic"))

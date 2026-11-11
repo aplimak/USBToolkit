@@ -1,4 +1,4 @@
-package ir.aeliux.usbtoolkit.ipc;
+package ir.aeliux.usbtoolkit.rootservice;
 
 import android.content.Intent;
 import android.os.IBinder;
@@ -17,6 +17,7 @@ import java.util.List;
 import ir.aeliux.usbtoolkit.callback.IRootFileCallback;
 import ir.aeliux.usbtoolkit.callback.IRootFileExistCallback;
 import ir.aeliux.usbtoolkit.data.FileEntry;
+import ir.aeliux.usbtoolkit.ipc.IRootFileService;
 
 public class RootFileService extends RootService {
     private final String TAG = "RootFileService";

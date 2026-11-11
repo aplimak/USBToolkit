@@ -33,7 +33,6 @@ import ir.aeliux.usbtoolkit.callback.IRootFileCallback;
 import ir.aeliux.usbtoolkit.data.FileEntry;
 import ir.aeliux.usbtoolkit.databinding.ActivityFilePickerBinding;
 import ir.aeliux.usbtoolkit.ipc.IRootFileService;
-import ir.aeliux.usbtoolkit.ipc.RootFileService;
 import ir.aeliux.usbtoolkit.util.FileEntryAdapter;
 import ir.aeliux.usbtoolkit.util.Message;
 import ir.aeliux.usbtoolkit.viewmodel.FilePickerViewModel;
@@ -46,20 +45,8 @@ public class FilePickerActivity extends BaseActivity {
     public static final String EXTRA_ALLOWED_EXTENSIONS = "allowed_extensions";
 
     public static final String ROOT_PATH = "/";
-    public static final String HOME_PATH = Environment.getExternalStorageDirectory().getAbsolutePath();
-
-
-    private ActivityFilePickerBinding binding;
-    private FileEntryAdapter adapter;
-
-    private IRootFileService rootService;
-    private boolean isBound = false;
-
-    private boolean allowMultiple = true;
-    private Set<String> allowedExtensions = null;
-
-    private FilePickerViewModel model;
-
+    public static final String HOME_PATH = Environment.getExternalStorageDirectory()
+                                                      .getAbsolutePath();
     private final ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
@@ -74,6 +61,13 @@ public class FilePickerActivity extends BaseActivity {
             isBound = false;
         }
     };
+    private ActivityFilePickerBinding binding;
+    private FileEntryAdapter adapter;
+    private IRootFileService rootService;
+    private boolean isBound = false;
+    private boolean allowMultiple = true;
+    private Set<String> allowedExtensions = null;
+    private FilePickerViewModel model;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -118,79 +112,6 @@ public class FilePickerActivity extends BaseActivity {
         bindRootService();
     }
 
-    private void setupRecyclerView() {
-        adapter = new FileEntryAdapter(
-                entry -> { // onDirectoryClick
-                    changeDirectory(entry.getAbsolutePath());
-                },
-                (entry, checked) -> { // onFileSelect (checkbox)
-                    var listCopy = new ArrayList<>(Objects.requireNonNull(model.getFilePaths().getValue()));
-                    var absPath = entry.getAbsolutePath();
-                    if (checked) {
-                        listCopy.add(absPath);
-                    } else {
-                        listCopy.remove(absPath);
-                    }
-                    model.setFilePaths(listCopy);
-                },
-                entry -> { // onFileClick (row)
-                    var listCopy = new ArrayList<>(Objects.requireNonNull(model.getFilePaths().getValue()));
-                    var absPath = entry.getAbsolutePath();
-                    boolean wasSelected = listCopy.contains(absPath);
-                    if (!allowMultiple) {
-                        listCopy.clear();
-                        adapter.deselectAll();
-                    }
-                    boolean newState = !wasSelected;
-                    if (newState) listCopy.add(absPath);
-                    else listCopy.remove(absPath);
-                    adapter.setSelected(absPath, newState);
-                    model.setFilePaths(listCopy);
-                },
-                allowMultiple,
-                allowedExtensions
-        );
-
-        binding.recyclerFiles.setLayoutManager(new LinearLayoutManager(this));
-        binding.recyclerFiles.setAdapter(adapter);
-    }
-
-    private void setupButtons() {
-        binding.actionConfirm.setOnClickListener(v -> {
-            if (Objects.requireNonNull(model.getFilePaths().getValue()).isEmpty()) {
-                Message.snack(getString(R.string.error_no_file));
-                return;
-            }
-            Intent result = new Intent();
-            result.putStringArrayListExtra(
-                    EXTRA_SELECTED_PATHS,
-                    new ArrayList<>(model.getFilePaths().getValue())
-            );
-            setResult(Activity.RESULT_OK, result);
-            finish();
-        });
-
-        binding.btnUp.setOnClickListener(v -> {
-            Path parent = Paths.get(Objects.requireNonNull(model.getCurrentDirectory().getValue())).getParent();
-            if (parent != null) {
-                changeDirectory(parent.toAbsolutePath().toString());
-            }
-        });
-
-        binding.btnRoot.setOnClickListener(v -> changeDirectory(ROOT_PATH));
-
-        binding.btnHome.setOnClickListener(v -> changeDirectory(HOME_PATH));
-    }
-
-    private void changeDirectory(String path) {
-        model.setCurrentDirectory(path);
-    }
-
-    private void bindRootService() {
-        Intent intent = new Intent(this, RootFileService.class);
-        RootService.bind(intent, serviceConnection);
-    }
-
     private void loadDirectory() {
         showLoading(true);
         String currentPath = Objects.requireNonNull(model.getCurrentDirectory().getValue());
@@ -226,15 +147,86 @@ public class FilePickerActivity extends BaseActivity {
                     runOnUiThread(() -> {
                         showLoading(false);
                         Toast.makeText(FilePickerActivity.this,
-                                message, Toast.LENGTH_LONG).show();
+                                       message, Toast.LENGTH_LONG).show();
                     });
                 }
             });
         } catch (RemoteException e) {
             showLoading(false);
             Toast.makeText(this, getString(R.string.error_binder, e.getMessage()),
-                    Toast.LENGTH_SHORT).show();
+                           Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void setupRecyclerView() {
+        adapter = new FileEntryAdapter(
+                entry -> { // onDirectoryClick
+                    changeDirectory(entry.getAbsolutePath());
+                },
+                (entry, checked) -> { // onFileSelect (checkbox)
+                    var listCopy = new ArrayList<>(Objects.requireNonNull(model.getFilePaths()
+                                                                               .getValue()));
+                    var absPath = entry.getAbsolutePath();
+                    if (checked) {
+                        listCopy.add(absPath);
+                    } else {
+                        listCopy.remove(absPath);
+                    }
+                    model.setFilePaths(listCopy);
+                },
+                entry -> { // onFileClick (row)
+                    var listCopy = new ArrayList<>(Objects.requireNonNull(model.getFilePaths()
+                                                                               .getValue()));
+                    var absPath = entry.getAbsolutePath();
+                    boolean wasSelected = listCopy.contains(absPath);
+                    if (!allowMultiple) {
+                        listCopy.clear();
+                        adapter.deselectAll();
+                    }
+                    boolean newState = !wasSelected;
+                    if (newState) {listCopy.add(absPath);} else listCopy.remove(absPath);
+                    adapter.setSelected(absPath, newState);
+                    model.setFilePaths(listCopy);
+                },
+                allowMultiple,
+                allowedExtensions
+        );
+
+        binding.recyclerFiles.setLayoutManager(new LinearLayoutManager(this));
+        binding.recyclerFiles.setAdapter(adapter);
+    }
+
+    private void setupButtons() {
+        binding.actionConfirm.setOnClickListener(v -> {
+            if (Objects.requireNonNull(model.getFilePaths().getValue()).isEmpty()) {
+                Message.snack(getString(R.string.error_no_file));
+                return;
+            }
+            Intent result = new Intent();
+            result.putStringArrayListExtra(
+                    EXTRA_SELECTED_PATHS,
+                    new ArrayList<>(model.getFilePaths().getValue())
+            );
+            setResult(Activity.RESULT_OK, result);
+            finish();
+        });
+
+        binding.btnUp.setOnClickListener(v -> {
+            Path parent = Paths.get(Objects.requireNonNull(model.getCurrentDirectory().getValue()))
+                               .getParent();
+            if (parent != null) {
+                changeDirectory(parent.toAbsolutePath().toString());
+            }
+        });
+
+        binding.btnRoot.setOnClickListener(v -> changeDirectory(ROOT_PATH));
+
+        binding.btnHome.setOnClickListener(v -> changeDirectory(HOME_PATH));
+    }
+
+    private void bindRootService() {
+        Intent intent = new Intent(this, BinderServices.RF_SERVICE);
+        RootService.bind(intent, serviceConnection);
     }
 
     private void showLoading(boolean loading) {
@@ -243,6 +235,10 @@ public class FilePickerActivity extends BaseActivity {
         binding.btnUp.setVisibility(loading ? View.INVISIBLE : View.VISIBLE);
         binding.btnRoot.setVisibility(loading ? View.INVISIBLE : View.VISIBLE);
         binding.btnHome.setVisibility(loading ? View.INVISIBLE : View.VISIBLE);
+    }
+
+    private void changeDirectory(String path) {
+        model.setCurrentDirectory(path);
     }
 
     @Override

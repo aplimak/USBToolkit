@@ -19,13 +19,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 
-import ir.aeliux.usbtoolkit.ipc.KeepAliveRootService;
 import ir.aeliux.usbtoolkit.util.App;
 import ir.aeliux.usbtoolkit.util.LoadingDialog;
 
 public class MainApplication extends Application {
     private final String TAG = "MainApplication";
-    private final ServiceConnection serviceConnection = new ServiceConnection(){
+    private final ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             Log.i(TAG, "Keep-Alive Root Service started");
@@ -43,13 +42,13 @@ public class MainApplication extends Application {
         installCrashHandler();
         Shell.enableVerboseLogging = BuildConfig.DEBUG;
         Shell.setDefaultBuilder(Shell.Builder.create()
-                .setFlags(Shell.FLAG_MOUNT_MASTER)
-                .setTimeout(10));
+                                             .setFlags(Shell.FLAG_MOUNT_MASTER)
+                                             .setTimeout(10));
         App.init(this);
         LoadingDialog.init(this);
 
         Log.i(TAG, "Binding Keep-Alive Root Service");
-        Intent intent = new Intent(this, KeepAliveRootService.class);
+        Intent intent = new Intent(this, BinderServices.KAR_SERVICE);
         RootService.bind(intent, serviceConnection);
 
         extractMagic();
@@ -76,7 +75,7 @@ public class MainApplication extends Application {
         File mgc = new File(getFilesDir(), "magic.mgc");
 
         if (!mgc.exists() || mgc.length() == 0) {
-            try (InputStream in  = getAssets().open("magic.mgc");
+            try (InputStream in = getAssets().open("magic.mgc");
                  OutputStream out = new FileOutputStream(mgc)) {
                 byte[] buf = new byte[16384];
                 int n;

@@ -44,7 +44,6 @@ import ir.aeliux.magic.MagicResult;
 import ir.aeliux.usbtoolkit.data.MassStorageConfig;
 import ir.aeliux.usbtoolkit.databinding.ActivityMainBinding;
 import ir.aeliux.usbtoolkit.ipc.IUsbMassStorageService;
-import ir.aeliux.usbtoolkit.ipc.UsbMassStorageService;
 import ir.aeliux.usbtoolkit.util.LoadingDialog;
 import ir.aeliux.usbtoolkit.util.Message;
 import ir.aeliux.usbtoolkit.util.Views;
@@ -248,7 +247,7 @@ public class MainActivity extends BaseActivity {
 
         if (firstLaunch) LoadingDialog.updateMessage(getString(R.string.binder_waiting));
 
-        Intent intent = new Intent(this, UsbMassStorageService.class);
+        Intent intent = new Intent(this, BinderServices.UMS_SERVICE);
         RootService.bind(intent, serviceConnection);
     }
 
