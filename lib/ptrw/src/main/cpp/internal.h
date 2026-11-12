@@ -9,6 +9,17 @@
 #include "ptrw.h"
 
 /**
+ * Cast long to ptrw_t.
+ * @param wptr Pointer to ptrw_t.
+ * @return Casted ptrw_t.
+ * @note This function does not check anything, its just a convenient cast.
+ */
+static inline ptrw_t *ptrw_cast(long wptr)
+{
+    return (ptrw_t *) (intptr_t) wptr;
+}
+
+/**
  * Resolves ptrw and validates called from the owning thread.
  * @param env JNI env, used to queue a exception in case of any error.
  * @param wptr Pointer to the ptrw_t.

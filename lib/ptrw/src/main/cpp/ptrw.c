@@ -46,7 +46,7 @@ long ptrw_wrap(JNIEnv *env, void *ptr)
 
 ptrw_t *ptrw_resolve(JNIEnv *env, long wptr)
 {
-    ptrw_t *ptrw = (ptrw_t *) (intptr_t) wptr;
+    ptrw_t *ptrw = ptrw_cast(wptr);
 
     if (!ptrw) {
         AXSN_THROW_ISE(env, "PointerWrapper is already closed");
