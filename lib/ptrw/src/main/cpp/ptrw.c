@@ -27,8 +27,9 @@ struct ptrw
 static jboolean Java_isOwnerThread(jlong wptr)
 {
     ptrw_t *ptrw = ptrw_cast(wptr);
-    if (ptrw == NULL) return true;
     LOGD("Java_isOwnerThread(%p)", (void *) ptrw);
+    
+    if (ptrw == NULL) return true;
     return ptrw_owner(ptrw);
 }
 
