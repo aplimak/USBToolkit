@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+set -e
+
+./gradlew --stop          # kill any running daemons holding file locks
+./gradlew clean --no-build-cache
+
+rm -rf \
+    .gradle \
+    .kotlin \
+    build \
+    app/*/build app/*/.cxx app/*/.externalNativeBuild \
+    lib/*/build lib/*/.cxx lib/*/.externalNativeBuild \
+    app/*/*/build app/*/*/.cxx app/*/*/.externalNativeBuild
