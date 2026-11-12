@@ -71,6 +71,7 @@ PTRW_API bool ptrw_closed(ptrw_t *ptrw);
  * Frees the memory used by the wrapper.
  * @param ptrw The pointer to the wrapper to be freed.
  * @note This won't free the pointer itself.
+ * @note Never call this method after giving the wrapper to the java layer, instead call ptrw_pop to clear pointer and mark it as closed.
  */
 PTRW_API void ptrw_free(ptrw_t *ptrw);
 

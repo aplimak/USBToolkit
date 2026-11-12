@@ -39,6 +39,8 @@ Java_ir_aeliux_magic_Native_init(
         goto fail;
     }
 
+    LOGI("magic_open -> %p", (void *) magic);
+
     goto clean;
 
     fail:
@@ -122,5 +124,6 @@ Java_ir_aeliux_magic_Native_release(JNIEnv *env, jclass cls, jlong j_magic)
         return;
     }
 
+    LOGI("magic_close(%p)", (void *) magic);
     magic_close(magic);
 }

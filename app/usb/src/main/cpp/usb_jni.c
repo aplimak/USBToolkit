@@ -50,13 +50,14 @@ Java_ir_aeliux_usbtoolkit_usb_Native_init(JNIEnv *env, jclass cls,
         return 0;
     }
 
+    LOGI("usbg_init -> %p", (void *) s);
+
     long ptrw = ptrw_wrap(env, s);
     if (!ptrw) {
         usbg_cleanup(s);
         return 0;
     }
 
-    LOGD("usbg_init ok (handle %p)", (void *) ptrw);
     return ptrw;
 }
 
@@ -64,10 +65,10 @@ JNIEXPORT void JNICALL
 Java_ir_aeliux_usbtoolkit_usb_Native_close(JNIEnv *env, jclass cls,
                                            jlong handle)
 {
-    usbg_state *s = ptrw_unwrap(env, handle);
+    usbg_state *s = ptrw_pop(env, handle);
     if (s == NULL) return;
 
-    LOGD("usbg_cleanup (handle %p)", (void *) s);
+    LOGI("usbg_cleanup(%p)", (void *) s);
     usbg_cleanup(s);
 }
 

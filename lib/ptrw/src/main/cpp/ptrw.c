@@ -87,7 +87,7 @@ void *ptrw_pop(JNIEnv *env, long wptr)
     ptrw->ptr = NULL;
     ptrw->closed = true;
 
-    LOGV("ptrw_pop %p from %p", ptrw->ptr, (void *) ptrw);
+    LOGV("ptrw_pop %p from %p", ptr, (void *) ptrw);
 
     return ptr;
 }
