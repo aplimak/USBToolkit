@@ -41,7 +41,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved)
         return JNI_ERR;   /* still return ERR even with a pending exception */
     }
 
-    LOGI("JNI_OnLoad: ok (v0x%x)", USBTK_JNI_VERSION);
+    LOGI("JNI_OnLoad");
     return USBTK_JNI_VERSION;
 }
 

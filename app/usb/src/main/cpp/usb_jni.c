@@ -50,7 +50,7 @@ Java_ir_aeliux_usbtoolkit_usb_Native_init(JNIEnv *env, jclass cls,
         return 0;
     }
 
-    LOGI("usbg_init -> %p", (void *) s);
+    LOGV("usbg_init -> %p", (void *) s);
 
     long ptrw = ptrw_wrap(env, s);
     if (!ptrw) {
@@ -68,7 +68,7 @@ Java_ir_aeliux_usbtoolkit_usb_Native_close(JNIEnv *env, jclass cls,
     usbg_state *s = ptrw_pop(env, handle);
     if (s == NULL) return;
 
-    LOGI("usbg_cleanup(%p)", (void *) s);
+    LOGV("usbg_cleanup(%p)", (void *) s);
     usbg_cleanup(s);
 }
 
@@ -92,11 +92,9 @@ Java_ir_aeliux_usbtoolkit_usb_Native_createGadget(JNIEnv *env, jclass cls,
     struct usbg_config_attrs c_attrs;
     struct usbg_config_strs c_strs = {0};
 
-    LOGI("Creating Gadget");
     if (axsn_throw_if_null(env, j_gadgetName, "gadgetName") != 0) return 0;
     const char *gadget_name = (*env)->GetStringUTFChars(env, j_gadgetName, NULL);
     if (!gadget_name) return 0;
-    LOGV("Gadget name is ok");
 
     if (usbtk_usbg_gadget_attrs_from_kotlin(env, j_gadgetAttrs, &g_attrs) != 0) goto cleanup;
     if (usbtk_usbg_gadget_strs_from_kotlin(env, j_gadgetStrs, &g_strs) != 0) goto cleanup;
@@ -142,7 +140,6 @@ Java_ir_aeliux_usbtoolkit_usb_Native_openGadget(JNIEnv *env, jclass cls,
     if (axsn_throw_if_null(env, j_gadgetName, "gadgetName") != 0) return 0;
     const char *gadget_name = (*env)->GetStringUTFChars(env, j_gadgetName, NULL);
     if (!gadget_name) return 0;
-    LOGV("Gadget name is ok");
 
     usbg_gadget *g = NULL;
 
