@@ -10,74 +10,51 @@
 #include <pthread.h>
 #include <magic.h>
 #include <axsn/log.h>
+#include <axsn/error.h>
+#include <ptrw.h>
 
 #define MAGIC_RESULT_CLASS "ir/aeliux/magic/MagicResult"
 
-/* One cookie per output mode — libmagic bakes the mode bits into the
- * cookie at magic_open() time, so a single cookie cannot produce both
- * MIME and human-readable output. */
-static magic_t g_cookie_mime = NULL;   /* MAGIC_MIME_TYPE     */
-
-/* magic_t is not thread-safe; serialize all access. */
-static pthread_mutex_t g_lock = PTHREAD_MUTEX_INITIALIZER;
-
-static magic_t open_and_load(const char *db_path, int mode)
-{
-    magic_t c = magic_open(mode | MAGIC_ERROR | MAGIC_SYMLINK);
-    if (c == NULL) return NULL;
-    if (magic_load(c, db_path) != 0) {
-        LOGE("magic_load(%s) failed: %s", db_path, magic_error(c));
-        magic_close(c);
-        return NULL;
-    }
-    return c;
-}
-
-/* public static native void magicInit(String dbPath) */
-JNIEXPORT void JNICALL
-Java_ir_aeliux_magic_Native_magicInit(
+JNIEXPORT jlong JNICALL
+Java_ir_aeliux_magic_Native_init(
         JNIEnv *env, jclass cls, jstring j_dbPath)
 {
     if (j_dbPath == NULL) {
-        LOGE("magicInit: dbPath is null");
-        return;
-    }
-
-    pthread_mutex_lock(&g_lock);
-
-    if (g_cookie_mime != NULL) {        /* already initialized */
-        pthread_mutex_unlock(&g_lock);
-        return;
+        AXSN_THROW_IAE(env, "dbPath cannot be null");
+        return 0;
     }
 
     const char *dbPath = (*env)->GetStringUTFChars(env, j_dbPath, NULL);
     if (dbPath == NULL) {
-        pthread_mutex_unlock(&g_lock);
-        return;
+        return 0;
     }
 
-    g_cookie_mime = open_and_load(dbPath, MAGIC_MIME_TYPE);
-
-    (*env)->ReleaseStringUTFChars(env, j_dbPath, dbPath);
-
-    if (g_cookie_mime == NULL) {
-        LOGE("magicInit: one or more cookies failed to load");
-        /* leave whatever succeeded in place; release() cleans it up */
-    } else {
-        LOGI("magicInit: libmagic initialized");
+    magic_t magic = magic_open(MAGIC_MIME_TYPE | MAGIC_ERROR | MAGIC_SYMLINK);
+    if (magic == NULL) {
+        AXSN_THROW_RTE(env, "magic_open failed");
+        goto clean;
+    }
+    if (magic_load(magic, dbPath) != 0) {
+        AXSN_THROW_RTE(env, "magic_load(%s) failed: %s", dbPath, magic_error(magic));
+        goto fail;
     }
 
-    pthread_mutex_unlock(&g_lock);
+    goto clean;
+
+    fail:
+    if (magic) magic_close(magic);
+    clean:
+    if (dbPath) (*env)->ReleaseStringUTFChars(env, j_dbPath, dbPath);
+
+    return magic ? ptrw_wrap(env, magic) : 0;
 }
 
-/* Build a MagicResult(String, String). Any arg may be NULL. */
 static jobject build_result(JNIEnv *env,
                             const char *mime,
                             const char *err)
 {
     jclass cls = (*env)->FindClass(env, MAGIC_RESULT_CLASS);
     if (cls == NULL) {
-        LOGE("MagicResult class not found");
         return NULL;
     }
 
@@ -100,38 +77,34 @@ static jobject build_result(JNIEnv *env,
     return obj;
 }
 
-/* public static native MagicResult magicAnalyzeFile(String path) */
 JNIEXPORT jobject JNICALL
-Java_ir_aeliux_magic_Native_magicAnalyzeFile(
-        JNIEnv *env, jclass cls, jstring j_path)
+Java_ir_aeliux_magic_Native_analyzeFile(
+        JNIEnv *env, jclass cls, jlong j_magic, jstring j_path)
 {
-    if (j_path == NULL) {
-        return build_result(env, NULL, "path is null");
+    magic_t magic = ptrw_unwrap(env, j_magic);
+    if (magic == NULL) {
+        return NULL;
     }
 
-    pthread_mutex_lock(&g_lock);
-
-    if (g_cookie_mime == NULL) {
-        pthread_mutex_unlock(&g_lock);
-        return build_result(env, NULL, "libmagic not initialized");
+    if (j_path == NULL) {
+        AXSN_THROW_IAE(env, "path cannot be null");
+        return NULL;
     }
 
     const char *path = (*env)->GetStringUTFChars(env, j_path, NULL);
     if (path == NULL) {
-        pthread_mutex_unlock(&g_lock);
-        return build_result(env, NULL, "GetStringUTFChars failed");
+        return NULL;
     }
 
-    const char *mime = magic_file(g_cookie_mime, path);
+    const char *mime = magic_file(magic, path);
+
+    (*env)->ReleaseStringUTFChars(env, j_path, path);
 
     char *mime_c = mime ? strdup(mime) : NULL;
 
     /* error is shared across cookies; use the mime cookie */
-    const char *err = magic_error(g_cookie_mime);
+    const char *err = magic_error(magic);
     char *err_c = (err && *err) ? strdup(err) : NULL;
-
-    (*env)->ReleaseStringUTFChars(env, j_path, path);
-    pthread_mutex_unlock(&g_lock);
 
     jobject result = build_result(env, mime_c, err_c);
 
@@ -141,17 +114,13 @@ Java_ir_aeliux_magic_Native_magicAnalyzeFile(
     return result;
 }
 
-/* public static native void magicRelease() */
 JNIEXPORT void JNICALL
-Java_ir_aeliux_magic_Native_magicRelease(JNIEnv *env, jclass cls)
+Java_ir_aeliux_magic_Native_release(JNIEnv *env, jclass cls, jlong j_magic)
 {
-    pthread_mutex_lock(&g_lock);
-
-    if (g_cookie_mime) {
-        magic_close(g_cookie_mime);
-        g_cookie_mime = NULL;
+    magic_t magic = ptrw_pop(env, j_magic);
+    if (magic == NULL) {
+        return;
     }
 
-    pthread_mutex_unlock(&g_lock);
-    LOGI("magicRelease: libmagic released");
+    magic_close(magic);
 }

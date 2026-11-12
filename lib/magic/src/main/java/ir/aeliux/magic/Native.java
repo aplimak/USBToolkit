@@ -1,15 +1,15 @@
 package ir.aeliux.magic;
 
-public class Native {
+class Native {
     static {
         System.loadLibrary("magic");
     }
 
     private Native() {}
 
-    public static native void magicInit(String dbPath);
+    static native long init(String dbPath);
 
-    public static native MagicResult magicAnalyzeFile(String path);
+    static native MagicResult analyzeFile(long magic, String path);
 
-    public static native void magicRelease();
+    static native void release(long magic);
 }

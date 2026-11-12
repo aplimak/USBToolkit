@@ -19,6 +19,8 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 
 import ir.aeliux.core.App;
+import ir.aeliux.magic.Magic;
+import ir.aeliux.magic.MagicDatabase;
 import ir.aeliux.ui.LoadingDialog;
 
 public class MainApplication extends Application {
@@ -50,7 +52,11 @@ public class MainApplication extends Application {
         Intent intent = new Intent(this, BinderServices.KAR_SERVICE);
         RootService.bind(intent, serviceConnection);
 
-        extractMagic();
+        try {
+            MagicDatabase.extract(this);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void installCrashHandler() {
@@ -68,20 +74,5 @@ public class MainApplication extends Application {
                 def.uncaughtException(thread, ex); // let Android do its normal thing
             }
         });
-    }
-
-    private void extractMagic() {
-        File mgc = new File(getFilesDir(), "magic.mgc");
-
-        if (!mgc.exists() || mgc.length() == 0) {
-            try (InputStream in = getAssets().open("magic.mgc");
-                 OutputStream out = new FileOutputStream(mgc)) {
-                byte[] buf = new byte[16384];
-                int n;
-                while ((n = in.read(buf)) > 0) out.write(buf, 0, n);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
     }
 }

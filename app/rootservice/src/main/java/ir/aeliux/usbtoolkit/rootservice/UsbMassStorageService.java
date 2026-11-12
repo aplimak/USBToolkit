@@ -18,6 +18,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import ir.aeliux.magic.Magic;
+import ir.aeliux.magic.MagicDatabase;
 import ir.aeliux.usbtoolkit.shared.ipc.IUsbMassStorageService;
 import ir.aeliux.usbtoolkit.shared.callback.IGadgetStateListCallback;
 import ir.aeliux.usbtoolkit.shared.callback.IMagicResultCallback;
@@ -219,15 +221,15 @@ public class UsbMassStorageService extends RootService {
                                  IMagicResultCallback callback) throws RemoteException
         {
             Log.d(TAG, "binder.analyzeFiles");
-            String mgc = new File(getFilesDir(), "magic.mgc").getAbsolutePath();
-            ir.aeliux.magic.Native.magicInit(mgc);
+            String dbPath = MagicDatabase.getPath(UsbMassStorageService.this);
 
-            Map<String, MagicResult> result = paths.stream()
-                                                   .collect(Collectors.toMap(key -> key,
-                                                                             ir.aeliux.magic.Native::magicAnalyzeFile));
-
-
-            ir.aeliux.magic.Native.magicRelease();
+            Map<String, MagicResult> result;
+            try (Magic magic = Magic.open(dbPath)) {
+                result = paths.stream()
+                              .collect(Collectors.toMap(key -> key,
+                                                        magic::analyze));
+            }
+            
             Log.d(TAG, "firing onResult with result: " + result);
             callback.onResult(result);
         }
