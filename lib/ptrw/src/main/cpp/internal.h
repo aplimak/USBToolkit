@@ -5,6 +5,9 @@
 #ifndef PTRW_INTERNAL_H
 #define PTRW_INTERNAL_H
 
+#include <jni.h>
+#include "ptrw.h"
+
 /**
  * Resolves ptrw and validates called from the owning thread.
  * @param env JNI env, used to queue a exception in case of any error.
@@ -13,5 +16,20 @@
  * @note This function does not check closed pointer wrapper.
  */
 ptrw_t *ptrw_resolve(JNIEnv *env, long wptr);
+
+/**
+ * Try to get current thread's JNNIEnv or attach current thread to JVM.
+ * @param env out JNIEnv.
+ * @param did_attach out JNI_TRUE if attached and JNI_FALSE if already attached.
+ * @return JNI_OK if everything gone right, otherwise, the error code reurned by vm call.
+ * @note Thread must be detached on when did_attach.
+ */
+jint ptrw_aquire_env(JNIEnv **env, jboolean *did_attach);
+
+/**
+ * Detach current thread from JVM.
+ * @return JNI_OK if everything gone right, otherwise, the error code reurned by vm call.
+ */
+jint ptrw_detach_thread(void);
 
 #endif //PTRW_INTERNAL_H

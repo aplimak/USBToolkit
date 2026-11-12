@@ -1,5 +1,7 @@
 package ir.aeliux.ptrw;
 
+import android.util.Log;
+
 import androidx.annotation.Nullable;
 
 import java.util.HashSet;
@@ -7,21 +9,26 @@ import java.util.Objects;
 import java.util.Set;
 
 public abstract class PointerWrapper implements AutoCloseable {
+    static private final String TAG = "PointerWrapper";
+
     protected Set<PointerWrapper> childrens = new HashSet<>();
 
     @Nullable
     protected PointerWrapper parent;
 
     /**
-     * 0 == closed. Never exposed outside this class.
+     * The pointer to the ptrw_t.
      */
     private long ptr;
 
     protected PointerWrapper(long ptr, @Nullable PointerWrapper parent) {
+        Log.d(TAG, String.format("<init>(%s)", formatPointer(ptr)));
         if (ptr == 0) {
             throw new IllegalArgumentException("Pointer can't be 0");
         }
         this.ptr = ptr;
+
+        Native.setFreeCallback(ptr, this::close);
 
         if (parent != null) {
             parent.childrens.add(this);
@@ -37,8 +44,19 @@ public abstract class PointerWrapper implements AutoCloseable {
      */
     public long requireHandle() throws IllegalStateException {
         long p = ptr;
+        Log.d(TAG, String.format("requireHandle(%s)", formatPointer(p)));
         throwOnClosed(p);
         return p;
+    }
+
+    /**
+     * Converts pointer to a hex string.
+     *
+     * @param ptr Pointer.
+     * @return Hexadecimal formatted pointer.
+     */
+    protected String formatPointer(long ptr) {
+        return String.format("0x%x", ptr);
     }
 
     protected void throwOnClosed(long p) {
@@ -69,6 +87,7 @@ public abstract class PointerWrapper implements AutoCloseable {
         childrens.clear();
 
         long p = ptr;
+        Log.d(TAG, String.format("close(%s)", formatPointer(ptr)));
         if (p != 0) {
             ptr = 0;
             closeHandle(p);

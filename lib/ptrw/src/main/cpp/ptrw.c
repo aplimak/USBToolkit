@@ -10,11 +10,18 @@
 #include <axsn/log.h>
 #include <stdlib.h>
 
+struct ptrw_jni_call
+{
+    jobject obj;
+    jmethodID method;
+};
+
 struct ptrw
 {
     void *ptr;
     pthread_t owner;
     bool closed;
+    struct ptrw_jni_call free_callback;
 };
 
 long ptrw_wrap(JNIEnv *env, void *ptr)
@@ -102,9 +109,38 @@ bool ptrw_closed(ptrw_t *ptrw)
     return ptrw->closed;
 }
 
+void ptrw_set_free_callback(ptrw_t *ptrw, jobject obj, jmethodID method)
+{
+    ptrw->free_callback = (struct ptrw_jni_call) {
+            .obj = obj,
+            .method = method
+    };
+
+    LOGD("ptrw_set_free_callback(%p)", (void *) ptrw);
+}
+
 void ptrw_free(ptrw_t *ptrw)
 {
     if (!ptrw) return;
+
+    JNIEnv *env = NULL;
+    jboolean did_attach = JNI_FALSE;
+
+    if (ptrw->free_callback.obj && ptrw->free_callback.method &&
+        ptrw_aquire_env(&env, &did_attach) == JNI_OK) {
+        (*env)->CallVoidMethod(env, ptrw->free_callback.obj, ptrw->free_callback.method);
+        if ((*env)->ExceptionCheck(env)) {
+            char error[256];
+            axsn_get_pending_exception(env, error, sizeof(error));
+            LOGE("error while calling free_callback of %p: %s", (void *) ptrw, error);
+        }
+        (*env)->DeleteGlobalRef(env, ptrw->free_callback.obj);
+        if (did_attach && ptrw_detach_thread() != JNI_OK) {
+            LOGE("error while detaching thread from JVM");
+        }
+        env = NULL;
+        LOGD("ptrw_free(%p) call free_callback", (void *) ptrw);
+    }
 
     free(ptrw);
 

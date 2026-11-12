@@ -27,6 +27,7 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/common
 # Main Library
 
 add_library(${CMAKE_PROJECT_NAME} SHARED
+        core.c
         ptrw.c
         ptrw_jni.c
 )

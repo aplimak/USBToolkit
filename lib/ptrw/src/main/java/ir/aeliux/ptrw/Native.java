@@ -7,5 +7,7 @@ class Native {
 
     private Native() {}
 
+    static native void setFreeCallback(long handle, Runnable callback);
+
     static native void close(long handle);
 }
