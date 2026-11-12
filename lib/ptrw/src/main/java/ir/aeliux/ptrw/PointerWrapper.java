@@ -61,12 +61,18 @@ public abstract class PointerWrapper implements AutoCloseable {
 
     protected void throwOnClosed(long p) {
         if (isClosed(p)) {
-            throw new IllegalStateException("Configfs is closed");
+            throw new IllegalStateException("PointerWrapper is closed");
         }
     }
 
     protected boolean isClosed(long p) {
         return p == 0;
+    }
+
+    protected void throwOnThreadChange(long p) {
+        if (!Native.isOwnerThread(p)) {
+            throw new IllegalStateException("PointerWrapper used from a non-owner thread");
+        }
     }
 
     public void throwOnClosed() {
@@ -81,13 +87,15 @@ public abstract class PointerWrapper implements AutoCloseable {
 
     @Override
     public final void close() {
+        long p = ptr;
+        Log.d(TAG, String.format("close(%s)", formatPointer(ptr)));
+        throwOnThreadChange(p);
+
         for (PointerWrapper child : childrens) {
             child.close();
         }
         childrens.clear();
 
-        long p = ptr;
-        Log.d(TAG, String.format("close(%s)", formatPointer(ptr)));
         if (p != 0) {
             ptr = 0;
             closeHandle(p);

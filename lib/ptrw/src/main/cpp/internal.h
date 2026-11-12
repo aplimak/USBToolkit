@@ -43,4 +43,11 @@ jint ptrw_aquire_env(JNIEnv **env, jboolean *did_attach);
  */
 jint ptrw_detach_thread(void);
 
+/**
+ * Register all manually declared native methods.
+ * @param env JNIEnv to do registries.
+ * @return JNI_OK if everything gone right, otherwise JNI_ERR.
+ */
+jint ptrw_register_native_methods(JNIEnv *env);
+
 #endif //PTRW_INTERNAL_H

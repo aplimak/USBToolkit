@@ -24,6 +24,17 @@ struct ptrw
     struct ptrw_jni_call free_callback;
 };
 
+static jboolean jni_isOwnerThread(jlong wptr)
+{
+    ptrw_t *ptrw = ptrw_cast(wptr);
+    if (ptrw == NULL) return true;
+    return ptrw_owner(ptrw);
+}
+
+static JNINativeMethod methods[] = {
+        {"isOwnerThread", "(J)Z", (void *) jni_isOwnerThread}
+};
+
 long ptrw_wrap(JNIEnv *env, void *ptr)
 {
     if (ptr == NULL) {
@@ -123,6 +134,11 @@ void ptrw_free(ptrw_t *ptrw)
 {
     if (!ptrw) return;
 
+    if (!ptrw_owner(ptrw)) {
+        LOGW("ptrw_free(%p) called from a non-owner thread", (void *) ptrw);
+        return;
+    }
+
     JNIEnv *env = NULL;
     jboolean did_attach = JNI_FALSE;
 
@@ -145,4 +161,18 @@ void ptrw_free(ptrw_t *ptrw)
     free(ptrw);
 
     LOGV("ptrw_free(%p)", (void *) ptrw);
+}
+
+jint ptrw_register_native_methods(JNIEnv *env)
+{
+    jclass clazz = (*env)->FindClass(env, "ir/aeliux/ptrw/Native");
+    if (clazz == NULL) {
+        return JNI_ERR;
+    }
+
+    if ((*env)->RegisterNatives(env, clazz, methods, 1) < 0) {
+        return JNI_ERR;
+    }
+
+    return JNI_OK;
 }

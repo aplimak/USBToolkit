@@ -31,6 +31,8 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved)
         return JNI_ERR;
     }
 
+    if (ptrw_register_native_methods(env) != JNI_OK) return JNI_ERR;
+
     LOGI("JNI_OnLoad");
     return PTRW_JNI_VERSION;
 }
