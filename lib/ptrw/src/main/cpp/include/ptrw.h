@@ -27,13 +27,45 @@ typedef struct ptrw ptrw_t;
 PTRW_API long ptrw_wrap(JNIEnv *env, void *ptr);
 
 /**
+ * Resolves ptrw and validates called from th owning thread and not closed.
+ * @param env JNI env, used to queue a exception in case of any error.
+ * @param wptr Pointer to the ptrw_t.
+ * @return The resolved ptrw_t if it is valid and called from the owner thread and not closed, otherwise NULL.
+ * @note This function checks closed pointer wrapper.
+ */
+PTRW_API ptrw_t *ptrw_get(JNIEnv *env, long wptr);
+
+/**
  * Unwraps a pointer, if the wrapper is not closed and called from the owner thread.
  * @param env JNI env, used to queue a exception in case of any error.
- * @param ptr Pointer to the ptrw_t.
+ * @param wptr Pointer to the ptrw_t.
  * @return unwrapped pointer, or NULL if there is any errors.
  * @note Do Not use jni calls if the function returns NULL, as it already queued a exception, only do cleanups.
  */
-PTRW_API void *ptrw_unwrap(JNIEnv *env, long ptr);
+PTRW_API void *ptrw_unwrap(JNIEnv *env, long wptr);
+
+/**
+ * Unwraps a pointer and marks the wrapper as closed.
+ * @param env JNI env, used to queue a exception in case of any error.
+ * @param wptr Pointer to the ptrw_t.
+ * @return unwrapped pointer, or NULL if there is any errors.
+ * @note This won't free the pointer itself.
+ */
+PTRW_API void *ptrw_pop(JNIEnv *env, long wptr);
+
+/**
+ * Check if the calling thread is the wrapper's owner thread.
+ * @param ptrw The pointer to the ptrw_t.
+ * @return true if owning and false if not.
+ */
+PTRW_API bool ptrw_owner(ptrw_t *ptrw);
+
+/**
+ * Check if the wrapper is closed.
+ * @param ptrw The pointer to the ptrw_t.
+ * @return true if closed and false if not.
+ */
+PTRW_API bool ptrw_closed(ptrw_t *ptrw);
 
 /**
  * Frees the memory used by the wrapper.
