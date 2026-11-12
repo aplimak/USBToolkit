@@ -20,7 +20,7 @@ ptrw_t *ptrw_resolve(JNIEnv *env, long ptr)
 {
     ptrw_t *ptrw = (ptrw_t *) (intptr_t) ptr;
 
-    if (!ptrw || ptrw->closed) {
+    if (!ptrw) {
         AXSN_THROW_ISE(env, "PointerWrapper is already closed");
         return NULL;
     }
@@ -48,6 +48,10 @@ long ptrw_wrap(JNIEnv *env, void *ptr)
 void *ptrw_unwrap(JNIEnv *env, long ptr)
 {
     ptrw_t *ptrw = ptrw_resolve(env, ptr);
+    if (ptrw->closed) {
+        AXSN_THROW_ISE(env, "PointerWrapper is already closed");
+        return NULL;
+    }
     if (ptrw == NULL) return NULL;
     return ptrw->ptr;
 }
