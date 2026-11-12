@@ -31,13 +31,10 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved)
     }
 
     if (usbtk_dto_init(env) != 0) {
-        /* usbtk_dto_init already logs the specific failure. Roll back
-         * anything it may have partially set, then bail. */
         usbtk_dto_release(env);
-        if (!(*env)->ExceptionCheck(env)) {
-            axsn_throw(env, "java/lang/IllegalStateException",
-                       "usbtoolkit: native init failed (dto)");
-        }
+        char error[256];
+        axsn_get_pending_exception(env, error, sizeof(error));
+        LOGE("error in usbtk_dto_init: %s", error);
         return JNI_ERR;   /* still return ERR even with a pending exception */
     }
 

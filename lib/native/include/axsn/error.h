@@ -167,6 +167,64 @@ axsn_throw_errno(JNIEnv *env, const char *what)
         }                                                        \
     } while (0)
 
+/* Extract class name + message of a pending exception, then clear it.
+ * Returns 1 if an exception was handled, 0 otherwise. */
+static inline int axsn_get_pending_exception(JNIEnv *env, char *buf, size_t buf_size)
+{
+    if (!(*env)->ExceptionCheck(env)) {
+        return 0;
+    }
+
+    /* 1. Grab the throwable, then CLEAR before any other JNI call. */
+    jthrowable ex = (*env)->ExceptionOccurred(env);
+    (*env)->ExceptionClear(env);
+
+    if (ex == NULL) {
+        snprintf(buf, buf_size, "unknown exception");
+        return 1;
+    }
+
+    /* 2. Class name. */
+    jclass exClass = (*env)->GetObjectClass(env, ex);
+    jclass classClass = (*env)->FindClass(env, "java/lang/Class");
+    jmethodID getName = (*env)->GetMethodID(env, classClass,
+                                            "getName", "()Ljava/lang/String;");
+    jstring nameStr = (jstring) (*env)->CallObjectMethod(env, exClass, getName);
+    const char *name = nameStr
+                       ? (*env)->GetStringUTFChars(env, nameStr, NULL)
+                       : NULL;
+
+    /* 3. Message (may be NULL — Throwable.getMessage can return null). */
+    jclass throwableClass = (*env)->FindClass(env, "java/lang/Throwable");
+    jmethodID getMessage = (*env)->GetMethodID(env, throwableClass,
+                                               "getMessage", "()Ljava/lang/String;");
+    jstring msgStr = (jstring) (*env)->CallObjectMethod(env, ex, getMessage);
+    const char *msg = msgStr
+                      ? (*env)->GetStringUTFChars(env, msgStr, NULL)
+                      : NULL;
+
+    /* 4. Log it. */
+    snprintf(buf, buf_size, "%s: %s",
+             name ? name : "(unknown)",
+             msg ? msg : "(no message)");
+
+    /* 5. Cleanup (in reverse order; guard against NULLs). */
+    if (msg) {
+        (*env)->ReleaseStringUTFChars(env, msgStr, msg);
+        (*env)->DeleteLocalRef(env, msgStr);
+    }
+    if (name) {
+        (*env)->ReleaseStringUTFChars(env, nameStr, name);
+        (*env)->DeleteLocalRef(env, nameStr);
+    }
+    (*env)->DeleteLocalRef(env, throwableClass);
+    (*env)->DeleteLocalRef(env, classClass);
+    (*env)->DeleteLocalRef(env, exClass);
+    (*env)->DeleteLocalRef(env, ex);
+
+    return 1;
+}
+
 #ifdef __cplusplus
 }
 #endif
