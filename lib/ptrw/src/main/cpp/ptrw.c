@@ -7,6 +7,7 @@
 #include "ptrw.h"
 #include "internal.h"
 #include <axsn/error.h>
+#include <axsn/log.h>
 #include <stdlib.h>
 
 struct ptrw
@@ -31,6 +32,8 @@ long ptrw_wrap(JNIEnv *env, void *ptr)
     ptrw->ptr = ptr;
     ptrw->owner = pthread_self();
 
+    LOGI("ptrw_wrap(%p) -> %p", ptr, (void *) ptrw);
+
     return (long) (intptr_t) ptrw;
 }
 
@@ -47,6 +50,9 @@ ptrw_t *ptrw_resolve(JNIEnv *env, long wptr)
                        "PointerWrapper used from a non-owner thread");
         return NULL;
     }
+
+    LOGV("ptrw_resolve %p from %p", ptrw->ptr, (void *) ptrw);
+
     return ptrw;
 }
 
@@ -57,6 +63,9 @@ ptrw_t *ptrw_get(JNIEnv *env, long wptr)
         AXSN_THROW_ISE(env, "PointerWrapper is already closed");
         return NULL;
     }
+
+    LOGV("ptrw_get %p from %p", ptrw->ptr, (void *) ptrw);
+
     return ptrw;
 }
 
@@ -64,6 +73,9 @@ void *ptrw_unwrap(JNIEnv *env, long wptr)
 {
     ptrw_t *ptrw = ptrw_get(env, wptr);
     if (ptrw == NULL) return NULL;
+
+    LOGV("ptrw_unwrap %p from %p", ptrw->ptr, (void *) ptrw);
+
     return ptrw->ptr;
 }
 
@@ -74,6 +86,9 @@ void *ptrw_pop(JNIEnv *env, long wptr)
     void *ptr = ptrw->ptr;
     ptrw->ptr = NULL;
     ptrw->closed = true;
+
+    LOGV("ptrw_pop %p from %p", ptrw->ptr, (void *) ptrw);
+
     return ptr;
 }
 
@@ -92,4 +107,6 @@ void ptrw_free(ptrw_t *ptrw)
     if (!ptrw) return;
 
     free(ptrw);
+
+    LOGI("ptrw_free(%p)", (void *) ptrw);
 }
