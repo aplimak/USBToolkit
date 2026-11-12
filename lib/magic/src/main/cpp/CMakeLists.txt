@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.22.1)
-project("magic")
+project("magic" LANGUAGES C)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_C_EXTENSIONS OFF)
 
 option(AXSN_STRICT     "Enable aggressive warnings and -Werror on the main target" ON)
 
