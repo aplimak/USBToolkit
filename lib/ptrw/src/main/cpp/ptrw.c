@@ -24,15 +24,16 @@ struct ptrw
     struct ptrw_jni_call free_callback;
 };
 
-static jboolean jni_isOwnerThread(jlong wptr)
+static jboolean Java_isOwnerThread(jlong wptr)
 {
     ptrw_t *ptrw = ptrw_cast(wptr);
     if (ptrw == NULL) return true;
+    LOGD("Java_isOwnerThread(%p)", (void *) ptrw);
     return ptrw_owner(ptrw);
 }
 
 static JNINativeMethod methods[] = {
-        {"isOwnerThread", "(J)Z", (void *) jni_isOwnerThread}
+        {"isOwnerThread", "(J)Z", (void *) Java_isOwnerThread}
 };
 
 long ptrw_wrap(JNIEnv *env, void *ptr)
