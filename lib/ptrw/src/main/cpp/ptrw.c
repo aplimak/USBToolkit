@@ -28,13 +28,21 @@ static jboolean Java_isOwnerThread(jlong wptr)
 {
     ptrw_t *ptrw = ptrw_cast(wptr);
     LOGD("Java_isOwnerThread(%p)", (void *) ptrw);
-    
-    if (ptrw == NULL) return true;
+
     return ptrw_owner(ptrw);
 }
 
+static jboolean Java_isClosed(jlong wptr)
+{
+    ptrw_t *ptrw = ptrw_cast(wptr);
+    LOGD("Java_isClosed(%p)", (void *) ptrw);
+
+    return ptrw_closed(ptrw);
+}
+
 static JNINativeMethod methods[] = {
-        {"isOwnerThread", "(J)Z", (void *) Java_isOwnerThread}
+        {"isOwnerThread", "(J)Z", (void *) Java_isOwnerThread},
+        {"isClosed", "(J)Z", (void *) Java_isClosed}
 };
 
 long ptrw_wrap(JNIEnv *env, void *ptr)
@@ -79,6 +87,7 @@ ptrw_t *ptrw_resolve(JNIEnv *env, long wptr)
 ptrw_t *ptrw_get(JNIEnv *env, long wptr)
 {
     ptrw_t *ptrw = ptrw_resolve(env, wptr);
+    if (ptrw == NULL) return NULL;
     if (ptrw_closed(ptrw)) {
         AXSN_THROW_ISE(env, "PointerWrapper is already closed");
         return NULL;
@@ -114,16 +123,19 @@ void *ptrw_pop(JNIEnv *env, long wptr)
 
 bool ptrw_owner(ptrw_t *ptrw)
 {
+    if (ptrw == NULL) return true;
     return pthread_equal(ptrw->owner, pthread_self());
 }
 
 bool ptrw_closed(ptrw_t *ptrw)
 {
+    if (ptrw == NULL) return true;
     return ptrw->closed;
 }
 
 void ptrw_set_free_callback(ptrw_t *ptrw, jobject obj, jmethodID method)
 {
+    if (ptrw == NULL) return;
     ptrw->free_callback = (struct ptrw_jni_call) {
             .obj = obj,
             .method = method

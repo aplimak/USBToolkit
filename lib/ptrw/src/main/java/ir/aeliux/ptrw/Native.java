@@ -15,4 +15,7 @@ class Native {
 
     @CriticalNative
     static native boolean isOwnerThread(long handle);
+
+    @CriticalNative
+    static native boolean isClosed(long handle);
 }
