@@ -38,6 +38,7 @@ android {
     }
     buildFeatures {
         prefabPublishing = true
+        buildConfig = true
     }
     prefab {
         create("ptrw") {

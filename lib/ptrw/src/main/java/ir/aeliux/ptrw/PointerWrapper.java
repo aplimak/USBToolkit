@@ -8,9 +8,11 @@ import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Set;
 
+import ir.aeliux.ptrw.BuildConfig;
+
 public abstract class PointerWrapper implements AutoCloseable {
     static private final String TAG = "PointerWrapper";
-    private static final boolean DEBUG = Log.isLoggable(TAG, Log.DEBUG);
+    private static final boolean DEBUG = BuildConfig.DEBUG;
 
     private final Set<PointerWrapper> children =
             Collections.newSetFromMap(new IdentityHashMap<>());
