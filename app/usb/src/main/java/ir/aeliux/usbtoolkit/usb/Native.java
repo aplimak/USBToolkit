@@ -8,7 +8,7 @@ import ir.aeliux.usbtoolkit.usb.dto.UsbgGadgetStrs;
 
 class Native {
     static {
-        System.loadLibrary("usb");
+        System.loadLibrary("usbtk");
     }
 
     private Native() {}

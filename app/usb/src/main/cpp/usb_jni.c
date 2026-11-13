@@ -2,7 +2,7 @@
 // Created by aeliux on 9/23/26.
 //
 
-#define LOG_TAG "libusb:"__FILE_NAME__
+#define LOG_TAG "libusbtk:"__FILE_NAME__
 
 #include "dto.h"
 
@@ -96,10 +96,10 @@ Java_ir_aeliux_usbtoolkit_usb_Native_createGadget(JNIEnv *env, jclass cls,
     const char *gadget_name = (*env)->GetStringUTFChars(env, j_gadgetName, NULL);
     if (!gadget_name) return 0;
 
-    if (usbtk_usbg_gadget_attrs_from_kotlin(env, j_gadgetAttrs, &g_attrs) != 0) goto cleanup;
-    if (usbtk_usbg_gadget_strs_from_kotlin(env, j_gadgetStrs, &g_strs) != 0) goto cleanup;
-    if (usbtk_usbg_config_attrs_from_kotlin(env, j_configAttrs, &c_attrs) != 0) goto cleanup;
-    if (usbtk_usbg_config_strs_from_jstring(env, j_configStr, &c_strs) != 0) goto cleanup;
+    if (usbtk_import_usbg_gadget_attrs(env, j_gadgetAttrs, &g_attrs) != 0) goto cleanup;
+    if (usbtk_import_usbg_gadget_strs(env, j_gadgetStrs, &g_strs) != 0) goto cleanup;
+    if (usbtk_import_usbg_config_attrs(env, j_configAttrs, &c_attrs) != 0) goto cleanup;
+    if (usbtk_import_usbg_config_strs(env, j_configStr, &c_strs) != 0) goto cleanup;
 
     {
         int rc = usbg_create_gadget(s, gadget_name, &g_attrs, &g_strs, &g);
@@ -193,7 +193,7 @@ Java_ir_aeliux_usbtoolkit_usb_Native_createFunction(JNIEnv *env,
     switch (j_functionType) {
         case USBG_F_MASS_STORAGE:
             attrs = malloc(sizeof(struct usbg_f_ms_attrs));
-            usbtk_usbg_f_mass_storage_attrs_from_kotlin(env, j_functionAttrs, attrs);
+            usbtk_import_usbg_f_mass_storage_attrs(env, j_functionAttrs, attrs);
             break;
         default:
             AXSN_THROW_IAE(env,
@@ -211,7 +211,7 @@ Java_ir_aeliux_usbtoolkit_usb_Native_createFunction(JNIEnv *env,
     clean:
     switch (j_functionType) {
         case USBG_F_MASS_STORAGE:
-            usbtk_usbg_f_mass_storage_attrs_free(attrs);
+            usbtk_free_usbg_f_mass_storage_attrs(attrs);
             break;
         default:
             break;

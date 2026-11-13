@@ -2,7 +2,7 @@
 // Created by aeliux on 9/22/26.
 //
 
-#define LOG_TAG "libusb:"__FILE_NAME__
+#define LOG_TAG "libusbtk:"__FILE_NAME__
 
 #include "dto.h"
 
@@ -427,8 +427,8 @@ void usbtk_dto_release(JNIEnv *env)
     usbtk_java_list_jni_release(env);
 }
 
-jobject usbtk_usbg_gadget_attrs_to_kotlin(JNIEnv *env,
-                                          const struct usbg_gadget_attrs *src)
+jobject usbtk_export_usbg_gadget_attrs(JNIEnv *env,
+                                       const struct usbg_gadget_attrs *src)
 {
     if (!g_jni.gadget_attrs.cls || !src) return NULL;
 
@@ -443,9 +443,9 @@ jobject usbtk_usbg_gadget_attrs_to_kotlin(JNIEnv *env,
                              (jshort) src->bcdDevice);
 }
 
-int usbtk_usbg_gadget_attrs_from_kotlin(JNIEnv *env,
-                                        jobject obj,
-                                        struct usbg_gadget_attrs *dst)
+int usbtk_import_usbg_gadget_attrs(JNIEnv *env,
+                                   jobject obj,
+                                   struct usbg_gadget_attrs *dst)
 {
     if (!g_jni.gadget_attrs.cls || !obj || !dst) return -1;
 
@@ -467,8 +467,8 @@ int usbtk_usbg_gadget_attrs_from_kotlin(JNIEnv *env,
     return 0;
 }
 
-jobject usbtk_usbg_gadget_strs_to_kotlin(JNIEnv *env,
-                                         const struct usbg_gadget_strs *src)
+jobject usbtk_export_usbg_gadget_strs(JNIEnv *env,
+                                      const struct usbg_gadget_strs *src)
 {
     if (!g_jni.gadget_strs.cls || !src) return NULL;
 
@@ -489,9 +489,9 @@ jobject usbtk_usbg_gadget_strs_to_kotlin(JNIEnv *env,
     return obj;
 }
 
-int usbtk_usbg_gadget_strs_from_kotlin(JNIEnv *env,
-                                       jobject obj,
-                                       struct usbg_gadget_strs *dst)
+int usbtk_import_usbg_gadget_strs(JNIEnv *env,
+                                  jobject obj,
+                                  struct usbg_gadget_strs *dst)
 {
     if (!g_jni.gadget_strs.cls || !obj || !dst) return -1;
 
@@ -502,8 +502,8 @@ int usbtk_usbg_gadget_strs_from_kotlin(JNIEnv *env,
     return 0;
 }
 
-jobject usbtk_usbg_config_attrs_to_kotlin(JNIEnv *env,
-                                          const struct usbg_config_attrs *src)
+jobject usbtk_export_usbg_config_attrs(JNIEnv *env,
+                                       const struct usbg_config_attrs *src)
 {
     if (!g_jni.config_attrs.cls || !src) return NULL;
 
@@ -512,9 +512,9 @@ jobject usbtk_usbg_config_attrs_to_kotlin(JNIEnv *env,
                              (jbyte) src->bMaxPower);
 }
 
-int usbtk_usbg_config_attrs_from_kotlin(JNIEnv *env,
-                                        jobject obj,
-                                        struct usbg_config_attrs *dst)
+int usbtk_import_usbg_config_attrs(JNIEnv *env,
+                                   jobject obj,
+                                   struct usbg_config_attrs *dst)
 {
     if (!g_jni.config_attrs.cls || !obj || !dst) return -1;
 
@@ -524,16 +524,16 @@ int usbtk_usbg_config_attrs_from_kotlin(JNIEnv *env,
     return 0;
 }
 
-jstring usbtk_usbg_config_strs_to_jstring(JNIEnv *env,
-                                          const struct usbg_config_strs *src)
+jstring usbtk_export_usbg_config_strs(JNIEnv *env,
+                                      const struct usbg_config_strs *src)
 {
     if (!src || !src->configuration) return NULL;
     return (*env)->NewStringUTF(env, src->configuration);
 }
 
-int usbtk_usbg_config_strs_from_jstring(JNIEnv *env,
-                                        jstring src,
-                                        struct usbg_config_strs *dst)
+int usbtk_import_usbg_config_strs(JNIEnv *env,
+                                  jstring src,
+                                  struct usbg_config_strs *dst)
 {
     if (!dst) return -1;
 
@@ -551,8 +551,8 @@ int usbtk_usbg_config_strs_from_jstring(JNIEnv *env,
     return dst->configuration ? 0 : -1;
 }
 
-jobject usbtk_usbg_f_mass_storage_lun_to_kotlin(JNIEnv *env,
-                                                const struct usbg_f_ms_lun_attrs *src)
+jobject usbtk_export_usbg_f_mass_storage_lun(JNIEnv *env,
+                                             const struct usbg_f_ms_lun_attrs *src)
 {
     if (!g_jni.f_mass_storage_lun.cls || !src) return NULL;
 
@@ -578,9 +578,9 @@ jobject usbtk_usbg_f_mass_storage_lun_to_kotlin(JNIEnv *env,
     return obj;
 }
 
-int usbtk_usbg_f_mass_storage_lun_from_kotlin(JNIEnv *env,
-                                              jobject obj,
-                                              struct usbg_f_ms_lun_attrs *dst)
+int usbtk_import_usbg_f_mass_storage_lun(JNIEnv *env,
+                                         jobject obj,
+                                         struct usbg_f_ms_lun_attrs *dst)
 {
     if (!g_jni.f_mass_storage_lun.cls || !obj || !dst) return -1;
 
@@ -595,8 +595,8 @@ int usbtk_usbg_f_mass_storage_lun_from_kotlin(JNIEnv *env,
     return 0;
 }
 
-jobject usbtk_usbg_f_mass_storage_attrs_to_kotlin(JNIEnv *env,
-                                                  const struct usbg_f_ms_attrs *src)
+jobject usbtk_export_usbg_f_mass_storage_attrs(JNIEnv *env,
+                                               const struct usbg_f_ms_attrs *src)
 {
     if (!g_jni.f_mass_storage_attrs.cls || !src) return NULL;
     jobject obj = NULL;
@@ -605,13 +605,13 @@ jobject usbtk_usbg_f_mass_storage_attrs_to_kotlin(JNIEnv *env,
     if (j_luns == NULL) {
         if (!(*env)->ExceptionCheck(env)) {
             AXSN_THROW_RTE(env,
-                           "usbtk_usbg_f_mass_storage_attrs_to_kotlin: Failed to create list");
+                           "usbtk_export_usbg_f_mass_storage_attrs: Failed to create list");
         }
         goto done;
     }
     if (src->luns) {
         for (int i = 0; i < src->nluns; i++) {
-            jobject lun = usbtk_usbg_f_mass_storage_lun_to_kotlin(env, src->luns[i]);
+            jobject lun = usbtk_export_usbg_f_mass_storage_lun(env, src->luns[i]);
             (*env)->CallBooleanMethod(env, j_luns, g_jni.java_list.m_add, lun);
             (*env)->DeleteLocalRef(env, lun);
         }
@@ -628,9 +628,9 @@ jobject usbtk_usbg_f_mass_storage_attrs_to_kotlin(JNIEnv *env,
     return obj;
 }
 
-int usbtk_usbg_f_mass_storage_attrs_from_kotlin(JNIEnv *env,
-                                                jobject obj,
-                                                struct usbg_f_ms_attrs *dst)
+int usbtk_import_usbg_f_mass_storage_attrs(JNIEnv *env,
+                                           jobject obj,
+                                           struct usbg_f_ms_attrs *dst)
 {
     if (!g_jni.f_mass_storage_attrs.cls || !obj || !dst) return -1;
     bool failed = false;
@@ -656,7 +656,7 @@ int usbtk_usbg_f_mass_storage_attrs_from_kotlin(JNIEnv *env,
 
     dst->luns = calloc(n + 1, sizeof(struct usbg_f_ms_lun_attrs *));
     if (!dst->luns) {
-        AXSN_THROW_OOM(env, "usbtk_usbg_f_mass_storage_attrs_from_kotlin: %s", "dst->luns");
+        AXSN_THROW_OOM(env, "usbtk_import_usbg_f_mass_storage_attrs: %s", "dst->luns");
         goto fail;
     }
     for (jint i = 0; i < n; i++) {
@@ -664,16 +664,16 @@ int usbtk_usbg_f_mass_storage_attrs_from_kotlin(JNIEnv *env,
         if (lun == NULL) {
             if (!(*env)->ExceptionCheck(env)) {
                 AXSN_THROW_RTE(env,
-                               "usbtk_usbg_f_mass_storage_attrs_from_kotlin: Failed to get the element index %d from luns list",
+                               "usbtk_import_usbg_f_mass_storage_attrs: Failed to get the element index %d from luns list",
                                i);
             }
             goto fail;
         }
         dst->luns[i] = calloc(1, sizeof(*dst->luns[i]));
-        if (usbtk_usbg_f_mass_storage_lun_from_kotlin(env, lun, dst->luns[i]) == -1) {
+        if (usbtk_import_usbg_f_mass_storage_lun(env, lun, dst->luns[i]) == -1) {
             if (!(*env)->ExceptionCheck(env)) {
                 AXSN_THROW_RTE(env,
-                               "usbtk_usbg_f_mass_storage_attrs_from_kotlin: Failed to read the element index %d from luns list",
+                               "usbtk_import_usbg_f_mass_storage_attrs: Failed to read the element index %d from luns list",
                                i);
             }
             goto fail;
@@ -687,16 +687,16 @@ int usbtk_usbg_f_mass_storage_attrs_from_kotlin(JNIEnv *env,
     fail:
     failed = true;
     dst->nluns = 0;
-    usbtk_usbg_f_mass_storage_attrs_free(dst);
+    usbtk_free_usbg_f_mass_storage_attrs(dst);
     if (!(*env)->ExceptionCheck(env)) {
-        AXSN_THROW_RTE(env, "usbtk_usbg_f_mass_storage_attrs_from_kotlin");
+        AXSN_THROW_RTE(env, "usbtk_import_usbg_f_mass_storage_attrs");
     }
     done:
     if (luns) (*env)->DeleteLocalRef(env, luns);
     return failed ? -1 : 0;
 }
 
-void usbtk_usbg_f_mass_storage_attrs_free(struct usbg_f_ms_attrs *ptr)
+void usbtk_free_usbg_f_mass_storage_attrs(struct usbg_f_ms_attrs *ptr)
 {
     if (!ptr || ptr->nluns == 0) return;
     for (int i = 0; i < ptr->nluns; i++) {
