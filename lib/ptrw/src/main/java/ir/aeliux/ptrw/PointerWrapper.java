@@ -4,17 +4,19 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 
-import java.util.HashSet;
-import java.util.Objects;
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.Set;
 
 public abstract class PointerWrapper implements AutoCloseable {
     static private final String TAG = "PointerWrapper";
+    private static final boolean DEBUG = Log.isLoggable(TAG, Log.DEBUG);
 
-    protected Set<PointerWrapper> childrens = new HashSet<>();
+    private final Set<PointerWrapper> children =
+            Collections.newSetFromMap(new IdentityHashMap<>());
 
     @Nullable
-    protected PointerWrapper parent;
+    private PointerWrapper parent;
 
     /**
      * The pointer to the ptrw_t.
@@ -22,7 +24,7 @@ public abstract class PointerWrapper implements AutoCloseable {
     private long ptr;
 
     protected PointerWrapper(long ptr, @Nullable PointerWrapper parent) {
-        Log.d(TAG, String.format("<init>(%s)", formatPointer(ptr)));
+        if (DEBUG) Log.d(TAG, String.format("<init>(%s)", formatPointer(ptr)));
         if (ptr == 0) {
             throw new IllegalArgumentException("Pointer can't be 0");
         }
@@ -31,9 +33,13 @@ public abstract class PointerWrapper implements AutoCloseable {
         Native.setFreeCallback(ptr, this::close);
 
         if (parent != null) {
-            parent.childrens.add(this);
+            parent.children.add(this);
         }
         this.parent = parent;
+    }
+
+    protected final @Nullable PointerWrapper getParent() {
+        return parent;
     }
 
     /**
@@ -44,7 +50,7 @@ public abstract class PointerWrapper implements AutoCloseable {
      */
     public final long requireHandle() throws IllegalStateException {
         long p = ptr;
-        Log.d(TAG, String.format("requireHandle(%s)", formatPointer(p)));
+        if (DEBUG) Log.d(TAG, String.format("requireHandle(%s)", formatPointer(p)));
         throwOnClosed(p);
         throwOnThreadChange(p);
         return p;
@@ -57,7 +63,7 @@ public abstract class PointerWrapper implements AutoCloseable {
      * @return Hexadecimal formatted pointer.
      */
     protected final String formatPointer(long ptr) {
-        return String.format("0x%x", ptr);
+        return "0x" + Long.toHexString(ptr);
     }
 
     protected final void throwOnClosed(long p) {
@@ -89,34 +95,39 @@ public abstract class PointerWrapper implements AutoCloseable {
     @Override
     public final void close() {
         long p = ptr;
-        Log.d(TAG, String.format("close(%s)", formatPointer(ptr)));
+        if (DEBUG) Log.d(TAG, String.format("close(%s)", formatPointer(ptr)));
+
+        if (p == 0) return;
         throwOnThreadChange(p);
 
-        for (PointerWrapper child : childrens) {
-            child.close();
+        if (!children.isEmpty()) {
+            PointerWrapper[] kids = children.toArray(new PointerWrapper[0]);
+            children.clear();
+            for (PointerWrapper child : kids) {
+                try {child.close();} catch (Exception e) {
+                    Log.w(TAG, "Error while closing child PointerWrapper", e);
+                }
+            }
         }
-        childrens.clear();
 
-        if (p != 0) {
-            ptr = 0;
+        // it must be here as childrens may need our pointer.
+        ptr = 0;
+
+        // We can't afford any failures.
+        try {
             closeHandle(p);
-            Native.close(p);
+        } finally {
+            try {Native.close(p);} finally {detachFromParent();}
         }
+    }
 
-        parent = null;
+    private void detachFromParent() {
+        PointerWrapper par = parent;
+        if (par != null) {
+            par.children.remove(this);
+            parent = null;
+        }
     }
 
     protected abstract void closeHandle(long ptr);
-
-    @Override
-    public boolean equals(Object o) {
-        if (!(o instanceof PointerWrapper)) return false;
-        PointerWrapper that = (PointerWrapper) o;
-        return ptr == that.ptr;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(ptr);
-    }
 }

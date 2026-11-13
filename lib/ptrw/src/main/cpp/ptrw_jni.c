@@ -21,10 +21,22 @@ Java_ir_aeliux_ptrw_Native_setFreeCallback(JNIEnv *env,
     }
 
     jclass callbackClass = (*env)->GetObjectClass(env, g_callback);
+    if (!callbackClass) {
+        goto fail;
+    }
     jmethodID mid = (*env)->GetMethodID(env, callbackClass, "run", "()V");
-    (*env)->DeleteLocalRef(env, callbackClass);
+    if (!mid) {
+        goto fail;
+    }
 
-    ptrw_set_free_callback(ptrw, g_callback, mid);
+    ptrw_set_free_callback(env, ptrw, g_callback, mid);
+
+    goto clean;
+
+    fail:
+    if (g_callback) (*env)->DeleteGlobalRef(env, g_callback);
+    clean:
+    if (callbackClass) (*env)->DeleteLocalRef(env, callbackClass);
 }
 
 JNIEXPORT void JNICALL

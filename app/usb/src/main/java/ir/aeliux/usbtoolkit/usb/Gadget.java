@@ -70,11 +70,4 @@ public class Gadget extends PointerWrapper {
     protected void closeHandle(long ptr) {
         // Nothing to do. gadgets are part of usbg_state memory so it is closed by Configfs close call.
     }
-
-    @NonNull
-    public Configfs getParent() {
-        throwOnClosed();
-        assert parent != null;
-        return (Configfs) parent;
-    }
 }

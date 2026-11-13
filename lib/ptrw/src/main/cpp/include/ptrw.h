@@ -69,18 +69,20 @@ PTRW_API bool ptrw_closed(ptrw_t *ptrw);
 
 /**
  * Set a java method to be called right before freeing the wrapper.
+ * @param env JNI env to release global ref used by previous setted free callback, if any.
  * @param ptrw The pointer to the ptrw_t.
  * @param obj global java object of the method that will be called.
  * @param method Method id of the method that will be called.
  * @note Method must be void return type.
  * @note Object must be global ref, not local ref. it will be automatically released on ptrw_free.
  */
-PTRW_API void ptrw_set_free_callback(ptrw_t *ptrw, jobject obj, jmethodID method);
+PTRW_API void ptrw_set_free_callback(JNIEnv *env, ptrw_t *ptrw, jobject obj, jmethodID method);
 
 /**
  * Frees the memory used by the wrapper.
  * @param ptrw The pointer to the wrapper to be freed.
- * @note This won't free the pointer itself.
+ * @note This won't free the pointer itself. unless the ptrw reaches java layer and get a free_callback.
+ * @note This function returns if called from non-owner thread, call ptrw_owner before calling this.
  */
 PTRW_API void ptrw_free(ptrw_t *ptrw);
 

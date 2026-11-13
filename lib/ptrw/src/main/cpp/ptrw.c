@@ -27,22 +27,18 @@ struct ptrw
 static jboolean Java_isOwnerThread(jlong wptr)
 {
     ptrw_t *ptrw = ptrw_cast(wptr);
-    LOGD("Java_isOwnerThread(%p)", (void *) ptrw);
-
     return ptrw_owner(ptrw);
 }
 
 static jboolean Java_isClosed(jlong wptr)
 {
     ptrw_t *ptrw = ptrw_cast(wptr);
-    LOGD("Java_isClosed(%p)", (void *) ptrw);
-
     return ptrw_closed(ptrw);
 }
 
 static JNINativeMethod methods[] = {
         {"isOwnerThread", "(J)Z", (void *) Java_isOwnerThread},
-        {"isClosed", "(J)Z", (void *) Java_isClosed}
+        {"isClosed",      "(J)Z", (void *) Java_isClosed}
 };
 
 long ptrw_wrap(JNIEnv *env, void *ptr)
@@ -52,7 +48,7 @@ long ptrw_wrap(JNIEnv *env, void *ptr)
         return 0;
     }
 
-    ptrw_t *ptrw = malloc(sizeof(ptrw_t));
+    ptrw_t *ptrw = calloc(1, sizeof(ptrw_t));
     if (!ptrw) {
         AXSN_THROW_OOM(env, "allocating ptrw_t");
         return 0;
@@ -133,9 +129,16 @@ bool ptrw_closed(ptrw_t *ptrw)
     return ptrw->closed;
 }
 
-void ptrw_set_free_callback(ptrw_t *ptrw, jobject obj, jmethodID method)
+static void ptrw_free_jni_call(JNIEnv *env, struct ptrw_jni_call call)
+{
+    if (!call.obj) return;
+    (*env)->DeleteGlobalRef(env, call.obj);
+}
+
+void ptrw_set_free_callback(JNIEnv *env, ptrw_t *ptrw, jobject obj, jmethodID method)
 {
     if (ptrw == NULL) return;
+    ptrw_free_jni_call(env, ptrw->free_callback);
     ptrw->free_callback = (struct ptrw_jni_call) {
             .obj = obj,
             .method = method
@@ -155,16 +158,17 @@ void ptrw_free(ptrw_t *ptrw)
 
     JNIEnv *env = NULL;
     jboolean did_attach = JNI_FALSE;
+    struct ptrw_jni_call cb = ptrw->free_callback;
+    ptrw->free_callback = (struct ptrw_jni_call) {0};
 
-    if (ptrw->free_callback.obj && ptrw->free_callback.method &&
-        ptrw_aquire_env(&env, &did_attach) == JNI_OK) {
-        (*env)->CallVoidMethod(env, ptrw->free_callback.obj, ptrw->free_callback.method);
+    if (cb.obj && cb.method && ptrw_aquire_env(&env, &did_attach) == JNI_OK) {
+        (*env)->CallVoidMethod(env, cb.obj, cb.method);
         if ((*env)->ExceptionCheck(env)) {
             char error[256];
             axsn_get_pending_exception(env, error, sizeof(error));
             LOGE("error while calling free_callback of %p: %s", (void *) ptrw, error);
         }
-        (*env)->DeleteGlobalRef(env, ptrw->free_callback.obj);
+        ptrw_free_jni_call(env, cb);
         if (did_attach && ptrw_detach_thread() != JNI_OK) {
             LOGE("error while detaching thread from JVM");
         }
@@ -179,14 +183,21 @@ void ptrw_free(ptrw_t *ptrw)
 
 jint ptrw_register_native_methods(JNIEnv *env)
 {
+    jint rc = JNI_OK;
+
     jclass clazz = (*env)->FindClass(env, "ir/aeliux/ptrw/Native");
     if (clazz == NULL) {
-        return JNI_ERR;
+        rc = JNI_ERR;
+        goto clean;
     }
 
-    if ((*env)->RegisterNatives(env, clazz, methods, 1) < 0) {
-        return JNI_ERR;
+    jint n = (jint) (sizeof(methods) / sizeof(methods[0]));
+    if ((*env)->RegisterNatives(env, clazz, methods, n) < 0) {
+        rc = JNI_ERR;
+        goto clean;
     }
 
-    return JNI_OK;
+    clean:
+    if (clazz) (*env)->DeleteLocalRef(env, clazz);
+    return rc;
 }
