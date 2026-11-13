@@ -30,7 +30,17 @@ public abstract class PointerWrapper implements AutoCloseable {
         }
         this.ptr = ptr;
 
-        Native.setFreeCallback(ptr, this::close);
+        try {
+            Native.setFreeCallback(ptr, this::close);
+        } catch (RuntimeException | Error e) {
+            // It's safe as close checks everything before doing any calls.
+            try {
+                close();
+            } catch (RuntimeException | Error closeEx) {
+                e.addSuppressed(closeEx);   // don't lose the original
+            }
+            throw e;
+        }
 
         if (parent != null) {
             parent.children.add(this);
@@ -115,9 +125,16 @@ public abstract class PointerWrapper implements AutoCloseable {
 
         // We can't afford any failures.
         try {
-            closeHandle(p);
+            if (!isClosed(p)) {
+                // Inner pointer still not freed.
+                closeHandle(p);
+            }
         } finally {
-            try {Native.close(p);} finally {detachFromParent();}
+            try {
+                Native.close(p);
+            } finally {
+                detachFromParent();
+            }
         }
     }
 

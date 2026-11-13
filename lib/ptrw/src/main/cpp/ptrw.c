@@ -21,6 +21,7 @@ struct ptrw
     void *ptr;
     pthread_t owner;
     bool closed;
+    bool freed;
     struct ptrw_jni_call free_callback;
 };
 
@@ -149,12 +150,14 @@ void ptrw_set_free_callback(JNIEnv *env, ptrw_t *ptrw, jobject obj, jmethodID me
 
 void ptrw_free(ptrw_t *ptrw)
 {
-    if (!ptrw) return;
+    if (!ptrw || ptrw->freed) return;
 
     if (!ptrw_owner(ptrw)) {
         LOGW("ptrw_free(%p) called from a non-owner thread", (void *) ptrw);
         return;
     }
+
+    ptrw->freed = true;
 
     JNIEnv *env = NULL;
     jboolean did_attach = JNI_FALSE;
