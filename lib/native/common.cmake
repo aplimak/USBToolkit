@@ -45,7 +45,7 @@ function(axsn_apply_warnings target)
         -Wmissing-declarations -Wold-style-definition -Wredundant-decls
         -Wformat=2 -Wformat-security -Wnull-dereference -Wdouble-promotion
         -Wfloat-equal -Wwrite-strings -Wvla -Wswitch-enum -Wundef
-        -Winit-self -Wuninitialized -Wno-unused-parameter
+        -Winit-self -Wuninitialized -Wno-unused-parameter -Wmissing-field-initializers
         -Werror
     )
 endfunction()
