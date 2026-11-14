@@ -46,55 +46,10 @@ add_subdirectory("${LIBCONFIG_SOURCE_DIR}" "${LIBCONFIG_BUILD_DIR}")
 
 # libusbgx
 
-set(USBGX_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third_party/libusbgx")
-set(USBGX_PREFIX     "${CMAKE_CURRENT_BINARY_DIR}/deps/libusbgx")
-set(USBGX_BUILD_DIR  "${CMAKE_CURRENT_BINARY_DIR}/build/libusbgx")
-
-ExternalProject_Add(libusbgx_build
-        SOURCE_DIR "${USBGX_SOURCE_DIR}"
-        BINARY_DIR "${USBGX_BUILD_DIR}"
-        PREFIX     "${USBGX_PREFIX}"
-
-        CONFIGURE_COMMAND
-        ${CMAKE_COMMAND} -E env
-        "CC=${CMAKE_C_COMPILER} --target=${CMAKE_C_COMPILER_TARGET} --sysroot=${CMAKE_SYSROOT}"
-        "CXX=${CMAKE_CXX_COMPILER} --target=${CMAKE_C_COMPILER_TARGET} --sysroot=${CMAKE_SYSROOT}"
-        "AR=${CMAKE_AR}"
-        "RANLIB=${CMAKE_RANLIB}"
-        "STRIP=${CMAKE_STRIP}"
-        "PKG_CONFIG_PATH="
-        "CFLAGS=${LIB_CFLAGS}"
-        "LDFLAGS=${LIB_LDFLAGS}"
-        "LIBCONFIG_CFLAGS=-I${LIBCONFIG_SOURCE_DIR}/lib"
-        "LIBCONFIG_LIBS=-L${LIBCONFIG_OUT_DIR} -lconfig"
-        <SOURCE_DIR>/configure
-        --host=${TRIPLET}
-        "--prefix=${USBGX_PREFIX}"
-        "--with-sysroot=${CMAKE_SYSROOT}"
-        --enable-static
-        --disable-shared
-        --with-pic
-
-        BUILD_COMMAND   make -j8
-        INSTALL_COMMAND make install
-
-        DEPENDS config
-
-        BUILD_BYPRODUCTS "${USBGX_PREFIX}/lib/libusbgx.a"
-
-        LOG_CONFIGURE 1
-        LOG_BUILD 1
-        LOG_INSTALL 1
-)
-
-file(MAKE_DIRECTORY "${USBGX_PREFIX}/include")
-file(MAKE_DIRECTORY "${USBGX_PREFIX}/lib")
-add_library(usbgx STATIC IMPORTED GLOBAL)
-add_dependencies(usbgx libusbgx_build)
-set_target_properties(usbgx PROPERTIES
-        IMPORTED_LOCATION "${USBGX_PREFIX}/lib/libusbgx.a"
-        INTERFACE_INCLUDE_DIRECTORIES "${USBGX_PREFIX}/include"
-)
+set(USBGX_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/third_party/libusbgx")
+add_subdirectory(
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/libusbgx"
+        "${CMAKE_CURRENT_BINARY_DIR}/build/libusbgx")
 
 # Main Library
 
