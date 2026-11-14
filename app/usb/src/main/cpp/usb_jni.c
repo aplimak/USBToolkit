@@ -119,6 +119,8 @@ Java_ir_aeliux_usbtoolkit_usb_Native_createGadget(JNIEnv *env, jclass cls,
 
     cleanup:
     (*env)->ReleaseStringUTFChars(env, j_gadgetName, gadget_name);
+
+    // TODO: There must be dto functions to free them, but usbg also calls free, so ok for now, but technically wrong.
     usbg_free_gadget_strs(&g_strs);
     usbg_free_config_strs(&c_strs);
 
