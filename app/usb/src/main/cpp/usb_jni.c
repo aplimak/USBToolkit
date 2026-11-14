@@ -141,24 +141,16 @@ Java_ir_aeliux_usbtoolkit_usb_Native_openGadget(JNIEnv *env, jclass cls,
     const char *gadget_name = (*env)->GetStringUTFChars(env, j_gadgetName, NULL);
     if (!gadget_name) return 0;
 
-    usbg_gadget *g = NULL;
+    usbg_gadget *g = usbg_get_gadget(s, gadget_name);
 
-    {
-        g = usbg_get_gadget(s, gadget_name);
-        if (g == NULL) {
-            AXSN_THROW_IAE(env, "gadget not found: %s", gadget_name);
-            goto cleanup;
-        }
-    }
-
-    cleanup:
     (*env)->ReleaseStringUTFChars(env, j_gadgetName, gadget_name);
 
-    if (g) {
-        return ptrw_wrap(env, g);
+    if (g == NULL) {
+        AXSN_THROW_IAE(env, "gadget not found: %s", gadget_name);
+        return 0;
     }
 
-    return 0;
+    return ptrw_wrap(env, g);
 }
 
 JNIEXPORT void JNICALL
