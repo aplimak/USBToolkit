@@ -104,7 +104,11 @@ Java_ir_aeliux_usbtoolkit_usb_Native_createGadget(JNIEnv *env, jclass cls,
     {
         int rc = usbg_create_gadget(s, gadget_name, &g_attrs, &g_strs, &g);
         if (rc != USBG_SUCCESS) {
-            usbtk_throw_usbg(env, "usbg_create_gadget", rc);
+            if (rc == USBG_ERROR_EXIST) {
+                AXSN_THROW_IAE(env, "Gadget already exists");
+            } else {
+                usbtk_throw_usbg(env, "create gadget", rc);
+            }
             goto cleanup;
         }
     }
@@ -112,7 +116,11 @@ Java_ir_aeliux_usbtoolkit_usb_Native_createGadget(JNIEnv *env, jclass cls,
     {
         int rc = usbg_create_config(g, 1, "c", &c_attrs, &c_strs, &c);
         if (rc != USBG_SUCCESS) {
-            usbtk_throw_usbg(env, "usbg_create_config", rc);
+            if (rc == USBG_ERROR_EXIST) {
+                AXSN_THROW_IAE(env, "Config already exists");
+            } else {
+                usbtk_throw_usbg(env, "create config", rc);
+            }
             goto cleanup;
         }
     }
@@ -197,8 +205,12 @@ Java_ir_aeliux_usbtoolkit_usb_Native_createFunction(JNIEnv *env,
     }
 
     int rc = usbg_create_function(g, j_functionType, instance, attrs, &f);
-    if (rc != 0) {
-        usbtk_throw_usbg(env, "create function", rc);
+    if (rc != USBG_SUCCESS) {
+        if (rc == USBG_ERROR_EXIST) {
+            AXSN_THROW_IAE(env, "Function already exists");
+        } else {
+            usbtk_throw_usbg(env, "create function", rc);
+        }
         goto clean;
     }
 
