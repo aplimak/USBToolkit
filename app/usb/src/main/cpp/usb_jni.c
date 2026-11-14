@@ -146,7 +146,7 @@ Java_ir_aeliux_usbtoolkit_usb_Native_openGadget(JNIEnv *env, jclass cls,
     {
         g = usbg_get_gadget(s, gadget_name);
         if (g == NULL) {
-            axsn_throw(env, AXSN_JC_IAE, "gadget not found: %s", gadget_name);
+            AXSN_THROW_IAE(env, "gadget not found: %s", gadget_name);
             goto cleanup;
         }
     }
