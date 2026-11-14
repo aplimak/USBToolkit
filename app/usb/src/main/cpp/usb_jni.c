@@ -159,7 +159,7 @@ JNIEXPORT void JNICALL
 Java_ir_aeliux_usbtoolkit_usb_Native_deleteGadget(JNIEnv *env, jclass cls,
                                                   jlong j_ptrwGadget)
 {
-    usbg_gadget *g = ptrw_unwrap(env, j_ptrwGadget);
+    usbg_gadget *g = ptrw_pop(env, j_ptrwGadget);
     if (g == NULL) return;
 
     int rc = usbg_rm_gadget(g, USBG_RM_RECURSE);
