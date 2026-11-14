@@ -87,9 +87,9 @@ Java_ir_aeliux_usbtoolkit_usb_Native_createGadget(JNIEnv *env, jclass cls,
     usbg_gadget *g = NULL;
     usbg_config *c = NULL;
 
-    struct usbg_gadget_attrs g_attrs;
+    struct usbg_gadget_attrs g_attrs = {0};
     struct usbg_gadget_strs g_strs = {0};
-    struct usbg_config_attrs c_attrs;
+    struct usbg_config_attrs c_attrs = {0};
     struct usbg_config_strs c_strs = {0};
 
     if (axsn_throw_if_null(env, j_gadgetName, "gadgetName") != 0) return 0;
