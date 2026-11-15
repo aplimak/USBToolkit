@@ -4,6 +4,7 @@ import java.util.Properties
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.parcelize)
+    id("io.github.reactivecircus.app-versioning") version "2.0.0-alpha.2"
 }
 
 android {
