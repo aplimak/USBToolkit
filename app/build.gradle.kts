@@ -73,6 +73,19 @@ android {
     }
 }
 
+appVersioning {
+    tagFilter.set("[0-9]*.[0-9]*.[0-9]")
+    versionCode.set {
+        // Placeholder for 99 untagged commits with no conflict
+        (tag.toSemVer().toVersionCode(digitsPerComponent = 2) * 100) + tag.commitsSinceLatestTag
+    }
+    versionName.set {
+        // add build variant to the versionName for debug builds
+        val suffix = if (variant.isDebugBuild) "-${variant.variantName}" else ""
+        "${tag.name}${if (tag.commitsSinceLatestTag > 0) "-" + tag.commitHash else ""}$suffix"
+    }
+}
+
 dependencies {
     implementation(project(":lib:ui"))
     runtimeOnly(project(":app:rootservice"))
