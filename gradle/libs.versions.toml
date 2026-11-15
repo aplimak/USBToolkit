@@ -10,6 +10,7 @@ material = "1.14.0"
 activityKtx = "1.13.0"
 constraintlayout = "2.2.2"
 recyclerview = "1.4.0"
+appversioning = "2.0.0-alpha.2"
 
 [libraries]
 kotlin-parcelize-runtime = { module = "org.jetbrains.kotlin:kotlin-parcelize-runtime", version.ref = "kotlinParcelizeRuntime" }
@@ -28,3 +29,4 @@ recyclerview = { module = "androidx.recyclerview:recyclerview", version.ref = "r
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize" }
 android-library = { id = "com.android.library", version.ref = "agp" }
+reactivecircus-appversioning = { id = "io.github.reactivecircus.app-versioning", version.ref = "appversioning"}
