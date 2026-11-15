@@ -12,6 +12,7 @@ android {
 
     defaultConfig {
         minSdk = 27
+        buildConfigField("int", "DB_VERSION", "500480000") // 5.48
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -37,6 +38,7 @@ android {
     }
     buildFeatures {
         prefab = true
+        buildConfig = true
     }
 }
 
