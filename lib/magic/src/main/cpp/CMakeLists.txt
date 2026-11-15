@@ -57,8 +57,8 @@ ExternalProject_Add(libmagic_build
         --enable-landlock
         --with-pic
 
-        BUILD_COMMAND   make -j8 SUBDIRS=src
-        INSTALL_COMMAND make SUBDIRS=src install
+        BUILD_COMMAND   make -j8 "SUBDIRS=src magic"
+        INSTALL_COMMAND make "SUBDIRS=src magic" install
 
         BUILD_BYPRODUCTS "${MAGIC_PREFIX}/lib/libmagic.a"
 
@@ -76,68 +76,28 @@ set_target_properties(magiclib PROPERTIES
         INTERFACE_INCLUDE_DIRECTORIES "${MAGIC_PREFIX}/include"
 )
 
-# Compile magic files
+# Magic db
 
-set(MAGIC_MGDIR   "${MAGIC_SOURCE_DIR}/magic/Magdir")
-set(MAGIC_MGC_OUT "${CMAKE_CURRENT_SOURCE_DIR}/../assets/magic.mgc")
-
-# The host's `file` binary — required. Install it if missing.
-find_program(HOST_FILE_EXECUTABLE file)
-if(NOT HOST_FILE_EXECUTABLE)
-    message(FATAL_ERROR
-            "Host `file` binary not found. Install it: "
-            "`apt install file` / `brew install file` / `pacman -S file`")
+if(NOT DEFINED MAGIC_ASSET_OUTPUT_DIR)
+    message(FATAL_ERROR "MAGIC_ASSET_OUTPUT_DIR must be passed from Gradle")
 endif()
-
-if(NOT EXISTS "${MAGIC_MGC_OUT}" OR
-        "${MAGIC_MGDIR}" IS_NEWER_THAN "${MAGIC_MGC_OUT}")
-
-    message(STATUS "Compiling magic.mgc from ${MAGIC_MGDIR}")
-
-    # Work in the build tree so we never touch the vendored source
-    set(_mgc_work "${CMAKE_CURRENT_BINARY_DIR}/mgc")
-
-    execute_process(
-            COMMAND ${CMAKE_COMMAND} -E make_directory "${_mgc_work}"
-            RESULT_VARIABLE _rc)
-    if(NOT _rc EQUAL 0)
-        message(FATAL_ERROR "mkdir ${_mgc_work} failed")
-    endif()
-
-    execute_process(
-            COMMAND ${CMAKE_COMMAND} -E copy_directory
-            "${MAGIC_MGDIR}" "${_mgc_work}/Magdir"
-            RESULT_VARIABLE _rc)
-    if(NOT _rc EQUAL 0)
-        message(FATAL_ERROR "copy Magdir failed")
-    endif()
-
-    # `file -C -m <dir>` writes <dir>.mgc next to it
-    execute_process(
-            COMMAND "${HOST_FILE_EXECUTABLE}" -C -m "${_mgc_work}/Magdir"
-            WORKING_DIRECTORY "${_mgc_work}"
-            RESULT_VARIABLE _rc
-            OUTPUT_VARIABLE _out
-            ERROR_VARIABLE  _err)
-    if(NOT _rc EQUAL 0)
-        message(FATAL_ERROR "file -C failed: ${_err}")
-    endif()
-
-    execute_process(
-            COMMAND ${CMAKE_COMMAND} -E copy
-            "${_mgc_work}/Magdir.mgc" "${MAGIC_MGC_OUT}"
-            RESULT_VARIABLE _rc)
-    if(NOT _rc EQUAL 0)
-        message(FATAL_ERROR "copy Magdir.mgc to assets failed")
-    endif()
-
-    message(STATUS "Wrote ${MAGIC_MGC_OUT}")
-endif()
+set(MAGIC_ASSET_STAGE "${MAGIC_ASSET_OUTPUT_DIR}")
+file(MAKE_DIRECTORY "${MAGIC_ASSET_STAGE}")
 
 # Main Library
 
 add_library(${CMAKE_PROJECT_NAME} SHARED
         magic_jni.c
+)
+
+# Copy magic db
+add_custom_command(
+        TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${MAGIC_PREFIX}/share/misc/magic.mgc"
+        "${MAGIC_ASSET_STAGE}/magic.mgc"
+        COMMENT "Staging magic.mgc as an Android asset"
+        VERBATIM
 )
 
 axsn_apply_warnings(${CMAKE_PROJECT_NAME})
