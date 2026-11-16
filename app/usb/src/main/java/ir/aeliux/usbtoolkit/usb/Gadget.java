@@ -19,7 +19,7 @@ public class Gadget extends PointerWrapper {
                                 UsbgGadgetAttrs gadgetAtts,
                                 UsbgGadgetStrs gadgetStrs,
                                 UsbgConfigAttrs configAttrs,
-                                String configStrs)
+                                String configStrs) throws EntityAlreadyExistsException
     {
         long ptr = Native.createGadget(configfs.requireHandle(),
                                        gadgetName,
@@ -32,7 +32,7 @@ public class Gadget extends PointerWrapper {
     }
 
     public static Gadget open(Configfs configfs,
-                              String gadgetName) throws IllegalArgumentException
+                              String gadgetName) throws IllegalArgumentException, EntityNotFoundException
     {
         long ptr = Native.openGadget(configfs.requireHandle(),
                                      gadgetName);
@@ -46,11 +46,19 @@ public class Gadget extends PointerWrapper {
     }
 
     public <A extends UsbgFunctionAttrsBase, F extends Function<A, F>>
-    F createFunction(String instance, A attrs) {
-        long ptr = Native.createFunction(requireHandle(),
-                                         attrs.getType().ordinal(),
-                                         instance,
-                                         attrs);
+    F createFunction(String instance,
+                     A attrs) throws EntityAlreadyExistsException
+    {
+        long ptr = 0;
+        try {
+            ptr = Native.createFunction(requireHandle(),
+                                        attrs.getType().ordinal(),
+                                        instance,
+                                        attrs);
+        } catch (UnsupportedFunctionException e) {
+            // It's designed to not let this happen, but if someone tries to fool us, let them taste a sweet runtime exception
+            throw new RuntimeException(e);
+        }
         @SuppressWarnings("unchecked")
         F result = (F) wrapFunction(attrs.getType(), ptr);
         return result;

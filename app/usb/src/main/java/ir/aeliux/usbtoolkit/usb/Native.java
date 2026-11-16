@@ -18,17 +18,17 @@ class Native {
                                     UsbgGadgetAttrs gadgetAtts,
                                     UsbgGadgetStrs gadgetStrs,
                                     UsbgConfigAttrs configAttrs,
-                                    String configStrs);
+                                    String configStrs) throws EntityAlreadyExistsException;
 
     static native long openGadget(long ptrwConfigfs,
-                                  String gadgetName);
+                                  String gadgetName) throws EntityNotFoundException;
 
     static native void deleteGadget(long ptrwGadget);
 
     static native long createFunction(long ptrwGadget,
                                       int functionType,
                                       String functionInstance,
-                                      Object functionAttrs);
+                                      Object functionAttrs) throws EntityAlreadyExistsException, UnsupportedFunctionException;
 
     static native long init(String configfsPath) throws IOException;
 

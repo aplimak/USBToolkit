@@ -26,7 +26,7 @@ public class Configfs extends PointerWrapper {
                                UsbgGadgetAttrs gadgetAtts,
                                UsbgGadgetStrs gadgetStrs,
                                UsbgConfigAttrs configAttrs,
-                               String configStrs)
+                               String configStrs) throws EntityAlreadyExistsException
     {
         return Gadget.create(this,
                              gadgetName,
@@ -36,7 +36,7 @@ public class Configfs extends PointerWrapper {
                              configStrs);
     }
 
-    public Gadget OpenGadget(String gadgetName)
+    public Gadget OpenGadget(String gadgetName) throws EntityNotFoundException
     {
         return Gadget.open(this,
                            gadgetName);
