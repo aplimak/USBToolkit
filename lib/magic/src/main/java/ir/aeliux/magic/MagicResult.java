@@ -27,7 +27,7 @@ public final class MagicResult implements Parcelable {
         this.error = error;
     }
 
-    protected MagicResult(Parcel in) {
+    private MagicResult(Parcel in) {
         this.mimeType = in.readString();
         this.error = in.readString();
     }

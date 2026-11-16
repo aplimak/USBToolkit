@@ -69,8 +69,7 @@ public class FileEntry implements Parcelable {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof FileEntry)) return false;
-        FileEntry other = (FileEntry) o;
+        if (!(o instanceof FileEntry other)) return false;
         return isDirectory == other.isDirectory
                 && size == other.size
                 && lastModified == other.lastModified

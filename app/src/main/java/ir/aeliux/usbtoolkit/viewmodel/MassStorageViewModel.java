@@ -30,7 +30,7 @@ public class MassStorageViewModel extends AndroidViewModel {
     private final MutableLiveData<String> udc = new MutableLiveData<>();
     private final MutableLiveData<List<String>> filePaths = new MutableLiveData<>(new ArrayList<>());
     private final MutableLiveData<List<GadgetState>> gadgets = new MutableLiveData<>(new ArrayList<>());
-    private Map<String, MagicResult> fileMagicResults = new HashMap<>();
+    private final Map<String, MagicResult> fileMagicResults = new HashMap<>();
 
     public MassStorageViewModel(@NonNull Application application) {
         super(application);

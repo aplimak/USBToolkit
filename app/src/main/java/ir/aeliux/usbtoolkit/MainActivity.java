@@ -55,7 +55,7 @@ public class MainActivity extends BaseActivity {
     private final int DIALOG_INIT = 1;
     private final int DIALOG_MASS_STORAGE = 2;
     private final ServiceConnection serviceConnection = new ServiceConnection() {
-        private final LifecycleEventObserver refreshLifecycleCallback = (LifecycleEventObserver) (lifecycleOwner, event) -> {
+        private final LifecycleEventObserver refreshLifecycleCallback = (lifecycleOwner, event) -> {
             if (this.refreshCalled) return;
             if (event == Lifecycle.Event.ON_START) {
                 refresh();
@@ -122,10 +122,7 @@ public class MainActivity extends BaseActivity {
         applyWindowInsets(binding.main);
 
         model = new ViewModelProvider(this).get(MassStorageViewModel.class);
-        boolean firstLaunch = true;
-        if (savedInstanceState != null) {
-            firstLaunch = false;
-        }
+        boolean firstLaunch = savedInstanceState == null;
 
         if (Shell.cmd("ls /data/adb").exec().getCode() > 0) {
             showRootRequiredError();

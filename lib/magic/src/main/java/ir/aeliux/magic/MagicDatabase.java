@@ -33,7 +33,7 @@ public final class MagicDatabase {
             while ((n = in.read(buf)) > 0) out.write(buf, 0, n);
         }
 
-        prefs.edit().putInt("db_version", DB_VERSION).commit();
+        prefs.edit().putInt("db_version", DB_VERSION).apply();
     }
 
     public static String getPath(Context ctx) {
