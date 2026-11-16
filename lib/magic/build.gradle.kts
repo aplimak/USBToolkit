@@ -61,9 +61,14 @@ abstract class PropertyBasedCopy : Copy() {
 androidComponents {
     onVariants { variant ->
         val cap = variant.name.replaceFirstChar { it.uppercase() }
+        val cmakeBuildType = when (variant.buildType) {
+            "release" -> "RelWithDebInfo"
+            "debug"   -> "Debug"
+            else      -> variant.buildType?.replaceFirstChar { it.uppercase() }
+        }
 
         val stageMagicAssets = tasks.register<PropertyBasedCopy>("stage${cap}MagicAssets") {
-            dependsOn("buildCMake${cap}")
+            dependsOn("buildCMake${cmakeBuildType}")
             from(magicAssetDir)
             into(layout.buildDirectory.dir("generated/magic_assets_staged"))
         }
