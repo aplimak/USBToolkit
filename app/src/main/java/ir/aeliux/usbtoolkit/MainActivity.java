@@ -202,7 +202,7 @@ public class MainActivity extends BaseActivity {
                 if ((fileMagicResult = magicResults.get(path)) == null) {
                     misses.add(path);
                 } else {
-                    item.setSubtitle(fileMagicResult.mimeType);
+                    item.setSubtitle(fileMagicResult.getMimeType());
                 }
                 item.setClickable(true);
                 item.setFocusable(true);
@@ -265,7 +265,7 @@ public class MainActivity extends BaseActivity {
                                 continue;
                             }
                             magicResults.put(path, fileMagicResult);
-                            item.setSubtitle(fileMagicResult.mimeType);
+                            item.setSubtitle(fileMagicResult.getMimeType());
                         }
                     });
                 }
