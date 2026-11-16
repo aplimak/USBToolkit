@@ -7,6 +7,6 @@ import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class UsbgMassStorageAttrs(
-    val stall: Boolean,
-    val luns: List<UsbgMassStorageLun>
+    var stall: Boolean,
+    var luns: List<UsbgMassStorageLun>
 ) : UsbgFunctionAttrsBase(UsbFunctions.USBG_F_MASS_STORAGE),Parcelable

@@ -5,11 +5,11 @@ import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class UsbgMassStorageLun(
-    val id: Int,
-    val cdrom: Boolean,
-    val ro: Boolean,
-    val nofua: Boolean,
-    val removable: Boolean,
-    val file: String,
-    val inquiryString: String
+    var id: Int,
+    var cdrom: Boolean,
+    var ro: Boolean,
+    var nofua: Boolean,
+    var removable: Boolean,
+    var file: String,
+    var inquiryString: String
 ) : Parcelable
