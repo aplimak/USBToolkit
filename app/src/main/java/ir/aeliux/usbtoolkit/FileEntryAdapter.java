@@ -1,4 +1,4 @@
-package ir.aeliux.usbtoolkit.util;
+package ir.aeliux.usbtoolkit;
 
 import android.annotation.SuppressLint;
 import android.view.LayoutInflater;
@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
-import ir.aeliux.usbtoolkit.R;
 import ir.aeliux.usbtoolkit.shared.dto.FileEntry;
 
 public final class FileEntryAdapter extends ListAdapter<FileEntry, FileEntryAdapter.ViewHolder> {
