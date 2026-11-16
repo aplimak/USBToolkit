@@ -4,8 +4,8 @@
 
 #define LOG_TAG "libusbtk:"__FILE_NAME__
 
+#include "internal.h"
 #include "dto.h"
-
 #include <jni.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,18 +17,6 @@
 #include <axsn/log.h>
 #include <axsn/error.h>
 #include <ptrw.h>
-
-/* Throw IOException for a failed libusbgx call. */
-static inline void
-usbtk_throw_usbg(JNIEnv *env, const char *what, int rc)
-{
-    AXSN_THROW_IOE(env,
-                   "%s failed: error %s: %s (%d)",
-                   what,
-                   usbg_error_name(rc),
-                   usbg_strerror(rc),
-                   rc);
-}
 
 JNIEXPORT jlong JNICALL
 Java_ir_aeliux_usbtoolkit_usb_Native_init(JNIEnv *env, jclass cls,
@@ -105,7 +93,7 @@ Java_ir_aeliux_usbtoolkit_usb_Native_createGadget(JNIEnv *env, jclass cls,
         int rc = usbg_create_gadget(s, gadget_name, &g_attrs, &g_strs, &g);
         if (rc != USBG_SUCCESS) {
             if (rc == USBG_ERROR_EXIST) {
-                AXSN_THROW_IAE(env, "Gadget already exists");
+                USBTK_THROW_EAEE(env, "Gadget already exists");
             } else {
                 usbtk_throw_usbg(env, "create gadget", rc);
             }
@@ -117,7 +105,7 @@ Java_ir_aeliux_usbtoolkit_usb_Native_createGadget(JNIEnv *env, jclass cls,
         int rc = usbg_create_config(g, 1, "c", &c_attrs, &c_strs, &c);
         if (rc != USBG_SUCCESS) {
             if (rc == USBG_ERROR_EXIST) {
-                AXSN_THROW_IAE(env, "Config already exists");
+                USBTK_THROW_EAEE(env, "Config already exists");
             } else {
                 usbtk_throw_usbg(env, "create config", rc);
             }
@@ -156,7 +144,7 @@ Java_ir_aeliux_usbtoolkit_usb_Native_openGadget(JNIEnv *env, jclass cls,
     (*env)->ReleaseStringUTFChars(env, j_gadgetName, gadget_name);
 
     if (g == NULL) {
-        AXSN_THROW_IAE(env, "gadget not found: %s", gadget_name);
+        USBTK_THROW_ENFE(env, "Gadget not found");
         return 0;
     }
 
@@ -198,16 +186,16 @@ Java_ir_aeliux_usbtoolkit_usb_Native_createFunction(JNIEnv *env,
             usbtk_import_usbg_f_mass_storage_attrs(env, j_functionAttrs, attrs);
             break;
         default:
-            AXSN_THROW_IAE(env,
-                           "usbtkUsbCreateFunction: Function type %d is currently not supported",
-                           j_functionType);
+            USBTK_THROW_UFE(env,
+                            "Function type %d is not supported",
+                            j_functionType);
             goto clean;
     }
 
     int rc = usbg_create_function(g, j_functionType, instance, attrs, &f);
     if (rc != USBG_SUCCESS) {
         if (rc == USBG_ERROR_EXIST) {
-            AXSN_THROW_IAE(env, "Function already exists");
+            USBTK_THROW_EAEE(env, "Function already exists");
         } else {
             usbtk_throw_usbg(env, "create function", rc);
         }
