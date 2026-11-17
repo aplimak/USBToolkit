@@ -87,7 +87,8 @@ static struct
     } f_mass_storage_attrs;
     struct
     {
-        jclass cls;
+        jclass c_list;
+        jclass c_array_list;
         jmethodID ctor;
         jmethodID m_add;
         jmethodID m_size;
@@ -404,35 +405,42 @@ static int usbtk_usbg_f_mass_storage_attrs_jni_init(JNIEnv *env)
 
 static void usbtk_java_list_jni_release(JNIEnv *env)
 {
-    if (g_jni.java_list.cls) {
-        (*env)->DeleteGlobalRef(env, g_jni.java_list.cls);
-        g_jni.java_list.cls = NULL;
+    if (g_jni.java_list.c_list) {
+        (*env)->DeleteGlobalRef(env, g_jni.java_list.c_list);
+        g_jni.java_list.c_list = NULL;
+    }
+    if (g_jni.java_list.c_array_list) {
+        (*env)->DeleteGlobalRef(env, g_jni.java_list.c_array_list);
+        g_jni.java_list.c_array_list = NULL;
     }
 }
 
 static int usbtk_java_list_jni_init(JNIEnv *env)
 {
-    if (g_jni.java_list.cls) return 0;
+    if (g_jni.java_list.c_array_list) return 0;
 
-    jclass local = (*env)->FindClass(env, "java/util/List");
-    if (!local) return -1;
+    jclass local_array_list = (*env)->FindClass(env, "java/util/ArrayList");
+    jclass local_list = (*env)->FindClass(env, "java/util/List");
+    if (!local_array_list || !local_list) return -1;
 
-    g_jni.java_list.cls = (jclass) (*env)->NewGlobalRef(env, local);
-    (*env)->DeleteLocalRef(env, local);
-    if (!g_jni.java_list.cls) return -1;
+    g_jni.java_list.c_array_list = (jclass) (*env)->NewGlobalRef(env, local_array_list);
+    g_jni.java_list.c_list = (jclass) (*env)->NewGlobalRef(env, local_list);
+    (*env)->DeleteLocalRef(env, local_array_list);
+    (*env)->DeleteLocalRef(env, local_list);
+    if (!g_jni.java_list.c_array_list || !g_jni.java_list.c_list) return -1;
 
     g_jni.java_list.ctor = (*env)->GetMethodID(
-            env, g_jni.java_list.cls, "<init>",
+            env, g_jni.java_list.c_array_list, "<init>",
             "()V");
     if (!g_jni.java_list.ctor) goto fail;
 
     g_jni.java_list.m_add = (*env)->GetMethodID(env,
-                                                g_jni.java_list.cls,
+                                                g_jni.java_list.c_list,
                                                 "add",
                                                 "(Ljava/lang/Object;)Z");
-    g_jni.java_list.m_size = (*env)->GetMethodID(env, g_jni.java_list.cls, "size", "()I");
+    g_jni.java_list.m_size = (*env)->GetMethodID(env, g_jni.java_list.c_list, "size", "()I");
     g_jni.java_list.m_get = (*env)->GetMethodID(env,
-                                                g_jni.java_list.cls,
+                                                g_jni.java_list.c_list,
                                                 "get",
                                                 "(I)Ljava/lang/Object;");
 
@@ -761,7 +769,7 @@ jobject usbtk_export_usbg_f_mass_storage_attrs(JNIEnv *env,
 
     jobject obj = NULL;
 
-    jobject j_luns = (*env)->NewObject(env, g_jni.java_list.cls, g_jni.java_list.ctor);
+    jobject j_luns = (*env)->NewObject(env, g_jni.java_list.c_array_list, g_jni.java_list.ctor);
     if (j_luns == NULL) {
         if (!(*env)->ExceptionCheck(env)) {
             AXSN_THROW_RTE(env,

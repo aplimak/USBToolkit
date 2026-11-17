@@ -5,6 +5,8 @@ import ir.aeliux.usbtoolkit.usb.dto.UsbgConfigAttrs
 import ir.aeliux.usbtoolkit.usb.dto.UsbgConfigStrs
 import ir.aeliux.usbtoolkit.usb.dto.UsbgGadgetAttrs
 import ir.aeliux.usbtoolkit.usb.dto.UsbgGadgetStrs
+import ir.aeliux.usbtoolkit.usb.dto.function.UsbgMassStorageAttrs
+import ir.aeliux.usbtoolkit.usb.dto.function.UsbgMassStorageLun
 import org.junit.Assert
 import org.junit.Test
 import org.junit.function.ThrowingRunnable
@@ -79,6 +81,40 @@ class NativeTests {
         Assert.assertEquals(sampleConfigStrs, processedConfigStrs)
     }
 
+    @Test
+    fun dtoUsbgMassStorageAttrsTest() {
+        val sampleMassStorageAttrs = UsbgMassStorageAttrs(
+            stall = true,
+            luns = listOf(
+                UsbgMassStorageLun(
+                    id = 7,
+                    cdrom = true,
+                    ro = true,
+                    nofua = false,
+                    removable = true,
+                    file = "test file",
+                    inquiryString = "test"
+                ),
+                UsbgMassStorageLun(
+                    id = 2,
+                    cdrom = false,
+                    ro = false,
+                    nofua = true,
+                    removable = false,
+                    file = "test file 2",
+                    inquiryString = "test2"
+                )
+            )
+        )
+        val processedMassStorageAttrs = processUsbgMassStorageAttrs(sampleMassStorageAttrs);
+
+        Assert.assertThrows(IllegalArgumentException::class.java) {
+            processUsbgMassStorageAttrs(null)
+        }
+        Assert.assertNotSame(sampleMassStorageAttrs, processedMassStorageAttrs)
+        Assert.assertEquals(sampleMassStorageAttrs, processedMassStorageAttrs)
+    }
+
     companion object {
         init {
             System.loadLibrary("usbtk")
@@ -95,5 +131,8 @@ class NativeTests {
 
         @JvmStatic
         private external fun processUsbgConfigStrs(configStrs: UsbgConfigStrs?): UsbgConfigStrs?
+
+        @JvmStatic
+        private external fun processUsbgMassStorageAttrs(massStorageAttrs: UsbgMassStorageAttrs?): UsbgMassStorageAttrs?
     }
 }

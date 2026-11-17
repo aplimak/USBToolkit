@@ -8,6 +8,7 @@
 
 #include "dto.h"
 #include <usbg/usbg.h>
+#include <usbg/function/ms.h>
 
 JNIEXPORT jobject JNICALL
 Java_ir_aeliux_usbtoolkit_usb_NativeTests_processUsbgGadgetAttrs(JNIEnv *env,
@@ -26,7 +27,9 @@ Java_ir_aeliux_usbtoolkit_usb_NativeTests_processUsbgGadgetStrs(JNIEnv *env,
 {
     struct usbg_gadget_strs g_strs = {0};
     if (usbtk_import_usbg_gadget_strs(env, j_gadgetStrs, &g_strs) != 0) return NULL;
-    return usbtk_export_usbg_gadget_strs(env, &g_strs);
+    jobject out = usbtk_export_usbg_gadget_strs(env, &g_strs);
+    usbtk_free_usbg_gadget_strs(&g_strs);
+    return out;
 }
 
 JNIEXPORT jobject JNICALL
@@ -46,5 +49,19 @@ Java_ir_aeliux_usbtoolkit_usb_NativeTests_processUsbgConfigStrs(JNIEnv *env,
 {
     struct usbg_config_strs c_strs = {0};
     if (usbtk_import_usbg_config_strs(env, j_configStrs, &c_strs) != 0) return NULL;
-    return usbtk_export_usbg_config_strs(env, &c_strs);
+    jobject out = usbtk_export_usbg_config_strs(env, &c_strs);
+    usbtk_free_usbg_config_strs(&c_strs);
+    return out;
+}
+
+JNIEXPORT jobject JNICALL
+Java_ir_aeliux_usbtoolkit_usb_NativeTests_processUsbgMassStorageAttrs(JNIEnv *env,
+                                                                    jclass clazz,
+                                                                    jobject j_massStorageAttrs)
+{
+    struct usbg_f_ms_attrs ms_attrs = {0};
+    if (usbtk_import_usbg_f_mass_storage_attrs(env, j_massStorageAttrs, &ms_attrs) != 0) return NULL;
+    jobject out = usbtk_export_usbg_f_mass_storage_attrs(env, &ms_attrs);
+    usbtk_free_usbg_f_mass_storage_attrs(&ms_attrs);
+    return out;
 }
