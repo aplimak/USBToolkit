@@ -13,7 +13,7 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class NativeTests {
     @Test
-    fun dtoTest() {
+    fun dtoUsbgGadgetAttrsTest() {
         val sampleGadgetAttrs = UsbgGadgetAttrs(
             bcdUSB = 0x2000.toShort(),
             bDeviceClass = 2.toByte(),
@@ -24,47 +24,59 @@ class NativeTests {
             idProduct = 9.toShort(),
             bcdDevice = 7.toShort()
         )
+
+        val processedGadgetAttrs = processUsbgGadgetAttrs(sampleGadgetAttrs)
+
+        Assert.assertThrows(IllegalArgumentException::class.java) {
+            processUsbgGadgetAttrs(null)
+        }
+        Assert.assertNotSame(sampleGadgetAttrs, processedGadgetAttrs)
+        Assert.assertEquals(sampleGadgetAttrs, processedGadgetAttrs)
+    }
+
+    @Test
+    fun dtoUsbgGadgetStrsTest() {
         val sampleGadgetStrs = UsbgGadgetStrs(
             manufacturer = "test manufacturer",
             product = "test product",
             serial = "test serial"
         )
-        val sampleConfigAttrs = UsbgConfigAttrs(
-            bmAttributes = 0b11111,
-            bMaxPower = 0b1001
-        )
-        val sampleConfigStrs = UsbgConfigStrs(
-            configuration = "test configuration"
-        )
-
-        val processedGadgetAttrs = processUsbgGadgetAttrs(sampleGadgetAttrs);
-        val processedGadgetStrs = processUsbgGadgetStrs(sampleGadgetStrs);
-        val processedConfigAttrs = processUsbgConfigAttrs(sampleConfigAttrs);
-        val processedConfigStrs = processUsbgConfigStrs(sampleConfigStrs);
-
-        Assert.assertThrows(IllegalArgumentException::class.java) {
-            processUsbgGadgetAttrs(null)
-        }
-        Assert.assertNotSame(sampleGadgetAttrs, processedGadgetAttrs);
-        Assert.assertEquals(sampleGadgetAttrs, processedGadgetAttrs);
+        val processedGadgetStrs = processUsbgGadgetStrs(sampleGadgetStrs)
 
         Assert.assertThrows(IllegalArgumentException::class.java) {
             processUsbgGadgetStrs(null)
         }
-        Assert.assertNotSame(sampleGadgetStrs, processedGadgetStrs);
-        Assert.assertEquals(sampleGadgetStrs, processedGadgetStrs);
+        Assert.assertNotSame(sampleGadgetStrs, processedGadgetStrs)
+        Assert.assertEquals(sampleGadgetStrs, processedGadgetStrs)
+    }
+
+    @Test
+    fun dtoUsbgConfigAttrsTest() {
+        val sampleConfigAttrs = UsbgConfigAttrs(
+            bmAttributes = 0b11111,
+            bMaxPower = 0b1001
+        )
+        val processedConfigAttrs = processUsbgConfigAttrs(sampleConfigAttrs);
 
         Assert.assertThrows(IllegalArgumentException::class.java) {
             processUsbgConfigAttrs(null)
         }
-        Assert.assertNotSame(sampleConfigAttrs, processedConfigAttrs);
-        Assert.assertEquals(sampleConfigAttrs, processedConfigAttrs);
+        Assert.assertNotSame(sampleConfigAttrs, processedConfigAttrs)
+        Assert.assertEquals(sampleConfigAttrs, processedConfigAttrs)
+    }
+
+    @Test
+    fun dtoUsbgConfigStrsTest() {
+        val sampleConfigStrs = UsbgConfigStrs(
+            configuration = "test configuration"
+        )
+        val processedConfigStrs = processUsbgConfigStrs(sampleConfigStrs);
 
         Assert.assertThrows(IllegalArgumentException::class.java) {
             processUsbgConfigStrs(null)
         }
-        Assert.assertNotSame(sampleConfigStrs, processedConfigStrs);
-        Assert.assertEquals(sampleConfigStrs, processedConfigStrs);
+        Assert.assertNotSame(sampleConfigStrs, processedConfigStrs)
+        Assert.assertEquals(sampleConfigStrs, processedConfigStrs)
     }
 
     companion object {
