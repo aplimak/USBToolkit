@@ -59,6 +59,11 @@ add_library(${CMAKE_PROJECT_NAME} SHARED
         usb_jni.c
 )
 
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    target_sources(${CMAKE_PROJECT_NAME} PRIVATE
+            tests_jni.c)
+endif()
+
 axsn_apply_warnings(${CMAKE_PROJECT_NAME})
 axsn_apply_build_flags(${CMAKE_PROJECT_NAME})
 
