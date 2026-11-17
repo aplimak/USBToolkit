@@ -4,6 +4,8 @@
 // Created by aeliux on 11/17/26.
 //
 
+#define LOG_TAG "libusbtk:tests_jni.c"
+
 #include "dto.h"
 #include <usbg/usbg.h>
 

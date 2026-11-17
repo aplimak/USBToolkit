@@ -2,7 +2,7 @@
 // Created by aeliux on 9/19/26.
 //
 
-#define LOG_TAG "libmagic:"__FILE_NAME__
+#define LOG_TAG "libmagic:magic_jni.c"
 
 #include <jni.h>
 #include <string.h>

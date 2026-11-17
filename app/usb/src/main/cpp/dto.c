@@ -2,7 +2,7 @@
 // Created by aeliux on 9/22/26.
 //
 
-#define LOG_TAG "libusbtk:"__FILE_NAME__
+#define LOG_TAG "libusbtk:dto.c"
 
 #include "dto.h"
 

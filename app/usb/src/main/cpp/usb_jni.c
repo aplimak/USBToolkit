@@ -2,7 +2,7 @@
 // Created by aeliux on 9/23/26.
 //
 
-#define LOG_TAG "libusbtk:"__FILE_NAME__
+#define LOG_TAG "libusbtk:usb_jni.c"
 
 #include "internal.h"
 #include "dto.h"

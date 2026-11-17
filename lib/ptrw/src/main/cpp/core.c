@@ -2,7 +2,7 @@
 // Created by aeliux on 11/12/26.
 //
 
-#define LOG_TAG "libptrw:"__FILE_NAME__
+#define LOG_TAG "libptrw:core.c"
 
 #include "internal.h"
 
