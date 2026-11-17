@@ -32,6 +32,8 @@ int usbtk_import_usbg_gadget_strs(JNIEnv *env,
                                   jobject obj,
                                   struct usbg_gadget_strs *dst);
 
+void usbtk_free_usbg_gadget_strs(struct usbg_gadget_strs *ptr);
+
 jobject usbtk_export_usbg_config_attrs(JNIEnv *env,
                                        const struct usbg_config_attrs *src);
 
@@ -45,6 +47,8 @@ jstring usbtk_export_usbg_config_strs(JNIEnv *env,
 int usbtk_import_usbg_config_strs(JNIEnv *env,
                                   jstring src,
                                   struct usbg_config_strs *dst);
+
+void usbtk_free_usbg_config_strs(struct usbg_config_strs *ptr);
 
 jobject usbtk_export_usbg_f_mass_storage_lun(JNIEnv *env,
                                              const struct usbg_f_ms_lun_attrs *src);

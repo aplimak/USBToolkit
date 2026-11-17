@@ -430,7 +430,14 @@ void usbtk_dto_release(JNIEnv *env)
 jobject usbtk_export_usbg_gadget_attrs(JNIEnv *env,
                                        const struct usbg_gadget_attrs *src)
 {
-    if (!g_jni.gadget_attrs.cls || !src) return NULL;
+    if (!g_jni.gadget_attrs.cls) {
+        AXSN_THROW_ISE(env, "DTO is not initialized");
+        return NULL;
+    }
+    if (!src) {
+        AXSN_THROW_IAE(env, "src");
+        return NULL;
+    }
 
     return (*env)->NewObject(env, g_jni.gadget_attrs.cls, g_jni.gadget_attrs.ctor,
                              (jshort) src->bcdUSB,
@@ -447,7 +454,18 @@ int usbtk_import_usbg_gadget_attrs(JNIEnv *env,
                                    jobject obj,
                                    struct usbg_gadget_attrs *dst)
 {
-    if (!g_jni.gadget_attrs.cls || !obj || !dst) return -1;
+    if (!g_jni.gadget_attrs.cls) {
+        AXSN_THROW_ISE(env, "DTO is not initialized");
+        return -1;
+    }
+    if (!obj) {
+        AXSN_THROW_IAE(env, "obj");
+        return -1;
+    }
+    if (!dst) {
+        AXSN_THROW_IAE(env, "dst");
+        return -1;
+    }
 
     dst->bcdUSB = (uint16_t) (*env)->GetShortField(env, obj, g_jni.gadget_attrs.f_bcdUSB);
     dst->bDeviceClass = (uint8_t) (*env)->GetByteField(env, obj, g_jni.gadget_attrs.f_bDeviceClass);
@@ -470,7 +488,14 @@ int usbtk_import_usbg_gadget_attrs(JNIEnv *env,
 jobject usbtk_export_usbg_gadget_strs(JNIEnv *env,
                                       const struct usbg_gadget_strs *src)
 {
-    if (!g_jni.gadget_strs.cls || !src) return NULL;
+    if (!g_jni.gadget_strs.cls) {
+        AXSN_THROW_ISE(env, "DTO is not initialized");
+        return NULL;
+    }
+    if (!src) {
+        AXSN_THROW_IAE(env, "src");
+        return NULL;
+    }
 
     jstring j_manufacturer = src->manufacturer
                              ? (*env)->NewStringUTF(env, src->manufacturer) : NULL;
@@ -493,7 +518,18 @@ int usbtk_import_usbg_gadget_strs(JNIEnv *env,
                                   jobject obj,
                                   struct usbg_gadget_strs *dst)
 {
-    if (!g_jni.gadget_strs.cls || !obj || !dst) return -1;
+    if (!g_jni.gadget_strs.cls) {
+        AXSN_THROW_ISE(env, "DTO is not initialized");
+        return -1;
+    }
+    if (!obj) {
+        AXSN_THROW_IAE(env, "obj");
+        return -1;
+    }
+    if (!dst) {
+        AXSN_THROW_IAE(env, "dst");
+        return -1;
+    }
 
     dst->manufacturer = usbtk_jstring_dup(env, obj, g_jni.gadget_strs.f_manufacturer);
     dst->product = usbtk_jstring_dup(env, obj, g_jni.gadget_strs.f_product);
@@ -502,10 +538,25 @@ int usbtk_import_usbg_gadget_strs(JNIEnv *env,
     return 0;
 }
 
+void usbtk_free_usbg_gadget_strs(struct usbg_gadget_strs *ptr) {
+    if (!ptr) return;
+
+    free(ptr->manufacturer);
+    free(ptr->product);
+    free(ptr->serial);
+}
+
 jobject usbtk_export_usbg_config_attrs(JNIEnv *env,
                                        const struct usbg_config_attrs *src)
 {
-    if (!g_jni.config_attrs.cls || !src) return NULL;
+    if (!g_jni.config_attrs.cls) {
+        AXSN_THROW_ISE(env, "DTO is not initialized");
+        return NULL;
+    }
+    if (!src) {
+        AXSN_THROW_IAE(env, "src");
+        return NULL;
+    }
 
     return (*env)->NewObject(env, g_jni.config_attrs.cls, g_jni.config_attrs.ctor,
                              (jbyte) src->bmAttributes,
@@ -516,7 +567,18 @@ int usbtk_import_usbg_config_attrs(JNIEnv *env,
                                    jobject obj,
                                    struct usbg_config_attrs *dst)
 {
-    if (!g_jni.config_attrs.cls || !obj || !dst) return -1;
+    if (!g_jni.config_attrs.cls) {
+        AXSN_THROW_ISE(env, "DTO is not initialized");
+        return -1;
+    }
+    if (!obj) {
+        AXSN_THROW_IAE(env, "obj");
+        return -1;
+    }
+    if (!dst) {
+        AXSN_THROW_IAE(env, "dst");
+        return -1;
+    }
 
     dst->bmAttributes = (uint8_t) (*env)->GetByteField(env, obj, g_jni.config_attrs.f_bmAttributes);
     dst->bMaxPower = (uint8_t) (*env)->GetByteField(env, obj, g_jni.config_attrs.f_bMaxPower);
@@ -551,10 +613,23 @@ int usbtk_import_usbg_config_strs(JNIEnv *env,
     return dst->configuration ? 0 : -1;
 }
 
+void usbtk_free_usbg_config_strs(struct usbg_config_strs *ptr) {
+    if (!ptr) return;
+
+    free(ptr->configuration);
+}
+
 jobject usbtk_export_usbg_f_mass_storage_lun(JNIEnv *env,
                                              const struct usbg_f_ms_lun_attrs *src)
 {
-    if (!g_jni.f_mass_storage_lun.cls || !src) return NULL;
+    if (!g_jni.f_mass_storage_lun.cls) {
+        AXSN_THROW_ISE(env, "DTO is not initialized");
+        return NULL;
+    }
+    if (!src) {
+        AXSN_THROW_IAE(env, "src");
+        return NULL;
+    }
 
     jstring j_file = src->file
                      ? (*env)->NewStringUTF(env, src->file) : NULL;
@@ -582,7 +657,18 @@ int usbtk_import_usbg_f_mass_storage_lun(JNIEnv *env,
                                          jobject obj,
                                          struct usbg_f_ms_lun_attrs *dst)
 {
-    if (!g_jni.f_mass_storage_lun.cls || !obj || !dst) return -1;
+    if (!g_jni.f_mass_storage_lun.cls) {
+        AXSN_THROW_ISE(env, "DTO is not initialized");
+        return -1;
+    }
+    if (!obj) {
+        AXSN_THROW_IAE(env, "obj");
+        return -1;
+    }
+    if (!dst) {
+        AXSN_THROW_IAE(env, "dst");
+        return -1;
+    }
 
     dst->id = (*env)->GetIntField(env, obj, g_jni.f_mass_storage_lun.f_id);
     dst->cdrom = (*env)->GetBooleanField(env, obj, g_jni.f_mass_storage_lun.f_cdrom);
@@ -598,7 +684,15 @@ int usbtk_import_usbg_f_mass_storage_lun(JNIEnv *env,
 jobject usbtk_export_usbg_f_mass_storage_attrs(JNIEnv *env,
                                                const struct usbg_f_ms_attrs *src)
 {
-    if (!g_jni.f_mass_storage_attrs.cls || !src) return NULL;
+    if (!g_jni.f_mass_storage_attrs.cls) {
+        AXSN_THROW_ISE(env, "DTO is not initialized");
+        return NULL;
+    }
+    if (!src) {
+        AXSN_THROW_IAE(env, "src");
+        return NULL;
+    }
+
     jobject obj = NULL;
 
     jobject j_luns = (*env)->NewObject(env, g_jni.java_list.cls, g_jni.java_list.ctor);
@@ -632,7 +726,19 @@ int usbtk_import_usbg_f_mass_storage_attrs(JNIEnv *env,
                                            jobject obj,
                                            struct usbg_f_ms_attrs *dst)
 {
-    if (!g_jni.f_mass_storage_attrs.cls || !obj || !dst) return -1;
+    if (!g_jni.f_mass_storage_attrs.cls) {
+        AXSN_THROW_ISE(env, "DTO is not initialized");
+        return -1;
+    }
+    if (!obj) {
+        AXSN_THROW_IAE(env, "obj");
+        return -1;
+    }
+    if (!dst) {
+        AXSN_THROW_IAE(env, "dst");
+        return -1;
+    }
+
     bool failed = false;
     memset(dst, 0, sizeof(*dst));
 
@@ -705,6 +811,4 @@ void usbtk_free_usbg_f_mass_storage_attrs(struct usbg_f_ms_attrs *ptr)
         free(ptr->luns[i]);
     }
     free(ptr->luns);
-
-    memset(ptr, 0, sizeof(*ptr));
 }
