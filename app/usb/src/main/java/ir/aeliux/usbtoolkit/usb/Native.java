@@ -3,6 +3,7 @@ package ir.aeliux.usbtoolkit.usb;
 import java.io.IOException;
 
 import ir.aeliux.usbtoolkit.usb.dto.UsbgConfigAttrs;
+import ir.aeliux.usbtoolkit.usb.dto.UsbgConfigStrs;
 import ir.aeliux.usbtoolkit.usb.dto.UsbgGadgetAttrs;
 import ir.aeliux.usbtoolkit.usb.dto.UsbgGadgetStrs;
 
@@ -18,7 +19,7 @@ class Native {
                                     UsbgGadgetAttrs gadgetAtts,
                                     UsbgGadgetStrs gadgetStrs,
                                     UsbgConfigAttrs configAttrs,
-                                    String configStrs) throws EntityAlreadyExistsException;
+                                    UsbgConfigStrs configStrs) throws EntityAlreadyExistsException;
 
     static native long openGadget(long ptrwConfigfs,
                                   String gadgetName) throws EntityNotFoundException;

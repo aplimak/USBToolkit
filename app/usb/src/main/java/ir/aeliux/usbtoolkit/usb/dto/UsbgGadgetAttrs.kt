@@ -1,5 +1,9 @@
 package ir.aeliux.usbtoolkit.usb.dto
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+
+@Parcelize
 data class UsbgGadgetAttrs(
     var bcdUSB: Short,
     var bDeviceClass: Byte,
@@ -9,4 +13,4 @@ data class UsbgGadgetAttrs(
     var idVendor: Short,
     var idProduct: Short,
     var bcdDevice: Short
-)
+) : Parcelable

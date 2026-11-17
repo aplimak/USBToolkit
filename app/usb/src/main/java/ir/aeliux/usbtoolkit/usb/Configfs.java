@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import ir.aeliux.ptrw.PointerWrapper;
 import ir.aeliux.usbtoolkit.usb.dto.UsbgConfigAttrs;
+import ir.aeliux.usbtoolkit.usb.dto.UsbgConfigStrs;
 import ir.aeliux.usbtoolkit.usb.dto.UsbgGadgetAttrs;
 import ir.aeliux.usbtoolkit.usb.dto.UsbgGadgetStrs;
 
@@ -26,7 +27,7 @@ public class Configfs extends PointerWrapper {
                                UsbgGadgetAttrs gadgetAtts,
                                UsbgGadgetStrs gadgetStrs,
                                UsbgConfigAttrs configAttrs,
-                               String configStrs) throws EntityAlreadyExistsException
+                               UsbgConfigStrs configStrs) throws EntityAlreadyExistsException
     {
         return Gadget.create(this,
                              gadgetName,

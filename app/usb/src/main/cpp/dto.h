@@ -41,11 +41,11 @@ int usbtk_import_usbg_config_attrs(JNIEnv *env,
                                    jobject obj,
                                    struct usbg_config_attrs *dst);
 
-jstring usbtk_export_usbg_config_strs(JNIEnv *env,
+jobject usbtk_export_usbg_config_strs(JNIEnv *env,
                                       const struct usbg_config_strs *src);
 
 int usbtk_import_usbg_config_strs(JNIEnv *env,
-                                  jstring src,
+                                  jobject obj,
                                   struct usbg_config_strs *dst);
 
 void usbtk_free_usbg_config_strs(struct usbg_config_strs *ptr);

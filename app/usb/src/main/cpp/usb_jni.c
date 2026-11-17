@@ -67,7 +67,7 @@ Java_ir_aeliux_usbtoolkit_usb_Native_createGadget(JNIEnv *env, jclass cls,
                                                   jobject j_gadgetAttrs,
                                                   jobject j_gadgetStrs,
                                                   jobject j_configAttrs,
-                                                  jstring j_configStr)
+                                                  jobject j_configStrs)
 {
     usbg_state *s = ptrw_unwrap(env, j_ptrwConfigfs);
     if (s == NULL) return 0;
@@ -87,7 +87,7 @@ Java_ir_aeliux_usbtoolkit_usb_Native_createGadget(JNIEnv *env, jclass cls,
     if (usbtk_import_usbg_gadget_attrs(env, j_gadgetAttrs, &g_attrs) != 0) goto cleanup;
     if (usbtk_import_usbg_gadget_strs(env, j_gadgetStrs, &g_strs) != 0) goto cleanup;
     if (usbtk_import_usbg_config_attrs(env, j_configAttrs, &c_attrs) != 0) goto cleanup;
-    if (usbtk_import_usbg_config_strs(env, j_configStr, &c_strs) != 0) goto cleanup;
+    if (usbtk_import_usbg_config_strs(env, j_configStrs, &c_strs) != 0) goto cleanup;
 
     {
         int rc = usbg_create_gadget(s, gadget_name, &g_attrs, &g_strs, &g);

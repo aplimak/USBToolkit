@@ -22,6 +22,9 @@
 #define KOTLIN_USBG_CONFIG_ATTRS_CLASS "ir/aeliux/usbtoolkit/usb/dto/UsbgConfigAttrs"
 #define KOTLIN_USBG_CONFIG_ATTRS_CTOR_SIG "(BB)V"
 
+#define KOTLIN_USBG_CONFIG_STRS_CLASS "ir/aeliux/usbtoolkit/usb/dto/UsbgConfigStrs"
+#define KOTLIN_USBG_CONFIG_STRS_CTOR_SIG "(Ljava/lang/String;)V"
+
 #define KOTLIN_USBG_F_MASS_STORAGE_LUN_CLASS "ir/aeliux/usbtoolkit/usb/dto/function/UsbgMassStorageLun"
 #define KOTLIN_USBG_F_MASS_STORAGE_LUN_CTOR_SIG "(IZZZZLjava/lang/String;Ljava/lang/String;)V"
 #define KOTLIN_USBG_F_MASS_STORAGE_ATTRS_CLASS "ir/aeliux/usbtoolkit/usb/dto/function/UsbgMassStorageAttrs"
@@ -57,6 +60,12 @@ static struct
         jfieldID f_bmAttributes;
         jfieldID f_bMaxPower;
     } config_attrs;
+    struct
+    {
+        jclass cls;
+        jmethodID ctor;
+        jfieldID f_configuration;
+    } config_strs;
     struct
     {
         jclass cls;
@@ -261,6 +270,43 @@ static int usbtk_usbg_config_attrs_jni_init(JNIEnv *env)
     return -1;
 }
 
+static void usbtk_usbg_config_strs_jni_release(JNIEnv *env)
+{
+    if (g_jni.config_strs.cls) {
+        (*env)->DeleteGlobalRef(env, g_jni.config_strs.cls);
+        g_jni.config_strs.cls = NULL;
+    }
+}
+
+static int usbtk_usbg_config_strs_jni_init(JNIEnv *env)
+{
+    if (g_jni.config_strs.cls) return 0;
+
+    jclass local = (*env)->FindClass(env, KOTLIN_USBG_CONFIG_STRS_CLASS);
+    if (!local) return -1;
+
+    g_jni.config_strs.cls = (jclass) (*env)->NewGlobalRef(env, local);
+    (*env)->DeleteLocalRef(env, local);
+    if (!g_jni.config_strs.cls) return -1;
+
+    g_jni.config_strs.ctor = (*env)->GetMethodID(
+            env, g_jni.config_strs.cls, "<init>",
+            KOTLIN_USBG_CONFIG_STRS_CTOR_SIG);
+    if (!g_jni.config_strs.ctor) goto fail;
+
+    g_jni.config_strs.f_configuration = (*env)->GetFieldID(
+            env, g_jni.config_strs.cls, "configuration", "Ljava/lang/String;");
+
+    if (!g_jni.config_strs.f_configuration) {
+        goto fail;
+    }
+    return 0;
+
+    fail:
+    usbtk_usbg_config_strs_jni_release(env);
+    return -1;
+}
+
 static void usbtk_usbg_f_mass_storage_lun_jni_release(JNIEnv *env)
 {
     if (g_jni.f_mass_storage_lun.cls) {
@@ -407,6 +453,7 @@ int usbtk_dto_init(JNIEnv *env)
     if (usbtk_usbg_gadget_attrs_jni_init(env)
         || usbtk_usbg_gadget_strs_jni_init(env)
         || usbtk_usbg_config_attrs_jni_init(env)
+        || usbtk_usbg_config_strs_jni_init(env)
         || usbtk_usbg_f_mass_storage_lun_jni_init(env)
         || usbtk_usbg_f_mass_storage_attrs_jni_init(env)
         || usbtk_java_list_jni_init(env)) {
@@ -422,6 +469,7 @@ void usbtk_dto_release(JNIEnv *env)
     usbtk_usbg_gadget_attrs_jni_release(env);
     usbtk_usbg_gadget_strs_jni_release(env);
     usbtk_usbg_config_attrs_jni_release(env);
+    usbtk_usbg_config_strs_jni_release(env);
     usbtk_usbg_f_mass_storage_lun_jni_release(env);
     usbtk_usbg_f_mass_storage_attrs_jni_release(env);
     usbtk_java_list_jni_release(env);
@@ -586,31 +634,49 @@ int usbtk_import_usbg_config_attrs(JNIEnv *env,
     return 0;
 }
 
-jstring usbtk_export_usbg_config_strs(JNIEnv *env,
+jobject usbtk_export_usbg_config_strs(JNIEnv *env,
                                       const struct usbg_config_strs *src)
 {
-    if (!src || !src->configuration) return NULL;
-    return (*env)->NewStringUTF(env, src->configuration);
+    if (!g_jni.config_strs.cls) {
+        AXSN_THROW_ISE(env, "DTO is not initialized");
+        return NULL;
+    }
+    if (!src) {
+        AXSN_THROW_IAE(env, "src");
+        return NULL;
+    }
+
+    jstring j_configuration = src->configuration
+                             ? (*env)->NewStringUTF(env, src->configuration) : NULL;
+
+    jobject obj = (*env)->NewObject(env, g_jni.config_strs.cls, g_jni.config_strs.ctor,
+                                    j_configuration);
+
+    if (j_configuration) (*env)->DeleteLocalRef(env, j_configuration);
+
+    return obj;
 }
 
 int usbtk_import_usbg_config_strs(JNIEnv *env,
-                                  jstring src,
+                                  jobject obj,
                                   struct usbg_config_strs *dst)
 {
-    if (!dst) return -1;
-
-    if (!src) {
-        dst->configuration = NULL;
-        return 0;
+    if (!g_jni.config_strs.cls) {
+        AXSN_THROW_ISE(env, "DTO is not initialized");
+        return -1;
+    }
+    if (!obj) {
+        AXSN_THROW_IAE(env, "obj");
+        return -1;
+    }
+    if (!dst) {
+        AXSN_THROW_IAE(env, "dst");
+        return -1;
     }
 
-    const char *utf = (*env)->GetStringUTFChars(env, src, NULL);
-    if (!utf) return -1;
+    dst->configuration = usbtk_jstring_dup(env, obj, g_jni.config_strs.f_configuration);
 
-    dst->configuration = strdup(utf);
-
-    (*env)->ReleaseStringUTFChars(env, src, utf);
-    return dst->configuration ? 0 : -1;
+    return 0;
 }
 
 void usbtk_free_usbg_config_strs(struct usbg_config_strs *ptr) {
