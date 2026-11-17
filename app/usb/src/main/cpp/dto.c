@@ -858,8 +858,8 @@ int usbtk_import_usbg_f_mass_storage_attrs(JNIEnv *env,
 
     fail:
     failed = true;
-    dst->nluns = 0;
     usbtk_free_usbg_f_mass_storage_attrs(dst);
+    dst->nluns = 0;
     if (!(*env)->ExceptionCheck(env)) {
         AXSN_THROW_RTE(env, "usbtk_import_usbg_f_mass_storage_attrs");
     }
