@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
     public void useAppContext() {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        assertEquals("ir.aeliux.usbtoolkit", appContext.getPackageName());
+        assertEquals("ir.aeliux.usbtoolkit" + (BuildConfig.DEBUG ? ".dbg" : ""), appContext.getPackageName());
     }
 }
