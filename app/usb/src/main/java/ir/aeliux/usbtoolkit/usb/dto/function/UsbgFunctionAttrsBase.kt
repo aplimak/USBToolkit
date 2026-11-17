@@ -1,4 +1,4 @@
-package ir.aeliux.usbtoolkit.usb.dto
+package ir.aeliux.usbtoolkit.usb.dto.function
 
 import ir.aeliux.usbtoolkit.usb.UsbFunctions
 
