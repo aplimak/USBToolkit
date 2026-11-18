@@ -34,7 +34,7 @@ extern "C" {
 #  define LOGV(...) ((void)0)
 #endif
 
-#ifdef __cplusplus
+#if defined(__cplusplus) && defined(AXSN_HAVE_GTEST)
 #define AXSN_GTEST_LOGCAT \
 class LogcatPrinter : public testing::EmptyTestEventListener {\
         public:\

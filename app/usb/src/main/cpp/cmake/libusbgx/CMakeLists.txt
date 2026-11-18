@@ -59,6 +59,9 @@ target_include_directories(usbgx SYSTEM
 # AC_DEFINE([_GNU_SOURCE], ...)
 target_compile_definitions(usbgx PRIVATE _GNU_SOURCE)
 
+# Disable all warnings
+target_compile_options(usbgx PRIVATE -w)
+
 # Autotools builds with GNU extensions on (default -std=gnuNN).
 set_target_properties(usbgx PROPERTIES
         C_STANDARD 11

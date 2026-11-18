@@ -24,6 +24,9 @@ set(ANDROID_CMAKE_ARGS
 include(ExternalProject)
 
 # Shared library
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set(AXSN_BUILD_GTEST ON)
+endif()
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/common
         ${CMAKE_CURRENT_BINARY_DIR}/build/axsn_common)
 

@@ -8,6 +8,11 @@ target_link_libraries(axsn_common INTERFACE
     log
 )
 
-set(BUILD_GMOCK OFF CACHE BOOL "" FORCE)
-set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
-add_subdirectory(third_party/googletest)
+if (AXSN_BUILD_GTEST)
+    target_compile_definitions(axsn_common INTERFACE AXSN_HAVE_GTEST)
+    set(BUILD_GMOCK OFF CACHE BOOL "" FORCE)
+    set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
+    set(BUILD_SHARED_LIBS ON)
+    add_subdirectory(third_party/googletest)
+    unset(BUILD_SHARED_LIBS)
+endif()
