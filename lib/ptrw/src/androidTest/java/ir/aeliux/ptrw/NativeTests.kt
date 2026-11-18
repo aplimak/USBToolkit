@@ -43,12 +43,20 @@ class NativeTests {
         // dummy memory will be leaked
     }
 
+    @Test
+    fun nativeTest() {
+        Assert.assertEquals(0, runNativeTests())
+    }
+
     companion object {
         init {
-            System.loadLibrary("ptrw")
+            System.loadLibrary("ptrwtests")
         }
 
         @JvmStatic
         private external fun pop(ptr: Long)
+
+        @JvmStatic
+        private external fun runNativeTests(): Int
     }
 }

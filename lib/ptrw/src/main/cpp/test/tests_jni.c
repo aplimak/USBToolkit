@@ -2,11 +2,11 @@
 // Created by aeliux on 11/17/26.
 //
 
-#define LOG_TAG "libptrw:tests_jni.c"
+#define LOG_TAG "libptrwtests:tests_jni.c"
 
 #include "ptrw.h"
-#include "internal.h"
-#include <axsn/error.h>
+#include "../internal.h"
+#include "axsn/error.h"
 #include <stdlib.h>
 
 struct dummy_data {

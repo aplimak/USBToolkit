@@ -117,7 +117,7 @@ class NativeTests {
 
     companion object {
         init {
-            System.loadLibrary("usbtk")
+            System.loadLibrary("usbtktests")
         }
 
         @JvmStatic

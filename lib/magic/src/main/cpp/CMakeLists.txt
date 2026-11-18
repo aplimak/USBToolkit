@@ -1,9 +1,12 @@
 cmake_minimum_required(VERSION 3.22.1)
-project("magic" LANGUAGES C)
+project("magic" LANGUAGES C CXX)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 option(AXSN_STRICT     "Enable aggressive warnings and -Werror on the main target" ON)
 
@@ -106,7 +109,6 @@ axsn_apply_build_flags(${CMAKE_PROJECT_NAME})
 target_link_libraries(${CMAKE_PROJECT_NAME}
         axsn_common
         magiclib
-        android
         log
         z)
 

@@ -1,5 +1,3 @@
-set(ANDROID_STL none)
-
 add_library(axsn_common INTERFACE)
 
 target_include_directories(axsn_common INTERFACE
@@ -7,6 +5,9 @@ target_include_directories(axsn_common INTERFACE
 )
 
 target_link_libraries(axsn_common INTERFACE
-    android
     log
 )
+
+set(BUILD_GMOCK OFF CACHE BOOL "" FORCE)
+set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
+add_subdirectory(third_party/googletest)

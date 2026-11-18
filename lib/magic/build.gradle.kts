@@ -25,7 +25,7 @@ android {
         externalNativeBuild {
             cmake {
                 arguments += listOf(
-                    "-DANDROID_STL=none",
+                    "-DANDROID_STL=c++_shared",
                     "-DMAGIC_ASSET_OUTPUT_DIR=${magicAssetDir.get().asFile.absolutePath}"
                 )
             }

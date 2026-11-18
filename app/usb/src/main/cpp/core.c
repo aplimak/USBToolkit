@@ -4,7 +4,8 @@
 
 #define LOG_TAG "libusbtk:core.c"
 
-#include "dto.h"
+#include "usbtk/dto.h"
+#include "internal.h"
 #include <jni.h>
 #include <axsn/log.h>
 #include <axsn/error.h>

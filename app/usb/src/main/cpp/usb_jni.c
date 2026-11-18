@@ -5,7 +5,7 @@
 #define LOG_TAG "libusbtk:usb_jni.c"
 
 #include "internal.h"
-#include "dto.h"
+#include "usbtk/dto.h"
 #include <jni.h>
 #include <stdio.h>
 #include <stdlib.h>

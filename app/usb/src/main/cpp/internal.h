@@ -30,4 +30,7 @@ usbtk_throw_usbg(JNIEnv *env, const char *what, int rc)
                    rc);
 }
 
+int usbtk_dto_init(JNIEnv *env);
+void usbtk_dto_release(JNIEnv *env);
+
 #endif //USBTK_INTERNAL_H

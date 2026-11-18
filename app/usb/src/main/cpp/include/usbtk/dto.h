@@ -2,10 +2,16 @@
 // Created by aeliux on 9/23/26.
 //
 
-#ifndef USBTOOLKIT_DTO_H
-#define USBTOOLKIT_DTO_H
+#ifndef USBTK_DTO_H
+#define USBTK_DTO_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <jni.h>
+
+#define USBTK_API __attribute__((visibility("default")))
 
 struct usbg_gadget_attrs;
 struct usbg_gadget_strs;
@@ -14,57 +20,59 @@ struct usbg_config_strs;
 struct usbg_f_ms_lun_attrs;
 struct usbg_f_ms_attrs;
 
-int usbtk_dto_init(JNIEnv *env);
-
-void usbtk_dto_release(JNIEnv *env);
-
-jobject usbtk_export_usbg_gadget_attrs(JNIEnv *env,
+USBTK_API jobject usbtk_export_usbg_gadget_attrs(JNIEnv *env,
                                        const struct usbg_gadget_attrs *src);
 
-int usbtk_import_usbg_gadget_attrs(JNIEnv *env,
+USBTK_API int usbtk_import_usbg_gadget_attrs(JNIEnv *env,
                                    jobject obj,
                                    struct usbg_gadget_attrs *dst);
 
-jobject usbtk_export_usbg_gadget_strs(JNIEnv *env,
+USBTK_API jobject usbtk_export_usbg_gadget_strs(JNIEnv *env,
                                       const struct usbg_gadget_strs *src);
 
-int usbtk_import_usbg_gadget_strs(JNIEnv *env,
+// Structs created by this function must be freed using usbtk_free_usbg_gadget_strs.
+USBTK_API int usbtk_import_usbg_gadget_strs(JNIEnv *env,
                                   jobject obj,
                                   struct usbg_gadget_strs *dst);
 
-void usbtk_free_usbg_gadget_strs(struct usbg_gadget_strs *ptr);
+USBTK_API void usbtk_free_usbg_gadget_strs(struct usbg_gadget_strs *ptr);
 
-jobject usbtk_export_usbg_config_attrs(JNIEnv *env,
+USBTK_API jobject usbtk_export_usbg_config_attrs(JNIEnv *env,
                                        const struct usbg_config_attrs *src);
 
-int usbtk_import_usbg_config_attrs(JNIEnv *env,
+USBTK_API int usbtk_import_usbg_config_attrs(JNIEnv *env,
                                    jobject obj,
                                    struct usbg_config_attrs *dst);
 
-jobject usbtk_export_usbg_config_strs(JNIEnv *env,
+USBTK_API jobject usbtk_export_usbg_config_strs(JNIEnv *env,
                                       const struct usbg_config_strs *src);
 
-int usbtk_import_usbg_config_strs(JNIEnv *env,
+// Structs created by this function must be freed using usbtk_free_usbg_config_strs.
+USBTK_API int usbtk_import_usbg_config_strs(JNIEnv *env,
                                   jobject obj,
                                   struct usbg_config_strs *dst);
 
-void usbtk_free_usbg_config_strs(struct usbg_config_strs *ptr);
+USBTK_API void usbtk_free_usbg_config_strs(struct usbg_config_strs *ptr);
 
-jobject usbtk_export_usbg_f_mass_storage_lun(JNIEnv *env,
+USBTK_API jobject usbtk_export_usbg_f_mass_storage_lun(JNIEnv *env,
                                              const struct usbg_f_ms_lun_attrs *src);
 
-int usbtk_import_usbg_f_mass_storage_lun(JNIEnv *env,
+USBTK_API int usbtk_import_usbg_f_mass_storage_lun(JNIEnv *env,
                                          jobject obj,
                                          struct usbg_f_ms_lun_attrs *dst);
 
-jobject usbtk_export_usbg_f_mass_storage_attrs(JNIEnv *env,
+USBTK_API jobject usbtk_export_usbg_f_mass_storage_attrs(JNIEnv *env,
                                                const struct usbg_f_ms_attrs *src);
 
 // Structs created by this function must be freed using usbtk_usbg_f_mass_storage_attrs_free.
-int usbtk_import_usbg_f_mass_storage_attrs(JNIEnv *env,
+USBTK_API int usbtk_import_usbg_f_mass_storage_attrs(JNIEnv *env,
                                            jobject obj,
                                            struct usbg_f_ms_attrs *dst);
 
-void usbtk_free_usbg_f_mass_storage_attrs(struct usbg_f_ms_attrs *ptr);
+USBTK_API void usbtk_free_usbg_f_mass_storage_attrs(struct usbg_f_ms_attrs *ptr);
 
-#endif //USBTOOLKIT_DTO_H
+#ifdef __cplusplus
+}
+#endif
+
+#endif //USBTK_DTO_H
