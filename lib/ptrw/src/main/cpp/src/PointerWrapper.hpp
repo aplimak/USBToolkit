@@ -4,9 +4,8 @@
 
 #pragma once
 
+#include "shared.hpp"
 #include <thread>
-
-#define PTRW_API __attribute__((visibility("default")))
 
 namespace ptrw {
 
