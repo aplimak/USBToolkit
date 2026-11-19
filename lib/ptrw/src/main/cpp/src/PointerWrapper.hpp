@@ -33,9 +33,8 @@ namespace ptrw {
     private:
         void release() noexcept;
 
-        void* m_pointer;
-        Deleter m_deleter;
-        const std::thread::id m_owner;
+        struct Impl;
+        Impl* m_impl;
     };
 
 } // ptrw

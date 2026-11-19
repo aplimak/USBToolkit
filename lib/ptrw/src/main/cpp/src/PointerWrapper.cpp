@@ -7,14 +7,16 @@
 
 namespace ptrw {
 
+    struct PointerWrapper::Impl {
+        void* pointer;
+        Deleter deleter;
+        const std::thread::id owner;
+    };
+
     PointerWrapper::PointerWrapper(
             void* pointer,
             Deleter deleter
-    )
-            : m_pointer(nullptr),
-              m_deleter(deleter),
-              m_owner(std::this_thread::get_id()) {
-
+    ): m_impl(nullptr) {
         if (pointer == nullptr) {
             throw std::invalid_argument(
                     "PointerWrapper cannot wrap a null pointer"
@@ -24,7 +26,12 @@ namespace ptrw {
             throw std::invalid_argument("Deleter cannot be null");
         }
 
-        m_pointer = pointer;
+
+        m_impl = new Impl{
+                pointer,
+                deleter,
+                std::this_thread::get_id()
+        };
     }
 
     PointerWrapper::~PointerWrapper() noexcept {
@@ -33,6 +40,7 @@ namespace ptrw {
             std::terminate();
         }
         release();
+        delete m_impl;
     }
 
     void PointerWrapper::assertOwnerThread() const
@@ -62,26 +70,26 @@ namespace ptrw {
         if (isClosed())
             return;
 
-        void* pointer = m_pointer;
-        m_pointer = nullptr;
+        void* pointer = m_impl->pointer;
+        m_impl->pointer = nullptr;
 
-        m_deleter(pointer);
+        m_impl->deleter(pointer);
     }
 
     void *PointerWrapper::getRawPointer() const
     {
         assertOpen();
         assertOwnerThread();
-        return m_pointer;
+        return m_impl->pointer;
     }
 
     bool PointerWrapper::isOwnerThread() const noexcept
     {
-        return m_owner == std::this_thread::get_id();
+        return m_impl->owner == std::this_thread::get_id();
     }
 
     bool PointerWrapper::isClosed() const noexcept
     {
-        return m_pointer == nullptr;
+        return m_impl->pointer == nullptr;
     }
 } // ptrw
