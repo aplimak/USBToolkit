@@ -36,6 +36,7 @@ add_library(${CMAKE_PROJECT_NAME} SHARED
         core.c
         ptrw.c
         ptrw_jni.c
+        src/PointerWrapper.cpp
 )
 
 target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC
