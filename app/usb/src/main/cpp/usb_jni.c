@@ -191,7 +191,7 @@ Java_ir_aeliux_usbtoolkit_usb_Native_createFunction(JNIEnv *env,
             goto clean;
     }
 
-    int rc = usbg_create_function(g, j_functionType, instance, attrs, &f);
+    int rc = usbg_create_function(g, (usbg_function_type) j_functionType, instance, attrs, &f);
     if (rc != USBG_SUCCESS) {
         if (rc == USBG_ERROR_EXIST) {
             USBTK_THROW_EAEE(env, "Function already exists");

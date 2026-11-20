@@ -835,7 +835,7 @@ int usbtk_import_usbg_f_mass_storage_attrs(JNIEnv *env,
         goto done;
     }
 
-    dst->luns = calloc(n + 1, sizeof(struct usbg_f_ms_lun_attrs *));
+    dst->luns = calloc((size_t)(n) + 1, sizeof(struct usbg_f_ms_lun_attrs *));
     if (!dst->luns) {
         AXSN_THROW_OOM(env, "usbtk_import_usbg_f_mass_storage_attrs: %s", "dst->luns");
         goto fail;

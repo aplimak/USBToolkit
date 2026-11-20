@@ -46,6 +46,10 @@ function(axsn_apply_warnings target)
         -Wformat=2 -Wformat-security -Wnull-dereference -Wdouble-promotion
         -Wfloat-equal -Wwrite-strings -Wvla -Wswitch-enum -Wundef
         -Winit-self -Wuninitialized -Wno-unused-parameter -Wmissing-field-initializers
+        -Wconversion -Wsign-conversion -Wzero-as-null-pointer-constant
+        -Wnon-virtual-dtor -Wdelete-non-virtual-dtor
+        -Woverloaded-virtual -Wsuggest-override -Wctor-dtor-privacy
+        -Wold-style-cast
         -Werror
     )
 endfunction()
