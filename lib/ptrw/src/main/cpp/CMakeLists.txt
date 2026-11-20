@@ -53,12 +53,26 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     set(TEST_PROJECT ${CMAKE_PROJECT_NAME}tests)
+    set(TEST_SOURCES
+            test/PointerWrapper.cpp
+    )
     add_library(${TEST_PROJECT} SHARED
+            ${TEST_SOURCES}
             test/core.cpp
-            test/tests_jni.c
-            test/PointerWrapper.cpp)
+            test/tests_jni.c)
     target_link_libraries(${TEST_PROJECT}
             ${CMAKE_PROJECT_NAME}
             GTest::gtest)
     axsn_apply_build_flags(${TEST_PROJECT})
+
+    add_executable(${TEST_PROJECT}_runner
+            ${TEST_SOURCES}
+    )
+
+    target_link_libraries(${TEST_PROJECT}_runner PRIVATE
+            ${CMAKE_PROJECT_NAME}
+            GTest::gtest_main
+    )
+
+    axsn_apply_build_flags(${TEST_PROJECT}_runner)
 endif()
