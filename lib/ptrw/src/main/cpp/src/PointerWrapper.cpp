@@ -2,7 +2,10 @@
 // Created by aeliux on 11/19/26.
 //
 
+#define LOG_TAG "libptrw:PointerWrapper.cpp"
+
 #include "PointerWrapper.hpp"
+#include <axsn/log.h>
 #include <stdexcept>
 #include <utility>
 
@@ -28,6 +31,8 @@ namespace ptrw {
             );
         }
 
+        LOGV("ctor(%p) -> %p", pointer, (void *) this);
+
         m_impl = std::make_unique<Impl>(Impl{
                 pointer,
                 native_deleter,
@@ -39,7 +44,7 @@ namespace ptrw {
 
     PointerWrapper::~PointerWrapper() noexcept {
         if (isClosed()) return;
-
+        LOGV("dtor(%p)", (void *) this);
         close();
     }
 
@@ -47,6 +52,7 @@ namespace ptrw {
         if (isClosed()) return;
         assertAllowedThread();
 
+        LOGV("close(%p)", (void *) this);
         void* pointer = m_impl->pointer;
         m_impl->pointer = nullptr;
 
@@ -76,6 +82,8 @@ namespace ptrw {
     {
         assertOpen();
         assertAllowedThread();
+
+        LOGD("getRawPointer %p from %p", m_impl->pointer, (void *) this);
         return m_impl->pointer;
     }
 
