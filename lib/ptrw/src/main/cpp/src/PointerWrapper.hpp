@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "JniCallable.hpp"
 #include "shared.hpp"
 #include <thread>
 
@@ -26,7 +27,7 @@ namespace ptrw {
         [[nodiscard]] bool isClosed() const noexcept;
         void close();
     protected:
-        PointerWrapper(void* pointer, Deleter deleter);
+        PointerWrapper(void* pointer, Deleter native_deleter, std::shared_ptr<JniCallable> jni_deleter);
         void assertOwnerThread() const;
         void assertOpen() const;
     private:

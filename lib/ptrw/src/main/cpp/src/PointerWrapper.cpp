@@ -4,32 +4,32 @@
 
 #include "PointerWrapper.hpp"
 #include <stdexcept>
+#include <utility>
 
 namespace ptrw {
 
     struct PointerWrapper::Impl {
         void* pointer;
-        Deleter deleter;
+        Deleter native_deleter;
+        std::shared_ptr<JniCallable> jni_deleter;
         const std::thread::id owner;
     };
 
     PointerWrapper::PointerWrapper(
             void* pointer,
-            Deleter deleter
+            Deleter native_deleter,
+            std::shared_ptr<JniCallable> jni_deleter
     ): m_impl(nullptr) {
         if (pointer == nullptr) {
             throw std::invalid_argument(
                     "PointerWrapper cannot wrap a null pointer"
             );
         }
-        if (deleter == nullptr) {
-            throw std::invalid_argument("Deleter cannot be null");
-        }
-
 
         m_impl = new Impl{
                 pointer,
-                deleter,
+                native_deleter,
+                std::move(jni_deleter),
                 std::this_thread::get_id()
         };
     }
@@ -73,7 +73,8 @@ namespace ptrw {
         void* pointer = m_impl->pointer;
         m_impl->pointer = nullptr;
 
-        m_impl->deleter(pointer);
+        if (m_impl->native_deleter) m_impl->native_deleter(pointer);
+        if (m_impl->jni_deleter) m_impl->jni_deleter->call();
     }
 
     void *PointerWrapper::getRawPointer() const

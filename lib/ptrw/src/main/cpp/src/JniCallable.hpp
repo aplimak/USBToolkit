@@ -6,6 +6,7 @@
 
 #include "shared.hpp"
 #include <jni.h>
+#include <memory>
 
 namespace ptrw {
 
@@ -19,7 +20,7 @@ namespace ptrw {
         JniCallable(JniCallable&&)                 = delete;
         JniCallable& operator=(JniCallable&&)      = delete;
 
-        static JniCallable fromRunnable(JavaVM *jvm, jobject runnable);
+        static std::shared_ptr<JniCallable> fromRunnable(JavaVM *jvm, jobject runnable);
         bool call();
     private:
         JniCallable(JavaVM *jvm, jobject object, jmethodID mid);

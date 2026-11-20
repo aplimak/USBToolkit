@@ -75,7 +75,7 @@ namespace ptrw {
         }
     }
 
-    JniCallable JniCallable::fromRunnable(JavaVM *jvm, jobject runnable)
+    std::shared_ptr<JniCallable> JniCallable::fromRunnable(JavaVM *jvm, jobject runnable)
     {
         if (!jvm)      throw std::invalid_argument("jvm can't be null");
         if (!runnable) throw std::invalid_argument("runnable can't be null");
@@ -100,8 +100,9 @@ namespace ptrw {
             throw std::runtime_error("could not resolve Runnable.run()");
         }
 
+        auto self = std::shared_ptr<JniCallable>(new JniCallable{jvm, object, mid});
         guard.ref = nullptr;
-        return {jvm, object, mid};
+        return self;
     }
 
     bool JniCallable::call()
