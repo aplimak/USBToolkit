@@ -1,5 +1,8 @@
 import org.gradle.api.initialization.resolve.RepositoriesMode
 
+include(":lib:gtestrunner")
+
+
 include(":lib:ptrw")
 
 

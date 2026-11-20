@@ -15,6 +15,7 @@
             <option value="$PROJECT_DIR$/app/usb" />
             <option value="$PROJECT_DIR$/lib" />
             <option value="$PROJECT_DIR$/lib/core" />
+            <option value="$PROJECT_DIR$/lib/gtestrunner" />
             <option value="$PROJECT_DIR$/lib/magic" />
             <option value="$PROJECT_DIR$/lib/ptrw" />
             <option value="$PROJECT_DIR$/lib/ui" />

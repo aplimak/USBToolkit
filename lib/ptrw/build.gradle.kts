@@ -53,6 +53,7 @@ dependencies {
     implementation(libs.appcompat)
     implementation(libs.material)
     testImplementation(libs.junit)
+    androidTestImplementation(project(":lib:gtestrunner"))
     androidTestImplementation(libs.espresso.core)
     androidTestImplementation(libs.ext.junit)
 }

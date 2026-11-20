@@ -54,6 +54,7 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     set(TEST_PROJECT ${CMAKE_PROJECT_NAME}tests)
     add_library(${TEST_PROJECT} SHARED
+            test/core.cpp
             test/tests_jni.c
             test/tests_jni.cpp)
     target_link_libraries(${TEST_PROJECT}
