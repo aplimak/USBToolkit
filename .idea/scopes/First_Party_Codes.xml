@@ -1,0 +1,3 @@
+<component name="DependencyValidationManager">
+  <scope name="First Party Codes" pattern="!file:third_party//*&amp;&amp;!file:*/third_party//*" />
+</component>
