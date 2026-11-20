@@ -5,11 +5,9 @@
 #define LOG_TAG "libptrwtests:tests_jni.cpp"
 
 #include "PointerWrapper.hpp"
-#include <axsn/log.h>
+#include <axsn/gtest.hpp>
 #include <gtest/gtest.h>
 #include <jni.h>
-
-AXSN_GTEST_LOGCAT;
 
 using namespace ptrw;
 

@@ -2,6 +2,7 @@
 // Created by aeliux on 11/20/26.
 //
 
+#include <axsn/gtest.hpp>
 #include <jni.h>
 #include <gtest/gtest.h>
 
@@ -18,6 +19,7 @@ namespace {
     {
         std::call_once(g_init, [] {
             testing::InitGoogleTest();
+            AXSN_GTEST_LOGCAT_REGISTER;
         });
     }
 
