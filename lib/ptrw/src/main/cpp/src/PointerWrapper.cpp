@@ -31,7 +31,7 @@ namespace ptrw {
             );
         }
 
-        LOGV("ctor(%p) -> %p", pointer, (void *) this);
+        LOGV("ctor(%p) -> %p", pointer, static_cast<void *>(this));
 
         m_impl = std::make_unique<Impl>(Impl{
                 pointer,
@@ -44,7 +44,7 @@ namespace ptrw {
 
     PointerWrapper::~PointerWrapper() noexcept {
         if (isClosed()) return;
-        LOGV("dtor(%p)", (void *) this);
+        LOGV("dtor(%p)", static_cast<void *>(this));
         close();
     }
 
@@ -52,7 +52,7 @@ namespace ptrw {
         if (isClosed()) return;
         assertAllowedThread();
 
-        LOGV("close(%p)", (void *) this);
+        LOGV("close(%p)", static_cast<void *>(this));
         void* pointer = m_impl->pointer;
         m_impl->pointer = nullptr;
 
@@ -83,7 +83,7 @@ namespace ptrw {
         assertOpen();
         assertAllowedThread();
 
-        LOGD("getRawPointer %p from %p", m_impl->pointer, (void *) this);
+        LOGD("getRawPointer %p from %p", m_impl->pointer, static_cast<const void *>(this));
         return m_impl->pointer;
     }
 

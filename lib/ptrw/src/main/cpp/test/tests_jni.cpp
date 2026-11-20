@@ -4,15 +4,49 @@
 
 #define LOG_TAG "libptrwtests:tests_jni.cpp"
 
+#include "PointerWrapper.hpp"
 #include <axsn/log.h>
 #include <gtest/gtest.h>
 #include <jni.h>
 
 AXSN_GTEST_LOGCAT;
 
-TEST(PointerWrapperTest, Hello)
+using namespace ptrw;
+
+struct dummy_data {
+    bool deleted;
+};
+
+class DummyPointerWrapper: public PointerWrapper
 {
-    ASSERT_EQ(1+2, 3);
+public:
+    static void deleter(void *ptr) noexcept {
+        dummy_data *data = static_cast<dummy_data *>(ptr);
+        data->deleted = true;
+    }
+
+    explicit DummyPointerWrapper(void *pointer) : PointerWrapper(pointer,
+                                                                 &DummyPointerWrapper::deleter,
+                                                                 nullptr,
+                                                                 PointerWrapperFlags::ThreadConfined)
+    {
+
+    }
+};
+
+TEST(PointerWrapperTest, BasicTest)
+{
+    dummy_data data;
+    DummyPointerWrapper w(&data);
+    ASSERT_EQ(w.getRawPointer(), &data);
+    EXPECT_FALSE(data.deleted);
+    EXPECT_FALSE(w.isClosed());
+    EXPECT_TRUE(w.isOwnerThread());
+    ASSERT_NO_THROW(w.close());
+    EXPECT_THROW(w.getRawPointer(), std::runtime_error);
+    EXPECT_TRUE(data.deleted);
+    EXPECT_TRUE(w.isClosed());
+    EXPECT_TRUE(w.isOwnerThread());
 }
 
 extern "C"
