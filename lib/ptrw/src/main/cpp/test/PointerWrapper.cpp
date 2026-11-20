@@ -2,12 +2,10 @@
 // Created by aeliux on 11/18/26.
 //
 
-#define LOG_TAG "libptrwtests:tests_jni.cpp"
+#define LOG_TAG "libptrwtests:PointerWrapper.cpp"
 
 #include "PointerWrapper.hpp"
-#include <axsn/gtest.hpp>
 #include <gtest/gtest.h>
-#include <jni.h>
 
 using namespace ptrw;
 
@@ -45,15 +43,4 @@ TEST(PointerWrapperTest, BasicTest)
     EXPECT_TRUE(data.deleted);
     EXPECT_TRUE(w.isClosed());
     EXPECT_TRUE(w.isOwnerThread());
-}
-
-extern "C"
-JNIEXPORT jint JNICALL
-Java_ir_aeliux_ptrw_NativeTests_runNativeTests(JNIEnv *env, jclass clazz)
-{
-    testing::InitGoogleTest();
-
-    AXSN_GTEST_LOGCAT_REGISTER;
-
-    return RUN_ALL_TESTS();
 }

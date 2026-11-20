@@ -56,7 +56,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_library(${TEST_PROJECT} SHARED
             test/core.cpp
             test/tests_jni.c
-            test/tests_jni.cpp)
+            test/PointerWrapper.cpp)
     target_link_libraries(${TEST_PROJECT}
             ${CMAKE_PROJECT_NAME}
             GTest::gtest)
