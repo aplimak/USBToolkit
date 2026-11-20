@@ -19,7 +19,6 @@ namespace {
     {
         std::call_once(g_init, [] {
             testing::InitGoogleTest();
-            AXSN_GTEST_LOGCAT_REGISTER;
         });
     }
 
@@ -83,11 +82,12 @@ Java_ir_aeliux_gtestrunner_GTestRunner_listTests(
 }
 
 extern "C"
-JNIEXPORT jobjectArray JNICALL
+JNIEXPORT jint JNICALL
 Java_ir_aeliux_gtestrunner_GTestRunner_runAll(
         JNIEnv* env,
-        jclass,
-        jobjectArray selected)
+        jclass clazz,
+        jobjectArray selected,
+        jobject bridge)
 {
     initialize_gtest();
 
@@ -101,10 +101,9 @@ Java_ir_aeliux_gtestrunner_GTestRunner_runAll(
                 "GoogleTest has already executed in this process"
         );
 
-        return nullptr;
+        return 0;
     }
 
-    // Construct a GoogleTest filter from selected test names.
     std::string filter;
 
     const jsize count = env->GetArrayLength(selected);
@@ -114,11 +113,11 @@ Java_ir_aeliux_gtestrunner_GTestRunner_runAll(
                 env->GetObjectArrayElement(selected, i)
         );
 
-        const char* chars = env->GetStringUTFChars(value, nullptr);
+        const char* chars =
+                env->GetStringUTFChars(value, nullptr);
 
-        if (!filter.empty()) {
+        if (!filter.empty())
             filter += ':';
-        }
 
         filter += chars;
 
@@ -126,75 +125,31 @@ Java_ir_aeliux_gtestrunner_GTestRunner_runAll(
         env->DeleteLocalRef(value);
     }
 
-    if (filter.empty()) {
-        jclass exception = env->FindClass(
-                "java/lang/IllegalArgumentException"
-        );
-
-        env->ThrowNew(exception, "No native tests selected");
-
-        return nullptr;
-    }
+    if (filter.empty())
+        return -1;
 
     GTEST_FLAG_SET(filter, filter);
 
-    const int exit_code = RUN_ALL_TESTS();
+    AXSN_GTEST_LOGCAT_REGISTER;
 
-    std::vector<std::string> records;
+    // Install the JUnit event bridge.
+    auto* listener = new GTestJUnitListener(env, bridge);
 
-    const auto* unit = testing::UnitTest::GetInstance();
-
-    for (int i = 0; i < unit->total_test_suite_count(); ++i) {
-        const auto* suite = unit->GetTestSuite(i);
-
-        for (int j = 0; j < suite->total_test_count(); ++j) {
-            const auto* test = suite->GetTestInfo(j);
-
-            if (!test->should_run()) {
-                continue;
-            }
-
-            const auto* result = test->result();
-
-            std::string status =
-                    result->Skipped() ? "S" :
-                    result->Passed()  ? "P" : "F";
-
-            std::string message;
-
-            for (int k = 0; k < result->total_part_count(); ++k) {
-                const auto& part = result->GetTestPartResult(k);
-
-                if (!part.failed()) {
-                    continue;
-                }
-
-                if (!message.empty()) {
-                    message += '\n';
-                }
-
-                if (part.file_name() != nullptr) {
-                    message += part.file_name();
-                    message += ":";
-                    message += std::to_string(part.line_number());
-                    message += ": ";
-                }
-
-                message += part.message();
-            }
-
-            records.push_back(get_test_name(*test));
-            records.push_back(status);
-            records.push_back(message);
-        }
+    if (!listener->valid()) {
+        delete listener;
+        return -1;
     }
 
-    // Account for an invocation-level failure if no individual
-    // test result explains the nonzero exit code.
-    if (exit_code != 0 && !unit->Failed() && !records.empty()) {
-        records[1] = "F";
-        records[2] = "GoogleTest returned a failure exit code.";
-    }
+    auto& listeners =
+            testing::UnitTest::GetInstance()->listeners();
 
-    return to_java_array(env, records);
+    listeners.Append(listener);
+
+    // JUnit events are now emitted DURING native execution.
+    const int result = RUN_ALL_TESTS();
+
+    // Remove and destroy our listener after execution.
+    delete listeners.Release(listener);
+
+    return result;
 }

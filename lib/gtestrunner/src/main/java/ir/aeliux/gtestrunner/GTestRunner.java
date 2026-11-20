@@ -89,63 +89,20 @@ public final class GTestRunner extends Runner implements Filterable {
 
     @Override
     public void run(RunNotifier notifier) {
-        Map<String, Result> results;
 
-        try {
-            String[] raw = runAll(
-                    selectedTests.toArray(new String[0])
+        GTestEventBridge bridge =
+                new GTestEventBridge(notifier, descriptions);
+
+        int exitCode = runAll(
+                selectedTests.toArray(new String[0]),
+                bridge
+        );
+
+        if (exitCode != 0 && bridge.getFailureCount() == 0) {
+            throw new IllegalStateException(
+                    "GoogleTest returned " + exitCode
+                            + " without reporting individual failures"
             );
-
-            if (raw == null || raw.length % 3 != 0) {
-                throw new IllegalStateException(
-                        "Invalid native test result"
-                );
-            }
-
-            results = new HashMap<>();
-
-            for (int i = 0; i < raw.length; i += 3) {
-                results.put(
-                        raw[i],
-                        new Result(raw[i + 1], raw[i + 2])
-                );
-            }
-
-        } catch (Throwable error) {
-            reportExecutionFailure(notifier, error);
-            return;
-        }
-
-        for (String name : selectedTests) {
-            Description description = descriptions.get(name);
-            Result result = results.get(name);
-
-            if (result == null) {
-                reportFailure(
-                        notifier,
-                        description,
-                        new AssertionError("Native test returned no result")
-                );
-                continue;
-            }
-
-            if ("S".equals(result.status)) {
-                notifier.fireTestIgnored(description);
-                continue;
-            }
-
-            notifier.fireTestStarted(description);
-
-            if ("F".equals(result.status)) {
-                notifier.fireTestFailure(
-                        new Failure(
-                                description,
-                                new AssertionError(result.message)
-                        )
-                );
-            }
-
-            notifier.fireTestFinished(description);
         }
     }
 
@@ -179,5 +136,5 @@ public final class GTestRunner extends Runner implements Filterable {
     }
 
     private static native String[] listTests();
-    private static native String[] runAll(String[] selectedTests);
+    private static native int runAll(String[] selectedTests, GTestEventBridge bridge);
 }
