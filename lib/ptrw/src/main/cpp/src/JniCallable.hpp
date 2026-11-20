@@ -13,7 +13,7 @@ namespace ptrw {
     class PTRW_API JniCallable
     {
     public:
-        ~JniCallable();
+        ~JniCallable() noexcept;
 
         JniCallable(const JniCallable&)            = delete;
         JniCallable& operator=(const JniCallable&) = delete;
@@ -25,7 +25,7 @@ namespace ptrw {
     private:
         JniCallable(JavaVM *jvm, jobject object, jmethodID mid);
         struct Impl;
-        Impl* m_impl;
+        std::unique_ptr<Impl> m_impl;
     };
 
 } // ptrw

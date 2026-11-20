@@ -7,41 +7,48 @@
 #include <memory>
 #include <stdexcept>
 
-struct EnvHolder {
-    JavaVM *jvm;
-    JNIEnv *env;
-    bool attached;
+namespace {
 
-    ~EnvHolder() {
-        if (attached) {
-            if (env->ExceptionCheck()) {
-                env->ExceptionClear();
+    struct EnvHolder
+    {
+        JavaVM *jvm;
+        JNIEnv *env;
+        bool attached;
+
+        ~EnvHolder()
+        {
+            if (attached) {
+                if (env->ExceptionCheck()) {
+                    env->ExceptionClear();
+                }
+                jvm->DetachCurrentThread();
             }
-            jvm->DetachCurrentThread();
         }
-    }
-};
+    };
 
-static std::unique_ptr<EnvHolder> acquireEnv(JavaVM *jvm) {
-    if (!jvm) throw std::invalid_argument("jvm can't be null");
-    JNIEnv *env = nullptr;
-    bool attached = true;
-    int rc = JNI_OK;
-    if ((rc = jvm->GetEnv(reinterpret_cast<void **>(&env), JNI_VERSION_1_6)) != JNI_OK) {
-        rc = jvm->AttachCurrentThread(&env, nullptr);
-    } else {
-        attached = false;
+    static std::unique_ptr<EnvHolder> acquireEnv(JavaVM *jvm)
+    {
+        if (!jvm) throw std::invalid_argument("jvm can't be null");
+        JNIEnv *env = nullptr;
+        bool attached = true;
+        int rc = JNI_OK;
+        if ((rc = jvm->GetEnv(reinterpret_cast<void **>(&env), JNI_VERSION_1_6)) != JNI_OK) {
+            rc = jvm->AttachCurrentThread(&env, nullptr);
+        } else {
+            attached = false;
+        }
+
+        if (rc != JNI_OK || !env) {
+            throw std::runtime_error("Can't aquire a valid jni env");
+        }
+
+        return std::make_unique<EnvHolder>(EnvHolder{
+                jvm,
+                env,
+                attached
+        });
     }
 
-    if (rc != JNI_OK || ! env) {
-        throw std::runtime_error("Can't aquire a valid jni env");
-    }
-
-    return std::unique_ptr<EnvHolder>(new EnvHolder{
-        jvm,
-        env,
-        attached
-    });
 }
 
 namespace ptrw {
@@ -56,23 +63,25 @@ namespace ptrw {
         if (jvm == nullptr) {
             throw std::invalid_argument("jvm can't be null");
         }
-        m_impl = new Impl{
+        if (object == nullptr || mid == nullptr) {
+            throw std::invalid_argument("object can't be null");
+        }
+        if (mid == nullptr) {
+            throw std::invalid_argument("mid can't be null");
+        }
+
+        m_impl = std::make_unique<Impl>(Impl{
             jvm,
             object,
             mid
-        };
+        });
     }
 
-    JniCallable::~JniCallable()
+    JniCallable::~JniCallable() noexcept
     {
-        try {
-            auto holder = acquireEnv(m_impl->jvm);
-            JNIEnv *env = holder->env;
-            env->DeleteGlobalRef(m_impl->object);
-            delete m_impl;
-        } catch (const std::runtime_error &e) {
-            std::terminate();
-        }
+        auto holder = acquireEnv(m_impl->jvm);
+        JNIEnv *env = holder->env;
+        env->DeleteGlobalRef(m_impl->object);
     }
 
     std::shared_ptr<JniCallable> JniCallable::fromRunnable(JavaVM *jvm, jobject runnable)
@@ -100,9 +109,15 @@ namespace ptrw {
             throw std::runtime_error("could not resolve Runnable.run()");
         }
 
-        auto self = std::shared_ptr<JniCallable>(new JniCallable{jvm, object, mid});
         guard.ref = nullptr;
-        return self;
+        JniCallable* raw = nullptr;
+        try {
+            raw = new JniCallable{jvm, object, mid};
+        } catch (...) {
+            env->DeleteGlobalRef(object);
+            throw;
+        }
+        return std::shared_ptr<JniCallable>(raw);
     }
 
     bool JniCallable::call()
