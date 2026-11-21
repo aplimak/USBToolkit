@@ -12,6 +12,7 @@ Java_ir_aeliux_ptrw_Native_setFreeCallback(JNIEnv *env,
                                            jlong j_handle,
                                            jobject j_callback)
 {
+    (void)clazz;
     ptrw_t *ptrw = ptrw_resolve(env, j_handle);
     if (!ptrw) return;
 
@@ -43,6 +44,7 @@ JNIEXPORT void JNICALL
 Java_ir_aeliux_ptrw_Native_close(JNIEnv *env, jclass cls,
                                  jlong j_handle)
 {
+    (void)cls;
     ptrw_t *ptrw = ptrw_resolve(env, j_handle);
     if (!ptrw) return;
 

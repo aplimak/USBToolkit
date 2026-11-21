@@ -1,0 +1,175 @@
+include_guard(GLOBAL)
+
+# Register a centrally maintained, vendored CMake dependency. Registration
+# stores metadata only; source is added when axsn_add_registered_dependency()
+# or axsn_use_vendored_dependency() first requests it.
+function(axsn_register_vendored_dependency)
+  cmake_parse_arguments(PARSE_ARGV 0 ARG
+        "EXCLUDE_FROM_ALL"
+        "NAME;SOURCE_DIR;BINARY_DIR"
+        "TARGETS"
+    )
+  if(ARG_UNPARSED_ARGUMENTS OR NOT ARG_NAME OR NOT ARG_SOURCE_DIR OR NOT ARG_TARGETS)
+    message(FATAL_ERROR
+      "axsn_register_vendored_dependency requires NAME, SOURCE_DIR and TARGETS")
+  endif()
+  if(NOT EXISTS "${ARG_SOURCE_DIR}/CMakeLists.txt")
+    message(FATAL_ERROR
+      "AXSN dependency '${ARG_NAME}' has no CMakeLists.txt: ${ARG_SOURCE_DIR}")
+  endif()
+
+  string(MAKE_C_IDENTIFIER "${ARG_NAME}" _id)
+  get_filename_component(_source "${ARG_SOURCE_DIR}" REALPATH)
+  if(ARG_BINARY_DIR)
+    get_filename_component(_binary "${ARG_BINARY_DIR}" ABSOLUTE BASE_DIR "${CMAKE_BINARY_DIR}")
+  else()
+    set(_binary "${CMAKE_BINARY_DIR}/_axsn/deps/${_id}")
+  endif()
+
+  get_property(_old_name GLOBAL PROPERTY "AXSN_DEP_${_id}_NAME")
+  if(_old_name AND NOT _old_name STREQUAL ARG_NAME)
+    message(FATAL_ERROR "AXSN dependency name collision: '${_old_name}' vs '${ARG_NAME}'")
+  endif()
+  get_property(_registered GLOBAL PROPERTY "AXSN_DEP_${_id}_REGISTERED")
+  if(_registered)
+    get_property(_old_source GLOBAL PROPERTY "AXSN_DEP_${_id}_SOURCE")
+    get_property(_old_binary GLOBAL PROPERTY "AXSN_DEP_${_id}_BINARY")
+    get_property(_old_targets GLOBAL PROPERTY "AXSN_DEP_${_id}_TARGETS")
+    if(NOT _old_source STREQUAL _source OR NOT _old_binary STREQUAL _binary OR NOT _old_targets STREQUAL ARG_TARGETS)
+      message(FATAL_ERROR "AXSN dependency '${ARG_NAME}' was registered with conflicting settings")
+    endif()
+    return()
+  endif()
+
+  set_property(GLOBAL PROPERTY "AXSN_DEP_${_id}_NAME" "${ARG_NAME}")
+  set_property(GLOBAL PROPERTY "AXSN_DEP_${_id}_REGISTERED" TRUE)
+  set_property(GLOBAL PROPERTY "AXSN_DEP_${_id}_SOURCE" "${_source}")
+  set_property(GLOBAL PROPERTY "AXSN_DEP_${_id}_BINARY" "${_binary}")
+  set_property(GLOBAL PROPERTY "AXSN_DEP_${_id}_TARGETS" "${ARG_TARGETS}")
+  if(ARG_EXCLUDE_FROM_ALL)
+    set_property(GLOBAL PROPERTY "AXSN_DEP_${_id}_EXCLUDE" TRUE)
+  else()
+    set_property(GLOBAL PROPERTY "AXSN_DEP_${_id}_EXCLUDE" FALSE)
+  endif()
+endfunction()
+
+function(axsn_add_registered_dependency)
+  cmake_parse_arguments(PARSE_ARGV 0 ARG "" "NAME" "")
+  if(NOT ARG_NAME)
+    message(FATAL_ERROR "axsn_add_registered_dependency requires NAME")
+  endif()
+  string(MAKE_C_IDENTIFIER "${ARG_NAME}" _id)
+  get_property(_registered GLOBAL PROPERTY "AXSN_DEP_${_id}_REGISTERED")
+  if(NOT _registered)
+    message(FATAL_ERROR "AXSN dependency '${ARG_NAME}' has not been registered")
+  endif()
+  get_property(_already_added GLOBAL PROPERTY "AXSN_DEP_${_id}_ADDED")
+  if(_already_added)
+    return()
+  endif()
+
+  get_property(_source GLOBAL PROPERTY "AXSN_DEP_${_id}_SOURCE")
+  get_property(_binary GLOBAL PROPERTY "AXSN_DEP_${_id}_BINARY")
+  get_property(_exclude GLOBAL PROPERTY "AXSN_DEP_${_id}_EXCLUDE")
+  get_property(_targets GLOBAL PROPERTY "AXSN_DEP_${_id}_TARGETS")
+
+  # Permit an already-provided dependency (for example from find_package),
+  # but reject partially defined target sets to avoid duplicate/mixed copies.
+  set(_existing_count 0)
+  foreach(_target IN LISTS _targets)
+    if(TARGET "${_target}")
+      math(EXPR _existing_count "${_existing_count} + 1")
+    endif()
+  endforeach()
+  list(LENGTH _targets _target_count)
+  if(_existing_count EQUAL _target_count)
+    set_property(GLOBAL PROPERTY "AXSN_DEP_${_id}_ADDED" TRUE)
+    return()
+  elseif(_existing_count GREATER 0)
+    message(FATAL_ERROR
+            "AXSN dependency '${ARG_NAME}' has only some of its declared targets already defined")
+  endif()
+
+  # Vendored dependencies are static by default. This variable is scoped to
+  # this helper and inherited by the added subdirectory.
+  set(_had_build_shared_libs FALSE)
+  if(DEFINED BUILD_SHARED_LIBS)
+    set(_had_build_shared_libs TRUE)
+    set(_saved_build_shared_libs "${BUILD_SHARED_LIBS}")
+  endif()
+  set(BUILD_SHARED_LIBS OFF)
+
+  if(_exclude)
+    add_subdirectory("${_source}" "${_binary}" EXCLUDE_FROM_ALL)
+  else()
+    add_subdirectory("${_source}" "${_binary}")
+  endif()
+
+  if(_had_build_shared_libs)
+    set(BUILD_SHARED_LIBS "${_saved_build_shared_libs}")
+  else()
+    unset(BUILD_SHARED_LIBS)
+  endif()
+
+  foreach(_target IN LISTS _targets)
+    if(NOT TARGET "${_target}")
+      message(FATAL_ERROR
+        "AXSN added dependency '${ARG_NAME}', but expected target '${_target}' was not created")
+    endif()
+  endforeach()
+  set_property(GLOBAL PROPERTY "AXSN_DEP_${_id}_ADDED" TRUE)
+endfunction()
+
+function(axsn_use_vendored_dependency consumer)
+  cmake_parse_arguments(PARSE_ARGV 1 ARG "" "NAME" "")
+  if(NOT TARGET "${consumer}")
+    message(FATAL_ERROR "axsn_use_vendored_dependency: unknown consumer '${consumer}'")
+  endif()
+  if(NOT ARG_NAME)
+    message(FATAL_ERROR "axsn_use_vendored_dependency requires NAME")
+  endif()
+  axsn_add_registered_dependency(NAME "${ARG_NAME}")
+  string(MAKE_C_IDENTIFIER "${ARG_NAME}" _id)
+  get_property(_targets GLOBAL PROPERTY "AXSN_DEP_${_id}_TARGETS")
+  target_link_libraries("${consumer}" PRIVATE ${_targets})
+endfunction()
+
+
+# Import a separately built Android shared library without Prefab. The module
+# using this target must stage the ABI-matching .so before CMake configures.
+function(axsn_import_android_shared_library)
+  cmake_parse_arguments(PARSE_ARGV 0 ARG "" "NAME;LOCATION;ALIAS" "INCLUDE_DIRECTORIES")
+  if(NOT ARG_NAME OR NOT ARG_LOCATION)
+    message(FATAL_ERROR "axsn_import_android_shared_library requires NAME and LOCATION")
+  endif()
+  if(NOT ANDROID)
+    message(FATAL_ERROR "axsn_import_android_shared_library is intended for Android CMake roots")
+  endif()
+  if(NOT EXISTS "${ARG_LOCATION}")
+    message(FATAL_ERROR "AXSN imported library does not exist: ${ARG_LOCATION}")
+  endif()
+  if(TARGET "${ARG_NAME}")
+    message(FATAL_ERROR "AXSN imported target already exists: ${ARG_NAME}")
+  endif()
+
+  get_filename_component(_location "${ARG_LOCATION}" REALPATH)
+  add_library("${ARG_NAME}" SHARED IMPORTED GLOBAL)
+  set_target_properties("${ARG_NAME}" PROPERTIES IMPORTED_LOCATION "${_location}")
+
+  if(ARG_INCLUDE_DIRECTORIES)
+    set(_include_dirs)
+    foreach(_dir IN LISTS ARG_INCLUDE_DIRECTORIES)
+      get_filename_component(_absolute "${_dir}" ABSOLUTE BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+      list(APPEND _include_dirs "${_absolute}")
+    endforeach()
+    set_target_properties("${ARG_NAME}" PROPERTIES
+            INTERFACE_INCLUDE_DIRECTORIES "${_include_dirs}")
+  endif()
+
+  if(ARG_ALIAS)
+    if(TARGET "${ARG_ALIAS}")
+      message(FATAL_ERROR "AXSN imported alias already exists: ${ARG_ALIAS}")
+    endif()
+    add_library("${ARG_ALIAS}" ALIAS "${ARG_NAME}")
+  endif()
+endfunction()

@@ -39,7 +39,7 @@ TEST(PointerWrapperTest, BasicTest)
     EXPECT_FALSE(w.isClosed());
     EXPECT_TRUE(w.isOwnerThread());
     ASSERT_NO_THROW(w.close());
-    EXPECT_THROW(w.getRawPointer(), std::runtime_error);
+    EXPECT_THROW((void)w.getRawPointer(), std::runtime_error);
     EXPECT_TRUE(data.deleted);
     EXPECT_TRUE(w.isClosed());
     EXPECT_TRUE(w.isOwnerThread());

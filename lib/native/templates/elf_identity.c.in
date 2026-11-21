@@ -1,0 +1,44 @@
+#include <stdint.h>
+
+struct axsn_note_description {
+    uint32_t schema_version;
+    char project[sizeof("@AXSN_NOTE_PROJECT@")];
+    char target[sizeof("@AXSN_NOTE_TARGET@")];
+    char abi[sizeof("@AXSN_NOTE_ABI@")];
+    char revision[sizeof("@AXSN_NOTE_REVISION@")];
+};
+
+struct axsn_elf_note {
+    uint32_t namesz;
+    uint32_t descsz;
+    uint32_t type;
+    char name[8];
+    struct axsn_note_description description;
+};
+
+#if defined(__has_attribute)
+#  if __has_attribute(retain)
+#    define AXSN_NOTE_RETAIN __attribute__((retain))
+#  else
+#    define AXSN_NOTE_RETAIN
+#  endif
+#else
+#  define AXSN_NOTE_RETAIN
+#endif
+
+/* ELF note fields are 4-byte aligned; namesz includes the terminating NUL. */
+__attribute__((section(".note.axsn"), used, aligned(4), visibility("hidden")))
+AXSN_NOTE_RETAIN
+const struct axsn_elf_note axsn_elf_note = {
+    .namesz = 5,
+    .descsz = (uint32_t)sizeof(struct axsn_note_description),
+    .type = UINT32_C(0x4158534E),
+    .name = "AXSN",
+    .description = {
+        .schema_version = 1,
+        .project = "@AXSN_NOTE_PROJECT@",
+        .target = "@AXSN_NOTE_TARGET@",
+        .abi = "@AXSN_NOTE_ABI@",
+        .revision = "@AXSN_NOTE_REVISION@"
+    }
+};

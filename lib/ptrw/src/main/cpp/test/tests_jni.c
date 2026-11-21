@@ -17,12 +17,14 @@ struct dummy_data {
 JNIEXPORT void JNICALL
 Java_ir_aeliux_ptrw_NativeTests_pop(JNIEnv *env, jclass clazz, jlong ptr)
 {
+    (void)clazz;
     ptrw_pop(env, ptr);
 }
 
 JNIEXPORT jlong JNICALL
 Java_ir_aeliux_ptrw_DummyPointerWrapper_init(JNIEnv *env, jclass clazz)
 {
+    (void)clazz;
     struct dummy_data *ptr = calloc(1, sizeof(struct dummy_data));
     if (!ptr) {
         AXSN_THROW_OOM(env, "dummy_data");
@@ -35,6 +37,7 @@ Java_ir_aeliux_ptrw_DummyPointerWrapper_init(JNIEnv *env, jclass clazz)
 JNIEXPORT void JNICALL
 Java_ir_aeliux_ptrw_DummyPointerWrapper_free(JNIEnv *env, jclass clazz, jlong wptr)
 {
+    (void)clazz;
     struct dummy_data *ptr = ptrw_pop(env, wptr);
     if (!ptr) return;
 
