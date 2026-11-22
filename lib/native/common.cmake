@@ -31,15 +31,6 @@ endif()
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# Preserve the old AXSN_STRICT switch as a alias.
-if(DEFINED AXSN_STRICT)
-  set(_AXSN_WARNINGS_DEFAULT "${AXSN_STRICT}")
-  set(_AXSN_WERROR_DEFAULT "${AXSN_STRICT}")
-else()
-  set(_AXSN_WARNINGS_DEFAULT ON)
-  set(_AXSN_WERROR_DEFAULT ON)
-endif()
-
 option(AXSN_ENABLE_WARNINGS
   "Enable warnings on AXSN/first-party targets"
   "${_AXSN_WARNINGS_DEFAULT}")
