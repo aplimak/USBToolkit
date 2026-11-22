@@ -1,3 +1,5 @@
+#define LOG_TAG "axsn-jni:jni.c"
+
 #include <axsn/jni.h>
 
 #include <axsn/error.h>
@@ -114,6 +116,7 @@ void axsn_jni_env_release(axsn_jni_env *state) {
 }
 
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
+    LOGV("JNI_OnLoad");
     void *raw_env = NULL;
     jint result;
 
@@ -129,10 +132,12 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
     }
 
     atomic_store_explicit(&g_axsn_java_vm, vm, memory_order_release);
+    LOGI("JNI_OnLoad done");
     return JNI_VERSION_1_6;
 }
 
 JNIEXPORT void JNICALL JNI_OnUnload(JavaVM *vm, void *reserved) {
+    LOGV("JNI_OnUnload");
     JavaVM *expected = vm;
     (void)reserved;
 
@@ -143,4 +148,6 @@ JNIEXPORT void JNICALL JNI_OnUnload(JavaVM *vm, void *reserved) {
         memory_order_acq_rel,
         memory_order_acquire
     );
+
+    LOGI("JNI_OnUnload done");
 }

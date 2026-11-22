@@ -12,9 +12,9 @@ extern "C" {
 #endif
 
 /* Each .c can #define LOG_TAG before including this header.
-   If it doesn't, the library-wide tag is used. */
+   If it doesn't, the default tag is used. */
 #ifndef LOG_TAG
-#define LOG_TAG "libaxsn"
+#define LOG_TAG "axsn"
 #endif
 
 #define LOG(prio, ...) \

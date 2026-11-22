@@ -1,3 +1,5 @@
+#define LOG_TAG "axsn-gtest_jni:jni.cpp"
+
 #include <axsn/log.h>
 #include <gtest/gtest.h>
 #include <jni.h>
@@ -237,7 +239,7 @@ Java_ir_aeliux_gtestrunner_GTestRunner_listTests(JNIEnv *env, jclass) {
 
 extern "C" JNIEXPORT jint JNICALL Java_ir_aeliux_gtestrunner_GTestRunner_runAll(
     JNIEnv *env, jclass clazz, jobjectArray selected, jobject bridge) {
-        
+
   (void)clazz;
   axsn::GTest::initialize_gtest();
   if (axsn::GTest::g_has_run.test_and_set()) {

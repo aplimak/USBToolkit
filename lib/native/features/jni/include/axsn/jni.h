@@ -1,13 +1,5 @@
 #pragma once
 
-/*
- * C-compatible JNI runtime access for one consuming ELF shared library.
- *
- * These declarations intentionally have hidden visibility. They are resolved
- * among translation units in the final consuming DSO, but are not added to
- * its public dynamic symbol table. JNI_OnLoad/JNI_OnUnload are the only
- * symbols implemented by AXSN that are intentionally exported.
- */
 #include <jni.h>
 #include <axsn/export.h>
 
