@@ -4,7 +4,7 @@ project("usbtk" LANGUAGES C CXX)
 include("${CMAKE_CURRENT_LIST_DIR}/common/common.cmake")
 axsn_initialize()
 
-set(BUILD_SHARED_LIBS OFF)
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "")
 
 # set(TINYALSA_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 # set(TINYALSA_BUILD_UTILS OFF CACHE BOOL "" FORCE)
