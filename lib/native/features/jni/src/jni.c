@@ -1,5 +1,7 @@
 #include <axsn/jni.h>
 
+#include <axsn/error.h>
+#include <axsn/log.h>
 #include <jni.h>
 #include <stdatomic.h>
 #include <stddef.h>
@@ -98,6 +100,11 @@ void axsn_jni_env_release(axsn_jni_env *state) {
     }
 
     if (state->attached_by_axsn && state->vm != NULL) {
+        if ((*state->env)->ExceptionCheck(state->env)) {
+            char error_buf[1024];
+            axsn_get_pending_exception(state->env, error_buf, sizeof(error_buf));
+            LOGE("Unhandled pending exception on a jvm attached thread:\n%s", error_buf);
+        }
         (void)(*state->vm)->DetachCurrentThread(state->vm);
     }
 

@@ -26,6 +26,7 @@ if(AXSN_BUILD_TESTS)
     SOURCES
       test/PointerWrapper.cpp
     JNI_SOURCES
+          test/JniCallable.cpp
       test/tests_jni.c
     LIBRARIES
       ${PROJECT_NAME}

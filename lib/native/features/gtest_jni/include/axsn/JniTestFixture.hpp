@@ -12,10 +12,10 @@ namespace axsn::gtest {
         class JniTestFixture : public testing::Test
         {
         protected:
-            jni::ScopedEnv java;
+            jni::ScopedEnv env;
 
             void SetUp() override {
-                ASSERT_TRUE(java) << "Java context required in a jni test";
+                ASSERT_TRUE(env) << "Java context required in a jni test";
             }
         };
 

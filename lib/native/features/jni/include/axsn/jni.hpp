@@ -22,6 +22,7 @@ public:
 
     [[nodiscard]] jint status() const noexcept { return status_; }
     [[nodiscard]] JNIEnv *get() const noexcept { return state_.env; }
+    [[nodiscard]] JavaVM *getVM() const noexcept { return state_.vm; }
     [[nodiscard]] explicit operator bool() const noexcept {
         return status_ == JNI_OK && state_.env != nullptr;
     }
