@@ -2,9 +2,9 @@ include_guard(GLOBAL)
 
 function(axsn_add_gtest_targets)
   cmake_parse_arguments(PARSE_ARGV 0 ARG
-        "NO_JNI_LIFECYCLE;NO_GTEST_JNI_BRIDGE"
+        ""
         "NAME"
-        "SOURCES;SUPPORT_SOURCES;JNI_SOURCES;LIBRARIES;INCLUDE_DIRECTORIES;COMPILE_DEFINITIONS"
+        "SOURCES;JNI_SOURCES;LIBRARIES;INCLUDE_DIRECTORIES;COMPILE_DEFINITIONS"
     )
 
   if(ARG_UNPARSED_ARGUMENTS)
@@ -19,9 +19,6 @@ function(axsn_add_gtest_targets)
   if(NOT AXSN_BUILD_TESTS OR NOT TARGET axsn::gtest)
     message(FATAL_ERROR "GoogleTest support is disabled; configure with -DAXSN_BUILD_TESTS=ON")
   endif()
-  if(NOT ARG_NO_GTEST_JNI_BRIDGE AND NOT TARGET axsn::gtest_jni)
-    message(FATAL_ERROR "AXSN GTest JNI bridge is unavailable")
-  endif()
 
   set(_objects "${ARG_NAME}_test_objects")
   set(_shared "${ARG_NAME}tests")
@@ -35,19 +32,17 @@ function(axsn_add_gtest_targets)
 
   # Common test cases compile once. These sources must be runnable in the
   # standalone runner; JVM-dependent tests belong in JNI_SOURCES instead.
-  add_library("${_objects}" OBJECT
-        ${ARG_SOURCES}
-        ${ARG_SUPPORT_SOURCES}
-    )
+  add_library("${_objects}" OBJECT ${ARG_SOURCES})
+  # Just to pull their headers
   target_link_libraries("${_objects}" PRIVATE
         axsn::gtest
         ${ARG_LIBRARIES}
     )
   if(ARG_INCLUDE_DIRECTORIES)
-    target_include_directories("${_objects}" PRIVATE ${ARG_INCLUDE_DIRECTORIES})
+    target_include_directories("${_objects}" PUBLIC ${ARG_INCLUDE_DIRECTORIES})
   endif()
   if(ARG_COMPILE_DEFINITIONS)
-    target_compile_definitions("${_objects}" PRIVATE ${ARG_COMPILE_DEFINITIONS})
+    target_compile_definitions("${_objects}" PUBLIC ${ARG_COMPILE_DEFINITIONS})
   endif()
   axsn_configure_target("${_objects}")
 
@@ -59,20 +54,8 @@ function(axsn_add_gtest_targets)
     )
   target_link_libraries("${_shared}" PRIVATE
         ${ARG_LIBRARIES}
-        axsn::gtest
+        axsn::gtest_jni
     )
-  if(NOT ARG_NO_GTEST_JNI_BRIDGE)
-    target_link_libraries("${_shared}" PRIVATE axsn::gtest_jni)
-  endif()
-  if(NOT ARG_NO_JNI_LIFECYCLE)
-    target_link_libraries("${_shared}" PRIVATE axsn::jni)
-  endif()
-  if(ARG_INCLUDE_DIRECTORIES)
-    target_include_directories("${_shared}" PRIVATE ${ARG_INCLUDE_DIRECTORIES})
-  endif()
-  if(ARG_COMPILE_DEFINITIONS)
-    target_compile_definitions("${_shared}" PRIVATE ${ARG_COMPILE_DEFINITIONS})
-  endif()
   axsn_configure_target("${_shared}")
 
   # Standalone runner: shared test sources + core GTest implementation only.
@@ -85,12 +68,6 @@ function(axsn_add_gtest_targets)
         axsn::gtest
         GTest::gtest_main
     )
-  if(ARG_INCLUDE_DIRECTORIES)
-    target_include_directories("${_runner}" PRIVATE ${ARG_INCLUDE_DIRECTORIES})
-  endif()
-  if(ARG_COMPILE_DEFINITIONS)
-    target_compile_definitions("${_runner}" PRIVATE ${ARG_COMPILE_DEFINITIONS})
-  endif()
   axsn_configure_target("${_runner}")
 
   set_property(TARGET "${_shared}" PROPERTY AXSN_TEST_RUNNER "${_runner}")

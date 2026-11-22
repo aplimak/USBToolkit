@@ -94,6 +94,12 @@ if(AXSN_BUILD_TESTS)
         CXX_VISIBILITY_PRESET hidden
         VISIBILITY_INLINES_HIDDEN ON
     )
+  # pulls compiled object files
+  target_sources(axsn_gtest_jni PUBLIC
+        $<TARGET_OBJECTS:axsn_gtest>
+        $<TARGET_OBJECTS:axsn_jni>
+  )
+  # pulls headers and etc
   target_link_libraries(axsn_gtest_jni PUBLIC
         axsn::gtest
         axsn::jni
