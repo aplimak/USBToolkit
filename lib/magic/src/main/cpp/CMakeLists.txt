@@ -63,7 +63,7 @@ ExternalProject_Add(libmagic_build
 file(MAKE_DIRECTORY "${MAGIC_PREFIX}/include" "${MAGIC_PREFIX}/lib")
 add_library(magic_magiclib STATIC IMPORTED GLOBAL)
 add_dependencies(magic_magiclib libmagic_build)
-target_link_libraries(magic_magiclib PUBLIC z)
+target_link_libraries(magic_magiclib INTERFACE z)
 set_target_properties(magic_magiclib PROPERTIES
     IMPORTED_LOCATION "${MAGIC_PREFIX}/lib/libmagic.a"
     INTERFACE_INCLUDE_DIRECTORIES "${MAGIC_PREFIX}/include"

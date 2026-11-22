@@ -22,6 +22,7 @@ JNIEXPORT jlong JNICALL
 Java_ir_aeliux_usbtoolkit_usb_Native_init(JNIEnv *env, jclass cls,
                                           jstring j_configfsPath)
 {
+    (void)cls;
     if (axsn_throw_if_null(env, j_configfsPath, "configfsPath") != 0) {
         return 0;
     }
@@ -53,6 +54,7 @@ JNIEXPORT void JNICALL
 Java_ir_aeliux_usbtoolkit_usb_Native_close(JNIEnv *env, jclass cls,
                                            jlong handle)
 {
+    (void)cls;
     usbg_state *s = ptrw_pop(env, handle);
     if (s == NULL) return;
 
@@ -69,6 +71,7 @@ Java_ir_aeliux_usbtoolkit_usb_Native_createGadget(JNIEnv *env, jclass cls,
                                                   jobject j_configAttrs,
                                                   jobject j_configStrs)
 {
+    (void)cls;
     usbg_state *s = ptrw_unwrap(env, j_ptrwConfigfs);
     if (s == NULL) return 0;
 
@@ -131,6 +134,7 @@ Java_ir_aeliux_usbtoolkit_usb_Native_openGadget(JNIEnv *env, jclass cls,
                                                 jlong j_ptrwConfigfs,
                                                 jstring j_gadgetName)
 {
+    (void)cls;
     usbg_state *s = ptrw_unwrap(env, j_ptrwConfigfs);
     if (s == NULL) return 0;
 
@@ -154,6 +158,7 @@ JNIEXPORT void JNICALL
 Java_ir_aeliux_usbtoolkit_usb_Native_deleteGadget(JNIEnv *env, jclass cls,
                                                   jlong j_ptrwGadget)
 {
+    (void)cls;
     usbg_gadget *g = ptrw_pop(env, j_ptrwGadget);
     if (g == NULL) return;
 
@@ -172,6 +177,7 @@ Java_ir_aeliux_usbtoolkit_usb_Native_createFunction(JNIEnv *env,
                                                     jstring j_functionInstance,
                                                     jobject j_functionAttrs)
 {
+    (void)cls;
     usbg_gadget *g = ptrw_unwrap(env, j_ptrwGadget);
     if (g == NULL) return 0;
 

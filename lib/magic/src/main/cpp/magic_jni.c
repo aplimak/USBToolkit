@@ -19,6 +19,7 @@ JNIEXPORT jlong JNICALL
 Java_ir_aeliux_magic_Native_init(
         JNIEnv *env, jclass cls, jstring j_dbPath)
 {
+    (void)cls;
     if (j_dbPath == NULL) {
         AXSN_THROW_IAE(env, "dbPath cannot be null");
         return 0;
@@ -83,6 +84,7 @@ JNIEXPORT jobject JNICALL
 Java_ir_aeliux_magic_Native_analyzeFile(
         JNIEnv *env, jclass cls, jlong j_magic, jstring j_path)
 {
+    (void)cls;
     magic_t magic = ptrw_unwrap(env, j_magic);
     if (magic == NULL) {
         return NULL;
@@ -119,6 +121,7 @@ Java_ir_aeliux_magic_Native_analyzeFile(
 JNIEXPORT void JNICALL
 Java_ir_aeliux_magic_Native_release(JNIEnv *env, jclass cls, jlong j_magic)
 {
+    (void)cls;
     magic_t magic = ptrw_pop(env, j_magic);
     if (magic == NULL) {
         return;
