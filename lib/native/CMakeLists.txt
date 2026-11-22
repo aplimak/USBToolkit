@@ -1,34 +1,13 @@
 # AXSN targets. This directory is added by axsn_initialize()
-# it is not a project root and must not call project().
-
-# Base is deliberately small and always available to ordinary AXSN consumers.
 
 add_library(axsn INTERFACE)
 
 target_include_directories(axsn INTERFACE
     "$<BUILD_INTERFACE:${AXSN_ROOT}/include>"
 )
-if(ANDROID)
-  target_link_libraries(axsn INTERFACE log)
-endif()
+target_link_libraries(axsn INTERFACE log)
 
-# JNI is an OBJECT library. Linking axsn::jni to a
-# shared library embeds the compiled implementation into that DSO, giving
-# every consuming DSO its own VM slot and JNI_OnLoad/Unload.
-add_library(axsn_jni OBJECT
-    features/jni/src/jni.c
-)
-add_library(axsn::jni ALIAS axsn_jni)
-set_target_properties(axsn_jni PROPERTIES
-    EXCLUDE_FROM_ALL TRUE
-    POSITION_INDEPENDENT_CODE ON
-    C_VISIBILITY_PRESET hidden
-)
-target_include_directories(axsn_jni PUBLIC
-    "${AXSN_ROOT}/features/jni/include"
-)
-target_link_libraries(axsn_jni PUBLIC axsn)
-axsn_configure_target(axsn_jni)
+add_subdirectory(features/jni)
 
 # Load the central registry on every module. Registration is metadata-only;
 # each dependency's source tree is added only when requested.
@@ -62,49 +41,9 @@ if(AXSN_BUILD_TESTS)
     endif()
   endforeach()
 
-  add_library(axsn_gtest OBJECT
-        features/gtest/src/gtest.cpp
-    )
-  add_library(axsn::gtest ALIAS axsn_gtest)
-  set_target_properties(axsn_gtest PROPERTIES
-        EXCLUDE_FROM_ALL TRUE
-        POSITION_INDEPENDENT_CODE ON
-        CXX_VISIBILITY_PRESET hidden
-        VISIBILITY_INLINES_HIDDEN ON
-    )
-  target_include_directories(axsn_gtest PUBLIC
-        "${AXSN_ROOT}/features/gtest/include"
-    )
-  target_link_libraries(axsn_gtest PUBLIC
-        axsn
-        GTest::gtest
-    )
-  axsn_configure_target(axsn_gtest)
+  add_subdirectory(features/gtest)
+  add_subdirectory(features/gtest_jni)
 
-  # Java-facing GTest entrypoints are a separate compiled object feature.
-  # They are deliberately not part of axsn::gtest, because the standalone
-  # runner must not contain JNI entrypoints or depend on a JavaVM.
-  add_library(axsn_gtest_jni OBJECT
-        features/gtest/src/jni.cpp
-    )
-  add_library(axsn::gtest_jni ALIAS axsn_gtest_jni)
-  set_target_properties(axsn_gtest_jni PROPERTIES
-        EXCLUDE_FROM_ALL TRUE
-        POSITION_INDEPENDENT_CODE ON
-        CXX_VISIBILITY_PRESET hidden
-        VISIBILITY_INLINES_HIDDEN ON
-    )
-  # pulls compiled object files
-  target_sources(axsn_gtest_jni PUBLIC
-        $<TARGET_OBJECTS:axsn_gtest>
-        $<TARGET_OBJECTS:axsn_jni>
-  )
-  # pulls headers and etc
-  target_link_libraries(axsn_gtest_jni PUBLIC
-        axsn::gtest
-        axsn::jni
-    )
-  axsn_configure_target(axsn_gtest_jni)
 else()
   # This makes the intended opt-in behavior obvious at configure time.
   message(STATUS "AXSN: GoogleTest support is disabled (AXSN_BUILD_TESTS=OFF)")
