@@ -5,7 +5,7 @@ include_guard(GLOBAL)
 # or axsn_use_vendored_dependency() first requests it.
 function(axsn_register_vendored_dependency)
   cmake_parse_arguments(PARSE_ARGV 0 ARG
-        "EXCLUDE_FROM_ALL"
+        "EXCLUDE_FROM_ALL;SHARED"
         "NAME;SOURCE_DIR;BINARY_DIR"
         "TARGETS"
     )
@@ -42,6 +42,7 @@ function(axsn_register_vendored_dependency)
   endif()
 
   set_property(GLOBAL PROPERTY "AXSN_DEP_${_id}_NAME" "${ARG_NAME}")
+  set_property(GLOBAL PROPERTY "AXSN_DEP_${_id}_SHARED" ${ARG_SHARED})
   set_property(GLOBAL PROPERTY "AXSN_DEP_${_id}_REGISTERED" TRUE)
   set_property(GLOBAL PROPERTY "AXSN_DEP_${_id}_SOURCE" "${_source}")
   set_property(GLOBAL PROPERTY "AXSN_DEP_${_id}_BINARY" "${_binary}")
@@ -68,6 +69,7 @@ function(axsn_add_registered_dependency)
     return()
   endif()
 
+  get_property(_shared GLOBAL PROPERTY "AXSN_DEP_${_id}_SHARED")
   get_property(_source GLOBAL PROPERTY "AXSN_DEP_${_id}_SOURCE")
   get_property(_binary GLOBAL PROPERTY "AXSN_DEP_${_id}_BINARY")
   get_property(_exclude GLOBAL PROPERTY "AXSN_DEP_${_id}_EXCLUDE")
@@ -90,14 +92,12 @@ function(axsn_add_registered_dependency)
             "AXSN dependency '${ARG_NAME}' has only some of its declared targets already defined")
   endif()
 
-  # Vendored dependencies are static by default. This variable is scoped to
-  # this helper and inherited by the added subdirectory.
   set(_had_build_shared_libs FALSE)
   if(DEFINED BUILD_SHARED_LIBS)
     set(_had_build_shared_libs TRUE)
     set(_saved_build_shared_libs "${BUILD_SHARED_LIBS}")
   endif()
-  set(BUILD_SHARED_LIBS OFF)
+  set(BUILD_SHARED_LIBS ${_shared})
 
   if(_exclude)
     add_subdirectory("${_source}" "${_binary}" EXCLUDE_FROM_ALL)
