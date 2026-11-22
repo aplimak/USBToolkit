@@ -1,93 +1,56 @@
 cmake_minimum_required(VERSION 3.22.1)
 project("usbtk" LANGUAGES C CXX)
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(CMAKE_C_STANDARD 11)
-set(CMAKE_C_STANDARD_REQUIRED ON)
-set(CMAKE_C_EXTENSIONS OFF)
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
 
-option(AXSN_STRICT     "Enable aggressive warnings and -Werror on the main target" ON)
+include("${CMAKE_CURRENT_LIST_DIR}/common/common.cmake")
+axsn_initialize()
 
-include(${CMAKE_CURRENT_SOURCE_DIR}/common/common.cmake)
-axsn_set_external_build_flags()
+set(BUILD_SHARED_LIBS OFF)
 
-set(ANDROID_CMAKE_ARGS
-        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}
-        -DANDROID_ABI=${ANDROID_ABI}
-        -DANDROID_PLATFORM=${ANDROID_PLATFORM}
-        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-        -DANDROID_STL=${ANDROID_STL}
-)
+set(TINYALSA_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(TINYALSA_BUILD_UTILS OFF CACHE BOOL "" FORCE)
+add_subdirectory(third_party/tinyalsa
+  "${CMAKE_CURRENT_BINARY_DIR}/_deps/tinyalsa")
 
-include(ExternalProject)
-
-set(BUILD_SHARED_LIBS OFF CACHE BOOL "")
-
-# Shared library
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/common
-        ${CMAKE_CURRENT_BINARY_DIR}/build/axsn_common)
-
-# TinyALSA
-
-set(TINYALSA_BUILD_EXAMPLES OFF CACHE BOOL "")
-set(TINYALSA_BUILD_UTILS OFF CACHE BOOL "")
-
-add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/third_party/tinyalsa" "${CMAKE_CURRENT_BINARY_DIR}/build/tinyalsa")
-
-# libconfig
-
-set(BUILD_EXAMPLES OFF CACHE BOOL "")
-set(BUILD_TESTS OFF CACHE BOOL "")
-set(BUILD_CXX OFF CACHE BOOL "")
-
-set(LIBCONFIG_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third_party/libconfig")
-set(LIBCONFIG_BUILD_DIR  "${CMAKE_CURRENT_BINARY_DIR}/build/libconfig")
-set(LIBCONFIG_OUT_DIR  "${CMAKE_CURRENT_BINARY_DIR}/out")
-add_subdirectory("${LIBCONFIG_SOURCE_DIR}" "${LIBCONFIG_BUILD_DIR}")
-
-# libusbgx
+set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(BUILD_CXX OFF CACHE BOOL "" FORCE)
+add_subdirectory(third_party/libconfig
+  "${CMAKE_CURRENT_BINARY_DIR}/_deps/libconfig")
 
 set(USBGX_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/third_party/libusbgx")
-add_subdirectory(
-        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/libusbgx"
-        "${CMAKE_CURRENT_BINARY_DIR}/build/libusbgx")
+add_subdirectory(cmake/libusbgx
+  "${CMAKE_CURRENT_BINARY_DIR}/_deps/libusbgx")
 
 # Main Library
-
-add_library(${CMAKE_PROJECT_NAME} SHARED
+add_library(${PROJECT_NAME} SHARED
         core.c
         dto.c
         usb_jni.c
 )
 
-target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC
+target_include_directories(${PROJECT_NAME} PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
-axsn_apply_warnings(${CMAKE_PROJECT_NAME})
-axsn_apply_build_flags(${CMAKE_PROJECT_NAME})
-
-target_link_libraries(${CMAKE_PROJECT_NAME}
-        axsn_common
+target_link_libraries(${PROJECT_NAME}
+        axsn
         usbgx
         config
-        tinyalsa
-        log
-        z)
+        tinyalsa)
 
 find_package(ptrw REQUIRED CONFIG)
-target_link_libraries(${CMAKE_PROJECT_NAME} ptrw::ptrw)
+target_link_libraries(${PROJECT_NAME} ptrw::ptrw)
 
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    set(TEST_PROJECT ${CMAKE_PROJECT_NAME}tests)
-    add_library(${TEST_PROJECT} SHARED
-            test/tests_jni.c
-            )
-    target_link_libraries(${TEST_PROJECT}
-            ${CMAKE_PROJECT_NAME}
-            #GTest::gtest
-            )
-    axsn_apply_build_flags(${TEST_PROJECT})
+axsn_configure_target(${PROJECT_NAME})
+
+if(AXSN_BUILD_TESTS)
+  axsn_add_gtest_targets(
+    NAME "${PROJECT_NAME}"
+    SOURCES
+      test/Configfs.cpp
+    JNI_SOURCES
+      test/tests_jni.c
+    LIBRARIES
+      ${PROJECT_NAME}
+    )
 endif()
