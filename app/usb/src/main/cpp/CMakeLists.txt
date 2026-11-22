@@ -6,14 +6,13 @@ axsn_initialize()
 
 set(BUILD_SHARED_LIBS OFF)
 
-set(TINYALSA_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-set(TINYALSA_BUILD_UTILS OFF CACHE BOOL "" FORCE)
-add_subdirectory(third_party/tinyalsa
-  "${CMAKE_CURRENT_BINARY_DIR}/_deps/tinyalsa")
+# set(TINYALSA_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+# set(TINYALSA_BUILD_UTILS OFF CACHE BOOL "" FORCE)
+# add_subdirectory(third_party/tinyalsa
+#   "${CMAKE_CURRENT_BINARY_DIR}/_deps/tinyalsa")
 
 set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(BUILD_TESTS OFF CACHE BOOL "" FORCE)
-set(BUILD_CXX OFF CACHE BOOL "" FORCE)
 add_subdirectory(third_party/libconfig
   "${CMAKE_CURRENT_BINARY_DIR}/_deps/libconfig")
 
@@ -34,9 +33,8 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 
 target_link_libraries(${PROJECT_NAME}
         axsn
-        usbgx
-        config
-        tinyalsa)
+        #tinyalsa
+        usbgx)
 
 find_package(ptrw REQUIRED CONFIG)
 target_link_libraries(${PROJECT_NAME} ptrw::ptrw)
