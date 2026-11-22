@@ -157,17 +157,4 @@ function(axsn_configure_target target)
        AND _type MATCHES "^(EXECUTABLE|SHARED_LIBRARY|MODULE_LIBRARY)$")
     axsn_add_elf_identity("${target}")
   endif()
-
-  if(AXSN_GENERATE_SIZE_TARGETS AND _type MATCHES "^(EXECUTABLE|SHARED_LIBRARY|MODULE_LIBRARY)$")
-    if(NOT AXSN_LLVM_SIZE_EXECUTABLE)
-      find_program(AXSN_LLVM_SIZE_EXECUTABLE NAMES llvm-size)
-    endif()
-    if(AXSN_LLVM_SIZE_EXECUTABLE AND NOT TARGET "${target}_size")
-      add_custom_target("${target}_size"
-                COMMAND "${AXSN_LLVM_SIZE_EXECUTABLE}" -A "$<TARGET_FILE:${target}>"
-                DEPENDS "${target}"
-                COMMENT "AXSN section report: ${target}"
-                VERBATIM)
-    endif()
-  endif()
 endfunction()

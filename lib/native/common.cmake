@@ -56,7 +56,7 @@ option(AXSN_ENABLE_BUILD_ID
   ON)
 option(AXSN_ENABLE_ELF_NOTE
   "Embed a .note.axsn identity note"
-  ON)
+  OFF)
 option(AXSN_ENABLE_16K_PAGE_SIZE
   "Use 16 KB ELF alignment with NDKs older than r28"
   ON)
@@ -66,9 +66,6 @@ option(AXSN_ENABLE_PREFIX_MAP
 option(AXSN_GENERATE_LINK_MAP
   "Generate linker map files"
   OFF)
-option(AXSN_GENERATE_SIZE_TARGETS
-  "Add per-target llvm-size targets"
-  ON)
 option(AXSN_ENABLE_CLANG_TIDY
   "Enable clang-tidy on configured targets"
   OFF)
