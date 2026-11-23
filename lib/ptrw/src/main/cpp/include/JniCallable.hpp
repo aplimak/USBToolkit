@@ -15,12 +15,13 @@ namespace ptrw {
     public:
         ~JniCallable() noexcept;
 
-        JniCallable(const JniCallable&)            = delete;
+        JniCallable(const JniCallable&) = delete;
         JniCallable& operator=(const JniCallable&) = delete;
-        JniCallable(JniCallable&&)                 = delete;
-        JniCallable& operator=(JniCallable&&)      = delete;
 
-        static std::shared_ptr<JniCallable> fromRunnable(JavaVM *jvm, jobject runnable);
+        JniCallable(JniCallable&&) noexcept;
+        JniCallable& operator=(JniCallable&&) noexcept;
+
+        static JniCallable fromRunnable(JavaVM *jvm, jobject runnable);
         bool call();
     private:
         JniCallable(JavaVM *jvm, jobject object, jmethodID mid);

@@ -15,8 +15,8 @@ TEST_F(PointerWrapperJni, CallbackTest) {
     ASSERT_TRUE(jfid != nullptr);
     jobject runnable = env->GetStaticObjectField(cls, jfid);
     ASSERT_TRUE(runnable != nullptr);
-    std::shared_ptr<ptrw::JniCallable> callable = ptrw::JniCallable::fromRunnable(env.getVM(), runnable);
-    ASSERT_FALSE(callable->call());
+    ptrw::JniCallable callable = ptrw::JniCallable::fromRunnable(env.getVM(), runnable);
+    ASSERT_FALSE(callable.call());
     ASSERT_TRUE(env->ExceptionCheck());
     jthrowable exc = env->ExceptionOccurred();
     ASSERT_TRUE(exc != nullptr);
