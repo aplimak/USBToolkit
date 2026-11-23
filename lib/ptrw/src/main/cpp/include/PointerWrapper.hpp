@@ -9,6 +9,7 @@
 #include <thread>
 #include <cstdint>
 #include <memory>
+#include <optional>
 
 namespace ptrw {
 
@@ -53,7 +54,7 @@ namespace ptrw {
         [[nodiscard]] bool isClosed() const noexcept;
         void close();
     protected:
-        PointerWrapper(void* pointer, Deleter native_deleter, std::shared_ptr<JniCallable> jni_deleter, PointerWrapperFlags flags = PointerWrapperFlags::ThreadConfined);
+        PointerWrapper(void* pointer, Deleter native_deleter, std::optional<JniCallable> jni_deleter = std::nullopt, PointerWrapperFlags flags = PointerWrapperFlags::ThreadConfined);
         void assertAllowedThread() const;
         void assertOpen() const;
     private:

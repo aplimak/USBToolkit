@@ -14,15 +14,29 @@ namespace ptrw {
     struct PointerWrapper::Impl {
         void* pointer;
         Deleter native_deleter;
-        std::shared_ptr<JniCallable> jni_deleter;
+        std::optional<JniCallable> jni_deleter;
         const PointerWrapperFlags flags;
         const std::thread::id owner;
+
+        Impl(
+                void* pointer,
+                Deleter native_deleter,
+                std::optional<JniCallable> jni_deleter,
+                PointerWrapperFlags flags
+        )
+                : pointer(pointer),
+                  native_deleter(native_deleter),
+                  jni_deleter(std::move(jni_deleter)),
+                  flags(flags),
+                  owner(std::this_thread::get_id())
+        {
+        }
     };
 
     PointerWrapper::PointerWrapper(
             void* pointer,
             Deleter native_deleter,
-            std::shared_ptr<JniCallable> jni_deleter,
+            std::optional<JniCallable> jni_deleter,
             PointerWrapperFlags flags
     ): m_impl(nullptr) {
         if (pointer == nullptr) {
@@ -33,13 +47,12 @@ namespace ptrw {
 
         LOGV("ctor(%p) -> %p", pointer, static_cast<void *>(this));
 
-        m_impl = std::make_unique<Impl>(Impl{
+        m_impl = std::make_unique<Impl>(
                 pointer,
                 native_deleter,
                 std::move(jni_deleter),
                 flags,
-                std::this_thread::get_id()
-        });
+        );
     }
 
     PointerWrapper::~PointerWrapper() noexcept {
