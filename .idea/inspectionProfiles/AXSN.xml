@@ -7,7 +7,7 @@
     </inspection_tool>
     <inspection_tool class="InconsistentLineSeparators" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="IncorrectFormatting" enabled="true" level="WEAK WARNING" enabled_by_default="false">
-      <scope name="First Party Codes" level="WEAK WARNING" enabled="true">
+      <scope name="First Party Codes" level="WEAK WARNING" enabled="false">
         <option name="reportPerFile" value="true" />
       </scope>
     </inspection_tool>
