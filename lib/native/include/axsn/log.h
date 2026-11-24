@@ -11,10 +11,14 @@
 extern "C" {
 #endif
 
-/* Each .c can #define LOG_TAG before including this header.
+/* Each source file can #define LOG_TAG before including this header.
    If it doesn't, the default tag is used. */
 #ifndef LOG_TAG
-#define LOG_TAG "axsn"
+#ifndef NDEBUG
+#define LOG_TAG AXSN_D_LIBRARY_NAME ":" __FILE_NAME__
+#else
+#define LOG_TAG AXSN_D_LIBRARY_NAME
+#endif
 #endif
 
 #define LOG(prio, ...) \

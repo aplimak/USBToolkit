@@ -2,8 +2,6 @@
 // Created by aeliux on 11/17/26.
 //
 
-#define LOG_TAG "libptrwtests:tests_jni.c"
-
 #include "ptrw.h"
 #include "../internal.h"
 #include "axsn/error.h"

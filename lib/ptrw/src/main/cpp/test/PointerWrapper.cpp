@@ -2,8 +2,6 @@
 // Created by aeliux on 11/18/26.
 //
 
-#define LOG_TAG "libptrwtests:PointerWrapper.cpp"
-
 #include "PointerWrapper.hpp"
 #include <gtest/gtest.h>
 

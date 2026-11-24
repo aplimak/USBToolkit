@@ -2,8 +2,6 @@
 // Created by aeliux on 11/19/26.
 //
 
-#define LOG_TAG "libptrw:PointerWrapper.cpp"
-
 #include "PointerWrapper.hpp"
 #include <axsn/log.h>
 #include <stdexcept>

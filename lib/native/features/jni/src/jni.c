@@ -1,5 +1,3 @@
-#define LOG_TAG "axsn-jni:jni.c"
-
 #include <axsn/jni.h>
 
 #include <axsn/error.h>

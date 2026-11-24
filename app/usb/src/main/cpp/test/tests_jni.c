@@ -1,14 +1,11 @@
-#include <jni.h>
-
 //
 // Created by aeliux on 11/17/26.
 //
 
-#define LOG_TAG "libusbtktests:tests_jni.c"
-
 #include <usbtk/dto.h>
 #include <usbg/usbg.h>
 #include <usbg/function/ms.h>
+#include <jni.h>
 
 JNIEXPORT jobject JNICALL
 Java_ir_aeliux_usbtoolkit_usb_NativeTests_processUsbgGadgetAttrs(JNIEnv *env,

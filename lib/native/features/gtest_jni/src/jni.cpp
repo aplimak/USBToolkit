@@ -1,5 +1,3 @@
-#define LOG_TAG "axsn-gtest_jni:jni.cpp"
-
 #include <axsn/log.h>
 #include <gtest/gtest.h>
 #include <jni.h>

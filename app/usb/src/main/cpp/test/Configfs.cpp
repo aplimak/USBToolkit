@@ -1,5 +1,3 @@
-#define LOG_TAG "libptrwtests:PointerWrapper.cpp"
-
 #include <gtest/gtest.h>
 
 TEST(ConfigfsTest, Hello)

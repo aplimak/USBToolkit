@@ -2,8 +2,6 @@
 // Created by aeliux on 9/23/26.
 //
 
-#define LOG_TAG "libusbtk:core.c"
-
 #include "usbtk/dto.h"
 #include "internal.h"
 #include <jni.h>
