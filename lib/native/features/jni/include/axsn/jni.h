@@ -7,11 +7,34 @@
 extern "C" {
 #endif
 
-typedef struct axsn_jni_env {
+typedef struct {
     JavaVM *vm;
     JNIEnv *env;
     int attached_by_axsn;
 } axsn_jni_env;
+
+/**
+ * JNI Hook function signature.
+ * @note return non-zero to fail the load phase, ignored in unload phase.
+ * @note exceptions will be treated as fail.
+ */
+typedef int (*axsn_jni_hook)(JavaVM *vm, void *reserved);
+
+/**
+ * Type that indicates when the hook is called.
+ */
+typedef enum {
+    AXSN_JNI_LOAD,
+    AXSN_JNI_UNLOAD,
+} axsn_jni_hook_type;
+
+/**
+ * Register a function to be called on jni load or unload phase.
+ * @param hook Pointer to the hood function.
+ * @param type Type of the hook, either load or unload.
+ * @note Hook is able to fail the load phase by throwing exception or returning non zero value.
+ */
+AXSN_LOCAL void axsn_jni_register_hook(axsn_jni_hook hook, axsn_jni_hook_type type);
 
 /* Returns the VM captured by this DSO's JNI_OnLoad, or NULL before load. */
 AXSN_LOCAL JavaVM *axsn_jni_get_vm(void);

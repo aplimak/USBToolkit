@@ -3,6 +3,7 @@
 # every consuming DSO its own VM slot and JNI_OnLoad/Unload.
 add_library(axsn_jni OBJECT
         src/jni.c
+        src/hooks.cpp
 )
 add_library(axsn::jni ALIAS axsn_jni)
 set_target_properties(axsn_jni PROPERTIES

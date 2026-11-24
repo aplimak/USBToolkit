@@ -1,4 +1,5 @@
-#include <axsn/jni.h>
+#include "axsn/jni.h"
+#include "internal.h"
 
 #include <axsn/error.h>
 #include <axsn/log.h>
@@ -13,9 +14,6 @@
  * consuming shared library. It is consequently per-DSO, not process-global.
  */
 static _Atomic(JavaVM *) g_axsn_java_vm = ATOMIC_VAR_INIT(NULL);
-
-JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved);
-JNIEXPORT void JNICALL JNI_OnUnload(JavaVM *vm, void *reserved);
 
 JavaVM *axsn_jni_get_vm(void) {
     return atomic_load_explicit(&g_axsn_java_vm, memory_order_acquire);
@@ -114,7 +112,7 @@ void axsn_jni_env_release(axsn_jni_env *state) {
 }
 
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
-    LOGV("JNI_OnLoad");
+    LOGI("JNI_OnLoad");
     void *raw_env = NULL;
     jint result;
 
@@ -130,14 +128,23 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
     }
 
     atomic_store_explicit(&g_axsn_java_vm, vm, memory_order_release);
+
+    LOGI("JNI_OnLoad call hooks");
+    if (axsn_jni_call_hooks(vm, reserved, AXSN_JNI_LOAD) != JNI_OK) {
+        return JNI_ERR;
+    }
+
     LOGI("JNI_OnLoad done");
     return JNI_VERSION_1_6;
 }
 
 JNIEXPORT void JNICALL JNI_OnUnload(JavaVM *vm, void *reserved) {
-    LOGV("JNI_OnUnload");
+    LOGI("JNI_OnUnload");
     JavaVM *expected = vm;
     (void)reserved;
+
+    LOGI("JNI_OnUnload call hooks");
+    axsn_jni_call_hooks(vm, reserved, AXSN_JNI_UNLOAD);
 
     (void)atomic_compare_exchange_strong_explicit(
         &g_axsn_java_vm,
