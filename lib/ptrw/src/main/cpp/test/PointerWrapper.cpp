@@ -23,7 +23,7 @@ public:
 
     explicit DummyPointerWrapper(void *pointer) : PointerWrapper(pointer,
                                                                  &DummyPointerWrapper::deleter,
-                                                                 nullptr,
+                                                                 std::nullopt,
                                                                  PointerWrapperFlags::ThreadConfined)
     {
 

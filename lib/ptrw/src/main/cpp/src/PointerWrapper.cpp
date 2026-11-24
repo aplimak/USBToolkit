@@ -51,7 +51,7 @@ namespace ptrw {
                 pointer,
                 native_deleter,
                 std::move(jni_deleter),
-                flags,
+                flags
         );
     }
 
