@@ -4,6 +4,7 @@
 
 #include "axsn/jni.h"
 #include "shared.hpp"
+#include "runtime.h"
 #include <jni.h>
 #include <axsn/log.h>
 

@@ -45,9 +45,6 @@ inline void axsn_jni_register_hook(axsn_jni_hook hook, axsn_jni_hook_type type) 
     }
 }
 
-/* Call all load hooks */
-AXSN_EXPORT int axsn_jni_call_load_hooks(JavaVM *vm, void *reserved);
-
 /* Returns the VM captured by this process, or NULL before load. */
 AXSN_EXPORT JavaVM *axsn_jni_get_vm(void);
 
@@ -67,12 +64,40 @@ AXSN_EXPORT jint axsn_jni_env_acquire(
 /* Detaches only when axsn_jni_env_acquire() attached the current thread. */
 AXSN_EXPORT void axsn_jni_env_release(axsn_jni_env *env);
 
-/* Automatically called by consumer libraries */
-AXSN_EXPORT jint axsn_jni_load(JavaVM *vm, void *reserved);
-
-/* Automatically called by consumer libraries */
-AXSN_EXPORT void axsn_jni_unload(JavaVM *vm, void *reserved);
-
 #ifdef __cplusplus
 } /* extern "C" */
+#endif
+
+#ifdef __cplusplus
+namespace axsn::jni {
+
+class ScopedEnv final {
+public:
+    explicit ScopedEnv(const char *thread_name = nullptr) noexcept {
+        status_ = axsn_jni_env_acquire(&state_, thread_name);
+    }
+
+    ~ScopedEnv() noexcept {
+        axsn_jni_env_release(&state_);
+    }
+
+    ScopedEnv(const ScopedEnv &) = delete;
+    ScopedEnv &operator=(const ScopedEnv &) = delete;
+    ScopedEnv(ScopedEnv &&) = delete;
+    ScopedEnv &operator=(ScopedEnv &&) = delete;
+
+    [[nodiscard]] jint status() const noexcept { return status_; }
+    [[nodiscard]] JNIEnv *get() const noexcept { return state_.env; }
+    [[nodiscard]] JavaVM *getVM() const noexcept { return state_.vm; }
+    [[nodiscard]] explicit operator bool() const noexcept {
+        return status_ == JNI_OK && state_.env != nullptr;
+    }
+    [[nodiscard]] JNIEnv *operator->() const noexcept { return state_.env; }
+
+private:
+    axsn_jni_env state_{};
+    jint status_ = JNI_ERR;
+};
+
+} // namespace axsn::jni
 #endif

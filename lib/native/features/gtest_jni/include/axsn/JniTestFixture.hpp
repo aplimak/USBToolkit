@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <axsn/jni.hpp>
+#include <axsn/jni.h>
 #include <gtest/gtest.h>
 
 namespace axsn::gtest {
