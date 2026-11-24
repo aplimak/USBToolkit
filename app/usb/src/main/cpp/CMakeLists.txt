@@ -22,9 +22,9 @@ add_subdirectory(cmake/libusbgx
 
 # Main Library
 add_library(${PROJECT_NAME} SHARED
-        core.c
         dto.c
         usb_jni.c
+        src/dto.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC
@@ -33,6 +33,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 
 target_link_libraries(${PROJECT_NAME}
         axsn
+        axsn::jni
         #tinyalsa
         usbgx)
 

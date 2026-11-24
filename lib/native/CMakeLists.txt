@@ -1,11 +1,15 @@
 # AXSN targets. This directory is added by axsn_initialize()
 
-add_library(axsn INTERFACE)
-
-target_include_directories(axsn INTERFACE
-    "$<BUILD_INTERFACE:${AXSN_ROOT}/include>"
+add_library(axsn OBJECT
+        src/error.c)
+set_target_properties(axsn PROPERTIES
+        EXCLUDE_FROM_ALL TRUE
+        POSITION_INDEPENDENT_CODE ON
+        C_VISIBILITY_PRESET hidden
 )
-target_link_libraries(axsn INTERFACE log)
+target_include_directories(axsn PUBLIC include)
+target_link_libraries(axsn PUBLIC log)
+axsn_configure_target(axsn)
 
 add_subdirectory(features/jni)
 

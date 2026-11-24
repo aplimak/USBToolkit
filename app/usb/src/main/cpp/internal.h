@@ -8,6 +8,10 @@
 #include <axsn/error.h>
 #include <usbg/usbg.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define USBTK_JC_UE "ir/aeliux/usbtoolkit/usb/UsbException"
 #define USBTK_JC_EAEE "ir/aeliux/usbtoolkit/usb/EntityAlreadyExistsException"
 #define USBTK_JC_ENFE "ir/aeliux/usbtoolkit/usb/EntityNotFoundException"
@@ -25,12 +29,17 @@ usbtk_throw_usbg(JNIEnv *env, const char *what, int rc)
     AXSN_THROW_IOE(env,
                    "%s failed: error %s: %s (%d)",
                    what,
-                   usbg_error_name(rc),
-                   usbg_strerror(rc),
+                   usbg_error_name((usbg_error)rc),
+                   usbg_strerror((usbg_error)rc),
                    rc);
 }
 
 int usbtk_dto_init(JNIEnv *env);
+
 void usbtk_dto_release(JNIEnv *env);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif //USBTK_INTERNAL_H

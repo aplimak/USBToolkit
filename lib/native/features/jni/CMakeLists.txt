@@ -10,7 +10,12 @@ set_target_properties(axsn_jni PROPERTIES
         EXCLUDE_FROM_ALL TRUE
         POSITION_INDEPENDENT_CODE ON
         C_VISIBILITY_PRESET hidden
+        CXX_VISIBILITY_PRESET hidden
 )
 target_include_directories(axsn_jni PUBLIC include)
+# pulls compiled object files
+target_sources(axsn_jni PUBLIC
+        $<TARGET_OBJECTS:axsn>
+)
 target_link_libraries(axsn_jni PUBLIC axsn)
 axsn_configure_target(axsn_jni)
