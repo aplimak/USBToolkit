@@ -15,7 +15,7 @@ extern "C" {
    If it doesn't, the default tag is used. */
 #ifndef LOG_TAG
 #ifndef NDEBUG
-#define LOG_TAG AXSN_D_LIBRARY_NAME ":" __FILE_NAME__
+#define LOG_TAG AXSN_D_LIBRARY_NAME "/" __FILE_NAME__
 #else
 #define LOG_TAG AXSN_D_LIBRARY_NAME
 #endif
