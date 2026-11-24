@@ -125,6 +125,7 @@ jint axsn_jni_load(JavaVM *vm, void *reserved) {
 
     result = (*vm)->GetEnv(vm, &raw_env, JNI_VERSION_1_6);
     if (result != JNI_OK || raw_env == NULL) {
+        LOGE("axsn_jni_load: GetEnv failed");
         return JNI_ERR;
     }
 

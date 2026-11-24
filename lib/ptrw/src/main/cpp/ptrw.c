@@ -4,6 +4,7 @@
 
 #include "ptrw.h"
 #include "internal.h"
+#include <axsn/jni.h>
 #include <axsn/error.h>
 #include <axsn/log.h>
 #include <stdlib.h>
@@ -157,12 +158,12 @@ void ptrw_free(ptrw_t *ptrw)
 
     ptrw->freed = true;
 
-    JNIEnv *env = NULL;
-    jboolean did_attach = JNI_FALSE;
+    axsn_jni_env jwrapper;
     struct ptrw_jni_call cb = ptrw->free_callback;
     ptrw->free_callback = (struct ptrw_jni_call) {0};
 
-    if (cb.obj && cb.method && ptrw_aquire_env(&env, &did_attach) == JNI_OK) {
+    if (cb.obj && cb.method && axsn_jni_env_acquire(&jwrapper, NULL) == JNI_OK) {
+        JNIEnv *env = jwrapper.env;
         (*env)->CallVoidMethod(env, cb.obj, cb.method);
         if ((*env)->ExceptionCheck(env)) {
             char error[256];
@@ -170,9 +171,8 @@ void ptrw_free(ptrw_t *ptrw)
             LOGE("error while calling free_callback of %p: %s", (void *) ptrw, error);
         }
         ptrw_free_jni_call(env, cb);
-        if (did_attach && ptrw_detach_thread() != JNI_OK) {
-            LOGE("error while detaching thread from JVM");
-        }
+
+        axsn_jni_env_release(&jwrapper);
         env = NULL;
         LOGD("ptrw_free(%p) call free_callback", (void *) ptrw);
     }

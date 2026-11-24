@@ -8,6 +8,10 @@
 #include <jni.h>
 #include "ptrw.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * Cast long to ptrw_t.
  * @param wptr Pointer to ptrw_t.
@@ -29,25 +33,14 @@ static inline ptrw_t *ptrw_cast(long wptr)
 ptrw_t *ptrw_resolve(JNIEnv *env, long wptr);
 
 /**
- * Try to get current thread's JNNIEnv or attach current thread to JVM.
- * @param env out JNIEnv.
- * @param did_attach out JNI_TRUE if attached and JNI_FALSE if already attached.
- * @return JNI_OK if everything gone right, otherwise, the error code reurned by vm call.
- * @note Thread must be detached on when did_attach.
- */
-jint ptrw_aquire_env(JNIEnv **env, jboolean *did_attach);
-
-/**
- * Detach current thread from JVM.
- * @return JNI_OK if everything gone right, otherwise, the error code reurned by vm call.
- */
-jint ptrw_detach_thread(void);
-
-/**
  * Register all manually declared native methods.
  * @param env JNIEnv to do registries.
  * @return JNI_OK if everything gone right, otherwise JNI_ERR.
  */
 jint ptrw_register_native_methods(JNIEnv *env);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif //PTRW_INTERNAL_H

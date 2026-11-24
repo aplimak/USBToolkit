@@ -22,6 +22,17 @@ namespace {
         Failed
     };
 
+    constexpr const char* hookStateName(HookState state) noexcept {
+        switch (state) {
+            case HookState::NotStarted: return "NotStarted";
+            case HookState::Running:    return "Running";
+            case HookState::Completed:  return "Completed";
+            case HookState::Failed:     return "Failed";
+        }
+
+        return "Unknown";
+    }
+
     struct HookEntry {
         axsn_jni_hook function;
         HookState state = HookState::NotStarted;
@@ -72,11 +83,12 @@ int _axsn_jni_call_hooks(JavaVM *vm, void *reserved) {
 
         LOGV("jni %s hooks=%zu", hookTypeName, registry.entries.size());
 
-        for (HookEntry entry : registry.entries) {
+        for (HookEntry& entry : registry.entries) {
             if (entry.state != HookState::NotStarted) continue;
             try {
-                LOGV("jni %s hook %p call", hookTypeName, entry.function);
+                LOGV("jni %s hook %p call, state=%s", hookTypeName, entry.function, hookStateName(entry.state));
                 rc = entry.call(vm, reserved);
+                LOGV("jni %s hook %p call, new state=%s", hookTypeName, entry.function, hookStateName(entry.state));
                 if (rc != JNI_OK) {
                     LOGE("jni %s hook %p failed", hookTypeName, entry.function);
 #if AXSN_JNI_RUNTIME

@@ -17,10 +17,14 @@ static int dtoInit(JavaVM *vm, void *reserved) {
     }
 
     if (usbtk_dto_init(env) != 0) {
+        if (env->ExceptionCheck()) {
+            char error[256];
+            axsn_get_pending_exception(env, error, sizeof(error));
+            LOGE("error in usbtk_dto_init: %s", error);
+        } else {
+            LOGE("usbtk_dto_init failed");
+        }
         usbtk_dto_release(env);
-        char error[256];
-        axsn_get_pending_exception(env, error, sizeof(error));
-        LOGE("error in usbtk_dto_init: %s", error);
         return JNI_ERR;
     }
 
