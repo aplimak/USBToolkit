@@ -2,6 +2,8 @@ plugins {
     alias(libs.plugins.android.library)
 }
 
+val axsnRoot = rootProject.projectDir.resolve("lib/native")
+
 android {
     namespace = "ir.aeliux.ptrw"
     compileSdk {
@@ -21,7 +23,7 @@ android {
 
         externalNativeBuild {
             cmake {
-                arguments += "-DANDROID_STL=c++_shared"
+                arguments += listOf("-DANDROID_STL=c++_shared", "-DAXSN_ROOT=${axsnRoot}")
             }
         }
     }

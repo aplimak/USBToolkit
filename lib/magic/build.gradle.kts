@@ -4,6 +4,7 @@ plugins {
 }
 
 val magicAssetDir = layout.buildDirectory.dir("generated/magic_assets")
+val axsnRoot = rootProject.projectDir.resolve("lib/native")
 
 android {
     namespace = "ir.aeliux.magic"
@@ -26,7 +27,8 @@ android {
             cmake {
                 arguments += listOf(
                     "-DANDROID_STL=c++_shared",
-                    "-DMAGIC_ASSET_OUTPUT_DIR=${magicAssetDir.get().asFile.absolutePath}"
+                    "-DMAGIC_ASSET_OUTPUT_DIR=${magicAssetDir.get().asFile.absolutePath}",
+                    "-DAXSN_ROOT=${axsnRoot}"
                 )
             }
         }

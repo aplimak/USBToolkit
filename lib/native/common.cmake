@@ -2,8 +2,6 @@
 # Include after project() and before creating first-party targets.
 include_guard(GLOBAL)
 
-get_filename_component(AXSN_ROOT "${CMAKE_CURRENT_LIST_DIR}" REALPATH)
-
 if(NOT EXISTS "${AXSN_ROOT}/CMakeLists.txt")
   message(FATAL_ERROR "AXSN_ROOT is invalid: ${AXSN_ROOT}")
 endif()

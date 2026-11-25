@@ -1,7 +1,14 @@
 cmake_minimum_required(VERSION 3.22.1)
 project("magic" LANGUAGES C CXX)
 
-include("${CMAKE_CURRENT_LIST_DIR}/common/common.cmake")
+if (NOT DEFINED AXSN_ROOT)
+  message(FATAL_ERROR "AXSN_ROOT is required")
+endif ()
+if (NOT EXISTS "${AXSN_ROOT}/common.cmake")
+  message(FATAL_ERROR "AXSN_ROOT is invalid: ${AXSN_ROOT}")
+endif ()
+
+include("${AXSN_ROOT}/common.cmake")
 axsn_initialize()
 
 if(NOT ANDROID)
