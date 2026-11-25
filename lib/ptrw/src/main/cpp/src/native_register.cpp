@@ -7,15 +7,10 @@
 #include <axsn/log.h>
 #include <axsn/jni.h>
 
-static int nativeInit(JavaVM *vm, void *reserved) {
-    (void) reserved;
+static int nativeInit(const axsn_jni_env *jenv) {
     LOGV("nativeInit");
 
-    JNIEnv *env = nullptr;
-    if (vm->GetEnv((void **) &env, JNI_VERSION_1_6) != JNI_OK) {
-        LOGE("nativeInit: GetEnv failed");
-        return JNI_ERR;
-    }
+    JNIEnv *env = jenv->env;
 
     if (ptrw_register_native_methods(env) != JNI_OK) {
         if (env->ExceptionCheck()) {

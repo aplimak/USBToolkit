@@ -6,15 +6,10 @@
 
 #include <axsn/jni.h>
 
-static int dtoInit(JavaVM *vm, void *reserved) {
-    (void) reserved;
+static int dtoInit(const axsn_jni_env *jenv) {
     LOGV("dtoInit");
 
-    JNIEnv *env = nullptr;
-    if (vm->GetEnv((void **) &env, JNI_VERSION_1_6) != JNI_OK) {
-        LOGE("dtoInit: GetEnv failed");
-        return JNI_ERR;
-    }
+    JNIEnv *env = jenv->env;
 
     if (usbtk_dto_init(env) != 0) {
         if (env->ExceptionCheck()) {
@@ -33,17 +28,10 @@ static int dtoInit(JavaVM *vm, void *reserved) {
     return JNI_OK;
 }
 
-static int dtoRelease(JavaVM *vm, void *reserved) {
-    (void)reserved;
-    JNIEnv *env = nullptr;
-
+static int dtoRelease(const axsn_jni_env *jenv) {
     LOGV("dtoInit");
 
-    if (vm->GetEnv((void **) &env, JNI_VERSION_1_6) != JNI_OK) {
-        /* Thread torn down / VM going away — best effort only. */
-        LOGE("JNI_OnUnload: GetEnv failed, skipping cleanup");
-        return JNI_ERR;
-    }
+    JNIEnv *env = jenv->env;
 
     usbtk_dto_release(env);
 

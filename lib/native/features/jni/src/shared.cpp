@@ -22,29 +22,26 @@ namespace {
         Failed
     };
 
-    constexpr const char* hookStateName(HookState state) noexcept {
-        switch (state) {
-            case HookState::NotStarted: return "NotStarted";
-            case HookState::Running:    return "Running";
-            case HookState::Completed:  return "Completed";
-            case HookState::Failed:     return "Failed";
-        }
-
-        return "Unknown";
-    }
-
     struct HookEntry {
         axsn_jni_hook function;
         HookState state = HookState::NotStarted;
 
-        HookEntry(axsn_jni_hook function) : function(function) {
+        HookEntry(axsn_jni_hook function) : function(function) {}
+        constexpr const char* getStateName() noexcept {
+            switch (state) {
+                case HookState::NotStarted: return "NotStarted";
+                case HookState::Running:    return "Running";
+                case HookState::Completed:  return "Completed";
+                case HookState::Failed:     return "Failed";
+            }
 
+            return "Unknown";
         }
 
-        int call(JavaVM *vm, void *reserved) {
+        int call(const axsn_jni_env *jenv) {
             if (!function || state != HookState::NotStarted) return JNI_ERR;
             state = HookState::Running;
-            int rc = (*function)(vm, reserved);
+            int rc = (*function)(jenv);
             state = rc == JNI_OK ? HookState::Completed : HookState::Failed;
             return rc;
         }
@@ -74,7 +71,7 @@ void _axsn_jni_register_hook(axsn_jni_hook hook) {
     }
 }
 
-int _axsn_jni_call_hooks(JavaVM *vm, void *reserved) {
+int _axsn_jni_call_hooks(const axsn_jni_env *jenv) {
     try {
         auto& registry = getRegistry();
         std::lock_guard<std::mutex> lock(registry.mutex);
@@ -84,11 +81,12 @@ int _axsn_jni_call_hooks(JavaVM *vm, void *reserved) {
         LOGV("jni %s hooks=%zu", hookTypeName, registry.entries.size());
 
         for (HookEntry& entry : registry.entries) {
-            if (entry.state != HookState::NotStarted) continue;
+            bool skipped = entry.state != HookState::NotStarted;
+            LOGV("jni %s hook %p %s, state=%s", hookTypeName, entry.function, skipped ? "skip" : "call", entry.getStateName());
+            if (skipped) continue;
             try {
-                LOGV("jni %s hook %p call, state=%s", hookTypeName, entry.function, hookStateName(entry.state));
-                rc = entry.call(vm, reserved);
-                LOGV("jni %s hook %p call, new state=%s", hookTypeName, entry.function, hookStateName(entry.state));
+                rc = entry.call(jenv);
+                LOGV("jni %s hook %p %s", hookTypeName, entry.function, entry.getStateName());
                 if (rc != JNI_OK) {
                     LOGE("jni %s hook %p failed", hookTypeName, entry.function);
 #if AXSN_JNI_RUNTIME

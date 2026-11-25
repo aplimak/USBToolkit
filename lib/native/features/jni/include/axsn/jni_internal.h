@@ -18,7 +18,7 @@ extern "C" {
  * @return 0 if succeeded, otherwise non-zero.
  * @note Automatically called by axsn_jni_load.
  */
-AXSN_EXPORT int axsn_jni_call_load_hooks(JavaVM *vm, void *reserved);
+AXSN_EXPORT int axsn_jni_call_load_hooks(const axsn_jni_env *jenv);
 
 /**
  * Call runtime jni load handler, and increase lib counter.

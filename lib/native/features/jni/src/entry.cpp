@@ -26,7 +26,19 @@ JNIEXPORT void JNICALL JNI_OnUnload(JavaVM *vm, void *reserved) {
     LOGI("JNI_OnUnload");
 
     LOGI("JNI_OnUnload call hooks");
-    _axsn_jni_call_hooks(vm, reserved);
+
+    void *raw_env;
+    int result = vm->GetEnv(&raw_env, JNI_VERSION_1_6);
+    if (result != JNI_OK || raw_env == nullptr) {
+        LOGE("JNI_OnUnload: GetEnv failed");
+    } else {
+        const axsn_jni_env jenv = {
+                .vm = vm,
+                .env = (JNIEnv *)raw_env,
+                .attached = 0
+        };
+        _axsn_jni_call_hooks(&jenv);
+    }
 
     axsn_jni_unload(vm, reserved);
 

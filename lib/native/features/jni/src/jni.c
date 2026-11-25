@@ -132,8 +132,14 @@ jint axsn_jni_load(JavaVM *vm, void *reserved) {
 
     atomic_store_explicit(&g_axsn_java_vm, vm, memory_order_release);
 
+    const axsn_jni_env jenv = {
+            .vm = vm,
+            .env = (JNIEnv *)raw_env,
+            .attached = 0
+    };
+
     LOGI("axsn_jni_load call hooks");
-    if (axsn_jni_call_load_hooks(vm, reserved) != JNI_OK) {
+    if (axsn_jni_call_load_hooks(&jenv) != JNI_OK) {
         return JNI_ERR;
     }
 
