@@ -7,10 +7,24 @@
 extern "C" {
 #endif
 
+/**
+ * Data structure used to store jni pointers and track native attached thread.
+ */
 typedef struct {
+    /**
+     * Pointer to JVM.
+     * @note This pointer is valid for this process. it can be cached.
+     */
     JavaVM *vm;
+    /**
+     * Pointer to the current thread's jni env.
+     * @note This pointer is valid only on this thread and until the thread is died or detached from JVM. Must not be cached globally.
+     */
     JNIEnv *env;
-    int attached_by_axsn;
+    /**
+     * The value indicating whether this thread is attached to jvm by the call to axsn_jni_env_acquire or already attached.
+     */
+    int attached;
 } axsn_jni_env;
 
 /**
@@ -18,13 +32,19 @@ typedef struct {
  * @note return non-zero to fail the load phase, ignored in unload phase.
  * @note exceptions will be treated as fail.
  */
-typedef int (*axsn_jni_hook)(JavaVM *vm, void *reserved);
+typedef int (*axsn_jni_hook)(const axsn_jni_env *jenv);
 
 /**
  * Type that indicates when the hook is called.
  */
 typedef enum {
+    /**
+     * Global load hook, called by jni runtime.
+     */
     AXSN_JNI_LOAD,
+    /**
+     * Local unload hook, called by the local jni facility.
+     */
     AXSN_JNI_UNLOAD,
 } axsn_jni_hook_type;
 
@@ -45,30 +65,40 @@ inline void axsn_jni_register_hook(axsn_jni_hook hook, axsn_jni_hook_type type) 
     }
 }
 
-/* Returns the VM captured by this process, or NULL before load. */
+/**
+ * Get the JVM captured by this process.
+ * @return Pointer to the JVM if it captured, otherwise NULL.
+ */
 AXSN_EXPORT JavaVM *axsn_jni_get_vm(void);
 
-/* Returns this thread's JNIEnv only when it is already attached. */
+/**
+ * Get the current thread's jni env.
+ * @return Pointer to the jni env only if the current thread is already attached, otherwise NULL.
+ * @note This function won't try to attach the current thread if its not already attached.
+ */
 AXSN_EXPORT JNIEnv *axsn_jni_get_env(void);
 
-/*
- * Obtains the current thread's JNIEnv, attaching it if necessary.
- * On success, out_env->attached_by_axsn records whether release must detach.
- * Pass NULL as thread_name to use the VM's default thread name.
+/**
+ * Acquire jni jenv. either by getting current thread's jenv or attaching to JVM and then getting a jenv.
+ * @param jenv out parameter to hold the axsn_jni_env.
+ * @param thread_name The new for the new thread, used only when current thread is not already attached to JVM, pass NULL to use default.
+ * @return JNI_OK if succeeded.
+ * @note After a successful call, you must call axsn_jni_env_release to detach the thread safely if it attached by this call.
  */
 AXSN_EXPORT jint axsn_jni_env_acquire(
-    axsn_jni_env *out_env,
+    axsn_jni_env *jenv,
     const char *thread_name
 );
 
-/* Detaches only when axsn_jni_env_acquire() attached the current thread. */
-AXSN_EXPORT void axsn_jni_env_release(axsn_jni_env *env);
+/**
+ * Clean up resources and detach thread if needed.
+ * @param jenv Pointer to axsn_jni_env.
+ */
+AXSN_EXPORT void axsn_jni_env_release(axsn_jni_env *jenv);
 
 #ifdef __cplusplus
-} /* extern "C" */
-#endif
+}
 
-#ifdef __cplusplus
 namespace axsn::jni {
 
 class ScopedEnv final {

@@ -38,18 +38,18 @@ JNIEnv *axsn_jni_get_env(void) {
     return (JNIEnv *)raw_env;
 }
 
-jint axsn_jni_env_acquire(axsn_jni_env *out_env, const char *thread_name) {
+jint axsn_jni_env_acquire(axsn_jni_env *jenv, const char *thread_name) {
     JavaVM *vm;
     void *raw_env = NULL;
     jint result;
 
-    if (out_env == NULL) {
+    if (jenv == NULL) {
         return JNI_EINVAL;
     }
 
-    out_env->vm = NULL;
-    out_env->env = NULL;
-    out_env->attached_by_axsn = 0;
+    jenv->vm = NULL;
+    jenv->env = NULL;
+    jenv->attached = 0;
 
     vm = axsn_jni_get_vm();
     if (vm == NULL) {
@@ -58,8 +58,8 @@ jint axsn_jni_env_acquire(axsn_jni_env *out_env, const char *thread_name) {
 
     result = (*vm)->GetEnv(vm, &raw_env, JNI_VERSION_1_6);
     if (result == JNI_OK) {
-        out_env->vm = vm;
-        out_env->env = (JNIEnv *)raw_env;
+        jenv->vm = vm;
+        jenv->env = (JNIEnv *)raw_env;
         return JNI_OK;
     }
 
@@ -88,29 +88,29 @@ jint axsn_jni_env_acquire(axsn_jni_env *out_env, const char *thread_name) {
         return result;
     }
 
-    out_env->vm = vm;
-    out_env->env = (JNIEnv *)raw_env;
-    out_env->attached_by_axsn = 1;
+    jenv->vm = vm;
+    jenv->env = (JNIEnv *)raw_env;
+    jenv->attached = 1;
     return JNI_OK;
 }
 
-void axsn_jni_env_release(axsn_jni_env *state) {
-    if (state == NULL) {
+void axsn_jni_env_release(axsn_jni_env *jenv) {
+    if (jenv == NULL) {
         return;
     }
 
-    if (state->attached_by_axsn && state->vm != NULL) {
-        if ((*state->env)->ExceptionCheck(state->env)) {
+    if (jenv->attached && jenv->vm != NULL) {
+        if ((*jenv->env)->ExceptionCheck(jenv->env)) {
             char error_buf[1024];
-            axsn_get_pending_exception(state->env, error_buf, sizeof(error_buf));
+            axsn_get_pending_exception(jenv->env, error_buf, sizeof(error_buf));
             LOGE("Unhandled pending exception on a jvm attached thread:\n%s", error_buf);
         }
-        (void)(*state->vm)->DetachCurrentThread(state->vm);
+        (void)(*jenv->vm)->DetachCurrentThread(jenv->vm);
     }
 
-    state->vm = NULL;
-    state->env = NULL;
-    state->attached_by_axsn = 0;
+    jenv->vm = NULL;
+    jenv->env = NULL;
+    jenv->attached = 0;
 }
 
 jint axsn_jni_load(JavaVM *vm, void *reserved) {
