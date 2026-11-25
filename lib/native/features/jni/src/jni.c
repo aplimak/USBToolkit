@@ -1,5 +1,5 @@
 #include "axsn/jni.h"
-#include "runtime.h"
+#include "axsn/jni_internal.h"
 
 #include <axsn/error.h>
 #include <axsn/log.h>

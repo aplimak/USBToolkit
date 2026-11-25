@@ -3,7 +3,7 @@
 //
 
 #include "axsn/jni.h"
-#include "runtime.h"
+#include "axsn/jni_internal.h"
 #include "shared.hpp"
 
 int axsn_jni_call_load_hooks(JavaVM *vm, void *reserved) {

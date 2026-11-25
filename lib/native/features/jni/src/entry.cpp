@@ -3,8 +3,8 @@
 //
 
 #include "axsn/jni.h"
+#include "axsn/jni_internal.h"
 #include "shared.hpp"
-#include "runtime.h"
 #include <jni.h>
 #include <axsn/log.h>
 
