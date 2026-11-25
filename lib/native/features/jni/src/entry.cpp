@@ -25,10 +25,10 @@ extern "C"
 JNIEXPORT void JNICALL JNI_OnUnload(JavaVM *vm, void *reserved) {
     LOGI("JNI_OnUnload");
 
-    axsn_jni_unload(vm, reserved);
-
     LOGI("JNI_OnUnload call hooks");
     _axsn_jni_call_hooks(vm, reserved);
+
+    axsn_jni_unload(vm, reserved);
 
     LOGI("JNI_OnUnload done");
 }
